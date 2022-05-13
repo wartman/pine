@@ -12,13 +12,4 @@ abstract class ObjectElement extends Element {
     Debug.alwaysAssert(object != null);
     return object;
   }
-
-  public function createObject():Dynamic {
-    return objectComponent.createObject(getRoot());
-  }
-
-  public function updateObject(?oldComponent:Component) {
-    Debug.alwaysAssert(object != null);
-    objectComponent.updateObject(getRoot(), object, oldComponent);
-  }
 }

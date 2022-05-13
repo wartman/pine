@@ -71,9 +71,9 @@ class ReactivePropertyBuilder extends ClassBuilder {
   }
 
   function process() {
-    for (field in fields) {
+    for (field in findFieldsByMeta('observe')) {
       switch field.kind {
-        case FVar(t, e) if (field.meta.exists(f -> f.name == 'observe')):
+        case FVar(t, e):
           var prop = MacroTools.makeField(field.name, t, e != null);
           var name = field.name;
           var getter = 'get_$name';
@@ -108,5 +108,13 @@ class ReactivePropertyBuilder extends ClassBuilder {
         default:
       }
     }
+
+    // for (field in fields) {
+    //   switch field.kind {
+    //     case FFun(f) if (field.meta.exists(f -> f.name == 'transition')):
+    //     // @todo
+    //     default:
+    //   }
+    // }
   }
 }

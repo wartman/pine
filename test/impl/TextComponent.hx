@@ -23,25 +23,18 @@ class TextComponent extends ObjectComponent {
   }
 
   public function createElement() {
-    return new TextElement(this);
+    return new ObjectWithoutChildrenElement(this);
   }
 
   public function createObject(root:Root):Dynamic {
-    return new TestingObject(content);
+    var obj = new TestingObject(content);
+    if (ref != null)
+      ref(obj);
+    return obj;
   }
 
   public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
     (object : TestingObject).content = content;
     return object;
-  }
-}
-
-class TextElement extends ObjectWithoutChildrenElement {
-  override function createObject():Dynamic {
-    var text:TextComponent = cast component;
-    var obj = super.createObject();
-    if (text.ref != null)
-      text.ref(obj);
-    return obj;
   }
 }

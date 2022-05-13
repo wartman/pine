@@ -8,14 +8,13 @@ class ObjectWithChildrenElement extends ObjectElement {
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    Debug.alwaysAssert(root != null);
     if (previousComponent == null) {
-      object = createObject();
-      root.insertObject(object, slot, findAncestorObject);
+      object = objectComponent.createObject(getRoot());
+      objectComponent.insertObject(getRoot(), object, slot, findAncestorObject);
       initializeChildren();
     } else {
       if (previousComponent != component)
-        updateObject(previousComponent);
+        objectComponent.updateObject(getRoot(), getObject(), previousComponent);
       rebuildChildren();
     }
   }
@@ -23,7 +22,7 @@ class ObjectWithChildrenElement extends ObjectElement {
   function performHydrate(cursor:HydrationCursor) {
     object = cursor.current();
     Debug.assert(object != null);
-    updateObject(object);
+    objectComponent.updateObject(getRoot(), object, null);
 
     var components = objectComponent.getChildren();
     var objects = cursor.currentChildren();
@@ -68,12 +67,12 @@ class ObjectWithChildrenElement extends ObjectElement {
     var previousSlot = this.slot;
     this.slot = slot;
 
-    getRoot().moveObject(object, previousSlot, slot, findAncestorObject);
+    objectComponent.moveObject(getRoot(), object, previousSlot, slot, findAncestorObject);
   }
 
   override function dispose() {
     if (object != null)
-      getRoot().removeObject(object, slot);
+      objectComponent.removeObject(getRoot(), object, slot);
 
     super.dispose();
 

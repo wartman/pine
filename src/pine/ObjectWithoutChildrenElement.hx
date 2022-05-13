@@ -3,24 +3,24 @@ package pine;
 class ObjectWithoutChildrenElement extends ObjectElement {
   public function performBuild(previousComponent:Null<Component>) {
     if (previousComponent == null) {
-      object = createObject();
-      getRoot().insertObject(object, slot, findAncestorObject);
+      object = objectComponent.createObject(getRoot());
+      objectComponent.insertObject(getRoot(), object, slot, findAncestorObject);
     } else {
       if (previousComponent != component)
-        updateObject(previousComponent);
+        objectComponent.updateObject(getRoot(), getObject(), previousComponent);
     }
   }
 
   function performHydrate(cursor:HydrationCursor) {
     object = cursor.current();
-    Debug.assert(object != null);
-    updateObject(object);
+    Debug.alwaysAssert(object != null);
+    objectComponent.updateObject(getRoot(), object);
     cursor.next();
   }
 
   override function dispose() {
     if (object != null)
-      getRoot().removeObject(object, slot);
+      objectComponent.removeObject(getRoot(), object, slot);
     super.dispose();
     object = null;
   }

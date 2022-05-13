@@ -129,10 +129,6 @@ class TodoApp extends ImmutableComponent {
           ),
           new TodoContainer({
             total: store.todos.map(todos -> todos.length),
-            // The following code is designed to only re-render
-            // the component when the number of todos changes. If
-            // we just listened to the entire TodoState we'd be re-rendering
-            // everything even if it was just a Todo description changing.
             todos: store.select(data -> {
               visibility: data.visibility,
               todos: data.todos.toArray()
@@ -140,8 +136,6 @@ class TodoApp extends ImmutableComponent {
               case All: data.todos;
               case Completed: data.todos.filter(todo -> todo.isCompleted);
               case Active: data.todos.filter(todo -> !todo.isCompleted);
-            }, {
-              shouldUpdate: (a, b) -> a.length != b.length
             }).map(todos -> {
               todos.reverse();
               todos;

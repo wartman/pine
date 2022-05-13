@@ -56,10 +56,6 @@ abstract class RootElement extends ObjectElement implements Root {
     status = Valid;
   }
 
-  override function createObject():Dynamic {
-    return rootComponent.getRootObject();
-  }
-
   public function scheduleAfterRebuild(cb:() -> Void) {
     var disposable = onChange.next(_ -> cb());
     if (!isScheduled)
@@ -117,10 +113,10 @@ abstract class RootElement extends ObjectElement implements Root {
 
   function performBuild(previousComponent:Null<Component>) {
     if (previousComponent == null) {
-      object = createObject();
+      object = rootComponent.createObject(this);
     } else {
       if (previousComponent != component)
-        updateObject(previousComponent);
+        rootComponent.updateObject(this, previousComponent);
     }
     performBuildChild();
   }

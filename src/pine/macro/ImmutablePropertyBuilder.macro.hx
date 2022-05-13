@@ -35,9 +35,9 @@ class ImmutablePropertyBuilder extends ClassBuilder {
   }
 
   function process() {
-    for (field in fields) {
+    for (field in findFieldsByMeta('prop')) {
       switch field.kind {
-        case FVar(t, e) if (field.meta.exists(f -> f.name == 'prop')):
+        case FVar(t, e):
           var name = field.name;
 
           if (!field.access.contains(AFinal)) {

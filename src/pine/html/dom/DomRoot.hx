@@ -28,6 +28,10 @@ class DomRoot extends RootComponent {
   public function createElement():Element {
     return new DomRootElement(this);
   }
+
+  public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
+    return object;
+  }
 }
 
 class DomRootElement extends RootElement implements HtmlRoot {

@@ -76,9 +76,6 @@ class ObservableObjectBuilder {
                 var type = t.toType();
 
                 if (prop.access.contains(AFinal)) {
-                  // if (Context.unify(type, Context.getType('pine.Observable'))) {
-                  //   observableInit(name, link, macro this.observedValue.$name);
-                  // } else
                   if (Context.unify(type, Context.getType('pine.ObservableHost'))) {
                     observableInit(name, link, macro this.observedValue.$name.observe());
                   }
@@ -88,9 +85,6 @@ class ObservableObjectBuilder {
                     inline function $getter():$t return value.$name;
                   });
                 } else {
-                  // var setterExpr:Expr = if (Context.unify(type, Context.getType('pine.Observable'))) {
-                  //   observableSetter(name, link, macro this.observedValue.$name);
-                  // } else
                   var setterExpr:Expr = if (Context.unify(type, Context.getType('pine.ObservableHost'))) {
                     observableSetter(name, link, macro this.observedValue.$name.observe());
                   } else {

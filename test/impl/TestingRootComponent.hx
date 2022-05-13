@@ -22,6 +22,10 @@ class TestingRootComponent extends RootComponent {
     return new TestingRootElement(this);
   }
 
+  public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component) {
+    return object;
+  }
+
   public function getRootObject():Dynamic {
     return object;
   }

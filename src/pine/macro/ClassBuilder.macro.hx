@@ -43,4 +43,8 @@ class ClassBuilder {
       case field: Some(field);
     }
   }
+
+  public function findFieldsByMeta(name:String) {
+    return fields.filter(f -> f.meta.exists(m -> m.name == name));
+  }
 }
