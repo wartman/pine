@@ -1,0 +1,26 @@
+-cp src
+-cp test
+-cp example
+
+-lib medic
+-lib nuke
+
+-D js-es=6
+-D debug
+-D analyzer-optimize
+
+--dce full
+--macro nullSafety("pine")
+
+--each
+
+-main todo.Todo
+
+-js dist/assets/app.js
+
+--next
+
+-main Run
+-js dist/test/index.js
+
+
