@@ -32,8 +32,7 @@ abstract class ProviderComponent<T> extends ProxyComponent {
   }
 
   public function dispose() {
-    if (value != null)
-      doDispose(value);
+    if (value != null) doDispose(value);
   }
 
   override function createElement():Element {

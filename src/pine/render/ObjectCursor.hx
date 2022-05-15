@@ -12,14 +12,12 @@ class ObjectCursor implements HydrationCursor {
   }
 
   public function currentChildren():HydrationCursor {
-    if (object == null)
-      return new ObjectCursor(null);
+    if (object == null) return new ObjectCursor(null);
     return new ObjectCursor(object.children[0]);
   }
 
   public function next() {
-    if (object == null)
-      return;
+    if (object == null) return;
 
     if (object.parent == null) {
       object = null;

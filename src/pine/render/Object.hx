@@ -7,8 +7,7 @@ abstract class Object {
   public function prepend(child:Object) {
     Debug.assert(child != this);
 
-    if (child.parent != null)
-      child.remove();
+    if (child.parent != null) child.remove();
 
     child.parent = this;
     children.unshift(child);
@@ -17,8 +16,7 @@ abstract class Object {
   public function append(child:Object) {
     Debug.assert(child != this);
 
-    if (child.parent != null)
-      child.remove();
+    if (child.parent != null) child.remove();
 
     child.parent = this;
     children.push(child);
@@ -27,8 +25,7 @@ abstract class Object {
   public function insert(pos:Int, child:Object) {
     Debug.assert(child != this);
 
-    if (child.parent != this && child.parent != null)
-      child.remove();
+    if (child.parent != this && child.parent != null) child.remove();
 
     child.parent = this;
 
@@ -43,8 +40,7 @@ abstract class Object {
 
     var from = children.indexOf(child);
 
-    if (pos == from)
-      return;
+    if (pos == from) return;
 
     if (from < pos) {
       var i = from;

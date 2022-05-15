@@ -58,8 +58,7 @@ abstract class RootElement extends ObjectElement implements Root {
 
   public function scheduleAfterRebuild(cb:() -> Void) {
     var disposable = onChange.next(_ -> cb());
-    if (!isScheduled)
-      scheduleRebuildInvalidElements();
+    if (!isScheduled) scheduleRebuildInvalidElements();
     return disposable;
   }
 
@@ -75,8 +74,7 @@ abstract class RootElement extends ObjectElement implements Root {
       return;
     }
 
-    if (status == Invalid)
-      return;
+    if (status == Invalid) return;
     Debug.assert(status == Valid);
 
     if (invalidElements == null) {
@@ -84,14 +82,12 @@ abstract class RootElement extends ObjectElement implements Root {
       scheduleRebuildInvalidElements();
     }
 
-    if (invalidElements.contains(child))
-      return;
+    if (invalidElements.contains(child)) return;
     invalidElements.push(child);
   }
 
   function scheduleRebuildInvalidElements() {
-    if (isScheduled)
-      return;
+    if (isScheduled) return;
     isScheduled = true;
     rootComponent.scheduler.schedule(performRebuildInvalidElements);
   }
@@ -106,8 +102,7 @@ abstract class RootElement extends ObjectElement implements Root {
 
     var elements = invalidElements.copy();
     invalidElements = null;
-    for (el in elements)
-      el.rebuild();
+    for (el in elements) el.rebuild();
     onChange.notify();
   }
 
@@ -115,8 +110,7 @@ abstract class RootElement extends ObjectElement implements Root {
     if (previousComponent == null) {
       object = rootComponent.createObject(this);
     } else {
-      if (previousComponent != component)
-        rootComponent.updateObject(this, previousComponent);
+      if (previousComponent != component) rootComponent.updateObject(this, previousComponent);
     }
     performBuildChild();
   }
@@ -137,7 +131,6 @@ abstract class RootElement extends ObjectElement implements Root {
   }
 
   function visitChildren(visitor:ElementVisitor) {
-    if (child != null)
-      visitor.visit(child);
+    if (child != null) visitor.visit(child);
   }
 }

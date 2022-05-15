@@ -45,8 +45,7 @@ class ImmutablePropertyBuilder extends ClassBuilder {
           }
 
           addProp(MacroTools.makeField(name, t, e != null));
-          addInitializer(e == null ? macro this.$name = props.$name : macro if (props.$name != null)
-            this.$name = props.$name);
+          addInitializer(e == null ? macro this.$name = props.$name : macro if (props.$name != null) this.$name = props.$name);
         default:
       }
     }

@@ -38,8 +38,7 @@ class HtmlElementObject extends Object {
 
     var out = '<${tag}';
     var attrs = [for (key => value in attrs) '$key="$value"'];
-    if (attrs.length > 0)
-      out += ' ${attrs.join(' ')}';
+    if (attrs.length > 0) out += ' ${attrs.join(' ')}';
 
     // todo: handle innerHTML.
 

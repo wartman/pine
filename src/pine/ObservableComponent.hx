@@ -80,8 +80,7 @@ class ObservableElement<T> extends Element {
   }
 
   inline function cleanupLink() {
-    if (link != null)
-      link.dispose();
+    if (link != null) link.dispose();
     link = null;
   }
 

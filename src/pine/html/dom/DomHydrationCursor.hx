@@ -14,14 +14,12 @@ class DomHydrationCursor implements HydrationCursor {
   }
 
   public function next() {
-    if (node == null)
-      return;
+    if (node == null) return;
     node = node.nextSibling;
   }
 
   public function currentChildren():HydrationCursor {
-    if (node == null)
-      return new DomHydrationCursor(null);
+    if (node == null) return new DomHydrationCursor(null);
     return new DomHydrationCursor(node.firstChild);
   }
 

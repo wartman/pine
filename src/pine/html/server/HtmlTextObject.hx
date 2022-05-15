@@ -12,8 +12,7 @@ class HtmlTextObject extends Object {
   }
 
   public function updateContent(content) {
-    if (content == null)
-      content = '';
+    if (content == null) content = '';
     this.content = content;
   }
 
