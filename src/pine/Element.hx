@@ -76,8 +76,7 @@ abstract class Element implements Context implements Disposable implements Dispo
 
     visitChildren(child -> child.dispose());
 
-    for (disposable in disposables)
-      disposable.dispose();
+    for (disposable in disposables) disposable.dispose();
 
     status = Disposed;
     parent = null;
@@ -140,8 +139,7 @@ abstract class Element implements Context implements Disposable implements Dispo
 
   public function findAncestorOfType<T:Element>(kind:Class<T>):Option<T> {
     if (parent == null) {
-      if (Std.isOfType(this, kind))
-        return Some(cast this);
+      if (Std.isOfType(this, kind)) return Some(cast this);
       return None;
     }
 
@@ -153,7 +151,7 @@ abstract class Element implements Context implements Disposable implements Dispo
 
   function findAncestorObject():Dynamic {
     return switch findAncestorOfType(ObjectElement) {
-      case None: Debug.warn('Unable to find ObjectElement ancestor.');
+      case None: Debug.error('Unable to find ObjectElement ancestor.');
       case Some(root): root.getObject();
     }
   }
@@ -195,19 +193,16 @@ abstract class Element implements Context implements Disposable implements Dispo
 
   function updateChild(?child:Element, ?component:Component, ?slot:Slot):Null<Element> {
     if (component == null) {
-      if (child != null)
-        removeChild(child);
+      if (child != null) removeChild(child);
       return null;
     }
 
     return if (child != null) {
       if (child.component == component) {
-        if (child.slot != slot)
-          updateSlotForChild(child, slot);
+        if (child.slot != slot) updateSlotForChild(child, slot);
         child;
       } else if (child.component.shouldBeUpdated(component)) {
-        if (child.slot != slot)
-          updateSlotForChild(child, slot);
+        if (child.slot != slot) updateSlotForChild(child, slot);
         child.update(component);
         child;
       } else {

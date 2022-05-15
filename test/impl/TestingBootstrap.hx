@@ -1,8 +1,7 @@
 package impl;
 
-import impl.TestingRootComponent.TestingRootElement;
-import pine.RootElement;
 import pine.Component;
+import impl.TestingRootComponent;
 
 class TestingBootstrap {
   final object:TestingObject;

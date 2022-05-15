@@ -9,7 +9,7 @@ abstract class RootComponent extends ObjectComponent {
     ?child:Component
   }) {
     super(null);
-    scheduler = props.scheduler == null ? DefaultScheduler.getInstance() : props.scheduler;
+    scheduler = props.scheduler == null ? Scheduler.getInstance() : props.scheduler;
     child = props.child;
   }
 

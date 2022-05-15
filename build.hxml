@@ -23,4 +23,4 @@
 -main Run
 -js dist/test/index.js
 
-
+-cmd node dist/test

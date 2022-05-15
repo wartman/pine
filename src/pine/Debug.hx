@@ -13,8 +13,8 @@ class Debug {
     return createAssertion(expr, message);
   }
 
-  static public macro function warn(expr:haxe.macro.Expr.ExprOf<String>) {
-    return macro throw $expr;
+  static public macro function error(expr:haxe.macro.Expr.ExprOf<String>) {
+    return macro throw new pine.PineException($expr);
   }
 
   #if macro
@@ -27,7 +27,7 @@ class Debug {
     }
 
     return macro @:pos(expr.pos) if (!$expr) {
-      pine.Debug.warn($message);
+      pine.Debug.error($message);
     }
   }
   #end

@@ -49,15 +49,12 @@ private class Observer<T> implements Disposable {
   }
 
   final public function dispose() {
-    if (isDisposed)
-      return;
-    if (observable != null)
-      observable.remove(this);
+    if (isDisposed) return;
+    if (observable != null) observable.remove(this);
   }
 
   function cleanupOnRemoved() {
-    if (isDisposed)
-      return;
+    if (isDisposed) return;
     isDisposed = true;
     if (observable != null) {
       observable = null;
@@ -72,7 +69,7 @@ private class LinkedObserver<T, R> extends Observer<T> {
 
   public function new(parent:Observable<T>, linked:Observable<R>, transform:(observedValue:T) -> R) {
     linkedObservable = linked;
-    linkedObservable.link = this;
+    linkedObservable.observerLink = this;
     super(parent, observedValue -> linkedObservable.update(transform(observedValue)));
   }
 
@@ -82,7 +79,7 @@ private class LinkedObserver<T, R> extends Observer<T> {
 
   override function cleanupOnRemoved() {
     super.cleanupOnRemoved();
-    linkedObservable.link = null;
+    linkedObservable.observerLink = null;
     linkedObservable.dispose();
   }
 }
@@ -110,17 +107,18 @@ class Observable<T> implements Disposable {
   final shouldUpdate:ObservableShouldUpdate<T>;
   final shouldAutoDispose:Bool;
 
-  var notifying:Bool = false;
+  var isNotifying:Bool = false;
+  var isDisposed:Bool = false;
   var observedValue:T;
-  var head:Null<Observer<T>>;
-  var toAddHead:Null<Observer<T>>;
-  var link:Null<Disposable> = null;
+  var observerLink:Null<Disposable> = null;
+  var observerListHead:Null<Observer<T>>;
+  var observerListToAddHead:Null<Observer<T>>;
 
   public var length(get, never):Int;
 
   function get_length() {
     var len = 0;
-    var current = head;
+    var current = observerListHead;
     while (current != null) {
       len++;
       current = current.next;
@@ -158,8 +156,7 @@ class Observable<T> implements Disposable {
   }
 
   public function handle(listener:(observedValue:T) -> HandleableObserverStatus, ?options:ObservableBindingOptions):Disposable {
-    if (options == null)
-      options = {defer: false};
+    if (options == null) options = {defer: false};
 
     var observer = new HandleableObserver(this, listener);
     addObserver(observer, options);
@@ -202,7 +199,7 @@ class Observable<T> implements Disposable {
     }
 
     #if debug
-    if (link != null) {
+    if (observerLink != null) {
       // @todo: We need to come up with better language for this :V
       Debug.assert(shouldAutoDispose, 'Parents of linked Observables must either not be linked themselves or must be automatically disposable.');
     }
@@ -232,7 +229,7 @@ class Observable<T> implements Disposable {
     fooBar.dispose();
     ```
 
-    In the above example, when `fooBar.dispose()` is called it's parent
+    In the above example, when `fooBar.dispose()` is called its parent
     Observable will be removed as well (as it will no longer have any
     Observers).
 
@@ -269,62 +266,60 @@ class Observable<T> implements Disposable {
   }
 
   function addObserver(observer:Observer<T>, options:ObservableBindingOptions) {
-    if (notifying) {
-      observer.next = toAddHead;
-      toAddHead = observer;
+    Debug.assert(isDisposed != true);
+
+    if (isNotifying) {
+      observer.next = observerListToAddHead;
+      observerListToAddHead = observer;
     } else {
-      observer.next = head;
-      head = observer;
+      observer.next = observerListHead;
+      observerListHead = observer;
     }
 
-    if (!options.defer)
-      observer.handle(observedValue);
+    if (!options.defer) observer.handle(observedValue);
   }
 
   public function notify() {
-    if (notifying) {
-      return;
-    }
+    Debug.assert(isDisposed != true, 'Attempted to notify a disposed Observable');
 
-    notifying = true;
+    if (isNotifying) return;
 
-    var current = head;
+    isNotifying = true;
+
+    var current = observerListHead;
 
     while (current != null) {
       current.handle(this.observedValue);
       current = current.next;
     }
 
-    notifying = false;
+    isNotifying = false;
 
-    if (toAddHead != null) {
+    if (observerListToAddHead != null) {
       if (current != null) {
-        current.next = toAddHead;
+        current.next = observerListToAddHead;
       } else {
-        head = toAddHead;
+        observerListHead = observerListToAddHead;
       }
-      toAddHead = null;
+      observerListToAddHead = null;
     }
   }
 
   public function update(observedValue:T):Void {
-    if (shouldUpdate != null && !shouldUpdate(this.observedValue, observedValue)) {
-      return;
-    }
+    if (shouldUpdate != null && !shouldUpdate(this.observedValue, observedValue)) return;
     this.observedValue = observedValue;
     notify();
   }
 
   public function remove(observer:Observer<T>):Void {
     inline function maybeAutoDispose() {
-      if (shouldAutoDispose && head == null && toAddHead == null) {
-        // @todo: No idea if this actually works :V
+      if (!isDisposed && shouldAutoDispose && observerListHead == null && observerListToAddHead == null) {
         dispose();
       }
     }
 
-    inline function iterate(head:Null<Observer<T>>) {
-      var current = head;
+    inline function iterate(observerListHead:Null<Observer<T>>) {
+      var current = observerListHead;
       while (current != null) {
         if (current.next == observer) {
           current.next = observer.next;
@@ -334,22 +329,26 @@ class Observable<T> implements Disposable {
       }
     }
 
-    if (head == observer) {
-      head = observer.next;
+    if (observerListHead == observer) {
+      observerListHead = observer.next;
       maybeAutoDispose();
       return;
     }
 
-    iterate(head);
-    iterate(toAddHead);
+    iterate(observerListHead);
+    iterate(observerListToAddHead);
     maybeAutoDispose();
 
     observer.cleanupOnRemoved();
   }
 
   public function dispose():Void {
-    inline function iterate(head:Null<Observer<T>>) {
-      var current = head;
+    Debug.assert(isDisposed != true, 'Attempted to dispose an Observable that was already disposed.');
+
+    isDisposed = true;
+
+    inline function iterate(observerListHead:Null<Observer<T>>) {
+      var current = observerListHead;
       while (current != null) {
         var next = current.next;
         current.dispose();
@@ -357,15 +356,15 @@ class Observable<T> implements Disposable {
       }
     }
 
-    iterate(head);
-    iterate(toAddHead);
+    iterate(observerListHead);
+    iterate(observerListToAddHead);
 
-    head = null;
-    toAddHead = null;
+    observerListHead = null;
+    observerListToAddHead = null;
 
-    if (link != null) {
-      link.dispose();
-      link = null;
+    if (observerLink != null) {
+      observerLink.dispose();
+      observerLink = null;
     }
   }
 }

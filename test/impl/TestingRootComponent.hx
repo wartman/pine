@@ -40,8 +40,7 @@ class TestingRootElement extends ObjectRootElement {
       child: prev.child
     });
 
-    if (next != null)
-      onChange.next(_ -> next());
+    if (next != null) onChange.next(_ -> next());
 
     invalidate();
   }
@@ -51,6 +50,6 @@ class TestingRootElement extends ObjectRootElement {
   }
 
   public function createPlaceholderObject(component:Component):Dynamic {
-    return new TestingObject('');
+    return new TestingObject('<marker>');
   }
 }

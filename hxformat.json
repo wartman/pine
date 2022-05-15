@@ -1,5 +1,14 @@
 {
   "indentation": {
     "character": "  "
+  },
+  "sameLine": {
+    "anonFunctionBody": "same",
+    "functionBody": "same",
+    "ifBody": "same",
+    "forBody": "same",
+    "whileBody": "same",
+    "caseBody": "keep",
+    "expressionIf": "keep"
   }
 }

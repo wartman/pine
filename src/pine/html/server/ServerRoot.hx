@@ -25,6 +25,10 @@ class ServerRoot extends RootComponent {
     return new ServerRootElement(this);
   }
 
+  public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
+    return object;
+  }
+
   public function getRootObject():Dynamic {
     return el;
   }
