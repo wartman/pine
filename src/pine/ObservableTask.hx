@@ -59,8 +59,8 @@ abstract ObservableTask<Data, Error>(Observable<Task<Data, Error>>) from Observa
     this = new Observable(task, options);
   }
 
-  public function map<R>(transform:(task:Task<Data, Error>) -> Task<R, Error>) {
-    return this.map(transform);
+  public function map<R>(transform:(task:Task<Data, Error>) -> Task<R, Error>, ?options) {
+    return this.map(transform, options);
   }
 
   public function flatMap<R>(transform:(task:Task<Data, Error>) -> ObservableTask<R, Error>, ?options):ObservableTask<R, Error> {

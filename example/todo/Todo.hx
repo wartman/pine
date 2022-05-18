@@ -288,7 +288,14 @@ class TodoInput extends ReactiveComponent {
   @observe var value:String;
 
   function render(context:Context):Component {
-    var comp = Html.input({
+    Effect.from(context).add(_ -> {
+      if (isEditing) { 
+        var el:js.html.InputElement = context.getObject();
+        el.focus();
+      }
+    });
+
+    return Html.input({
       className: className,
       placeholder: 'What needs doing?',
       autofocus: true,
@@ -319,19 +326,5 @@ class TodoInput extends ReactiveComponent {
         }
       }
     });
-
-    #if (js && !nodejs)
-    return new Lifecycle({
-      render: _ -> comp,
-      afterFrame: _ -> {
-        if (isEditing) { 
-          var el:js.html.InputElement = context.getObject();
-          el.focus();
-        }
-      }
-    });
-    #end
-    
-    return comp;
   }
 }

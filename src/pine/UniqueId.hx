@@ -7,4 +7,9 @@ abstract UniqueId(Int) to Int {
   inline public function new() {
     this = uid++;
   }
+
+  @:to
+  public function toString():String {
+    return this + '';
+  }
 }

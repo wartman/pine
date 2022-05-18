@@ -1,5 +1,8 @@
 package pine;
 
+// @todo: Perhaps we should get a bit more ambitious with this scheduler?
+// Look into what React and Solid are doing and make things use more
+// than one thread?
 class Scheduler {
   static var instance:Null<Scheduler>;
 
