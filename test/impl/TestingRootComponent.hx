@@ -40,7 +40,7 @@ class TestingRootElement extends ObjectRootElement {
       child: prev.child
     });
 
-    if (next != null) onChange.next(_ -> next());
+    // if (next != null) onChange.next(_ -> next());
 
     invalidate();
   }

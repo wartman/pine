@@ -7,6 +7,7 @@ import haxe.Json;
   import pine.html.server.ServerBootstrap;
 #end
 import pine.*;
+import pine.track.*;
 import pine.html.Html;
 
 using Reflect;
@@ -20,7 +21,7 @@ function main() {
   boot.mount(new TodoApp({}));
 }
 
-class Todo extends State {
+class Todo implements Record {
   @prop public final id:Int;
   @observe public var description:String;
   @observe public var isCompleted:Bool;
@@ -44,7 +45,7 @@ enum abstract TodoVisibility(String) from String to String {
 
 typedef TodoProvider = Provider<TodoStore>;
 
-class TodoStore extends State {
+class TodoStore implements Record {
   static inline final BLOK_TODO_STORE = 'blok-todo-store';
 
   public inline static function from(context:Context) {
@@ -82,7 +83,7 @@ class TodoStore extends State {
 
   @observe var uid:Int;
   @observe public var visibility:TodoVisibility;
-  @observe public var todos:ObservableArray<Todo>;
+  @observe public var todos:Array<Todo>;
 
   public function addTodo(description:String) {
     todos.push(new Todo({
@@ -153,11 +154,11 @@ class TodoApp extends ImmutableComponent {
   }
 }
 
-class TodoFooter extends ReactiveComponent {
+class TodoFooter extends TrackedComponent {
   @prop final store:TodoStore;
-  @observe final visibility:Observable<TodoVisibility>;
-  @observe final totalTodos:Observable<Int>;
-  @observe final completedTodos:Observable<Int>;
+  @observe final visibility:TodoVisibility;
+  @observe final totalTodos:Int;
+  @observe final completedTodos:Int;
 
   public function render(context:Context):Component {
     var total = totalTodos.read();
@@ -210,9 +211,9 @@ class TodoFooter extends ReactiveComponent {
   }
 }
 
-class TodoContainer extends ReactiveComponent {
-  @observe final total:Observable<Int>;
-  @observe final todos:Observable<Array<Todo>>;
+class TodoContainer extends TrackedComponent {
+  @observe final total:Int;
+  @observe final todos:Array<Todo>;
 
   function render(context:Context) {
     var len = total.read();
@@ -230,7 +231,7 @@ class TodoContainer extends ReactiveComponent {
   }
 }
 
-class TodoItem extends ReactiveComponent {
+class TodoItem extends TrackedComponent {
   @observe final todo:Todo;
 
   inline function getClassName() {
@@ -279,7 +280,7 @@ class TodoItem extends ReactiveComponent {
   }
 }
 
-class TodoInput extends ReactiveComponent {
+class TodoInput extends TrackedComponent {
   @prop final className:String;
   @prop final clearOnComplete:Bool;
   @prop final onSubmit:(data:String) -> Void;

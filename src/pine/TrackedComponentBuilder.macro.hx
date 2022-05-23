@@ -5,17 +5,17 @@ import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
 import pine.macro.ClassMetaDebugger;
 import pine.macro.ImmutablePropertyBuilder;
-import pine.macro.ReactivePropertyBuilder;
+import pine.macro.TrackedPropertyBuilder;
 
 using Lambda;
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
 
-class ReactiveComponentBuilder {
+class TrackedComponentBuilder {
   public static function build() {
     var fields = MacroTools.getBuildFieldsSafe();
     var builder = new ClassBuilder(fields);
-    var reactiveBuilder = new ReactivePropertyBuilder(fields);
+    var trackedBuilder = new TrackedPropertyBuilder(fields);
     var immutableBuilder = new ImmutablePropertyBuilder(fields);
 
     immutableBuilder.addProp(MacroTools.makeField('key', macro:pine.Key, true));
@@ -29,14 +29,14 @@ class ReactiveComponentBuilder {
       ]);
       debugger.check();
 
-      if (reactiveBuilder.getObservableObjectProps().length == 0) {
+      if (trackedBuilder.getTrackedObjectProps().length == 0) {
         Context.warning('No observed properties were found while building this class. Consider extending `pine.ImmutableComponent` instead.',
           Context.getLocalClass().get().pos);
       }
     }
 
-    var initProps:ComplexType = TAnonymous(reactiveBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
-    var observableType = reactiveBuilder.getObservableObjectType();
+    var initProps:ComplexType = TAnonymous(trackedBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
+    var trackedType = trackedBuilder.getTrackedObjectType();
 
     switch builder.findField('render') {
       case None:
@@ -44,7 +44,7 @@ class ReactiveComponentBuilder {
         switch render.kind {
           case FFun(f):
             var expr = f.expr;
-            f.expr = macro return observable.render(_ -> $expr);
+            f.expr = macro return new pine.track.ObserverComponent({render: _ -> $expr});
           default:
         }
     }
@@ -52,7 +52,7 @@ class ReactiveComponentBuilder {
     builder.add(macro class {
       static final type = new pine.UniqueId();
 
-      final observable:$observableType;
+      final tracked:$trackedType;
 
       public function getComponentType() {
         return type;
@@ -60,12 +60,12 @@ class ReactiveComponentBuilder {
 
       public function new(props:$initProps) {
         super(props.key);
-        ${reactiveBuilder.getInitializers()};
+        ${trackedBuilder.getInitializers()};
         ${immutableBuilder.getInitializers()};
-        observable = ${reactiveBuilder.instantiateObservableObject()};
+        tracked = ${trackedBuilder.instantiateTrackedObject()};
       }
     });
 
-    return builder.merge(immutableBuilder).merge(reactiveBuilder).export();
+    return builder.merge(immutableBuilder).merge(trackedBuilder).export();
   }
 }

@@ -9,6 +9,17 @@ function main() {
     trackProgress: true
   }));
 
+  var foo = new pine.track.TrackedObject<{foo:String}>({
+    foo: 'foo'
+  });
+  var obs = new pine.track.Observer(() -> {
+    trace(foo.foo);
+  });
+
+  foo.foo = 'bar';
+  foo.foo = 'bin';
+  obs.dispose();
+
   addUnitTests(tests);
   addIntegrationTests(tests);
 
@@ -16,9 +27,6 @@ function main() {
 }
 
 function addUnitTests(tests:Runner) {
-  tests.add(new TestObservable());
-  tests.add(new TestObservableObject());
-
   tests.add(new TestFragment());
 }
 
