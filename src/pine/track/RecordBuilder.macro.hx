@@ -39,15 +39,7 @@ class RecordBuilder {
       public function new(props:$initProps) {
         ${trackedBuilder.getInitializers()};
         ${immutableBuilder.getInitializers()};
-        tracked = ${trackedBuilder.instantiateTrackedObject()};
-      }
-
-      public inline function observe() {
-        return tracked;
-      }
-
-      public inline function select<R>(transform, ?options):Tracked<R> {
-        return tracked.map(transform, options);
+        this.tracked = ${trackedBuilder.instantiateTrackedObject()};
       }
 
       public function dispose() {

@@ -12,13 +12,13 @@
 # --dce full
 --macro nullSafety("pine")
 
-# --each
+--each
 
-# -main todo.Todo
+-main todo.Todo
 
-# -js dist/assets/app.js
+-js dist/assets/app.js
 
-# --next
+--next
 
 -main Run
 -js dist/test/index.js

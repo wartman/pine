@@ -91,16 +91,16 @@ class TrackedPropertyBuilder extends ClassBuilder {
           if (field.access.contains(AFinal)) {
             field.kind = FProp('get', 'never', t);
             add(macro class {
-              inline function $getter():$t return observable.$name;
+              inline function $getter():$t return tracked.$name;
             });
           } else {
             field.kind = FProp('get', 'set', t);
 
             add(macro class {
-              inline function $getter():$t return observable.$name;
+              inline function $getter():$t return tracked.$name;
 
               inline function $setter(value) {
-                observable.$name = value;
+                tracked.$name = value;
                 return value;
               }
             });

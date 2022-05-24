@@ -53,18 +53,18 @@ class TodoStore implements Record {
   }
 
   public static function load() {
-    #if nodejs
+    // #if nodejs
       return new TodoStore({uid: 0, todos: [], visibility: All});
-    #else
-      var data = js.Browser.window.localStorage.getItem(BLOK_TODO_STORE);
-      var store = if (data == null) {
-        new TodoStore({uid: 0, todos: [], visibility: All});
-      } else {
-        fromJson(Json.parse(data));
-      }
-      store.observe().bindNext(_ -> save(store));
-      return store;
-    #end
+    // #else
+    //   var data = js.Browser.window.localStorage.getItem(BLOK_TODO_STORE);
+    //   var store = if (data == null) {
+    //     new TodoStore({uid: 0, todos: [], visibility: All});
+    //   } else {
+    //     fromJson(Json.parse(data));
+    //   }
+    //   store.observe().bindNext(_ -> save(store));
+    //   return store;
+    // #end
   }
 
   public static function save(store:TodoStore) {
@@ -99,13 +99,13 @@ class TodoStore implements Record {
   }
 
   public function removeCompletedTodos() {
-    todos.mutate(t -> !t.isCompleted);
+    todos = todos.filter(t -> !t.isCompleted);
   }
 
   public function toJson() {
     return {
       uid: uid,
-      todos: todos.read().map(todo -> todo.toJson()),
+      todos: todos.map(todo -> todo.toJson()),
       visibility: visibility
     };
   }
@@ -130,13 +130,10 @@ class TodoApp extends ImmutableComponent {
           ),
           new TodoContainer({
             total: store.todos.map(todos -> todos.length),
-            todos: store.select(data -> {
-              visibility: data.visibility,
-              todos: data.todos.toArray()
-            }).map(data -> switch data.visibility {
-              case All: data.todos;
-              case Completed: data.todos.filter(todo -> todo.isCompleted);
-              case Active: data.todos.filter(todo -> !todo.isCompleted);
+            todos: store.todos.map(todos -> switch store.visibility {
+              case All: todos;
+              case Completed: todos.filter(todo -> todo.isCompleted);
+              case Active: todos.filter(todo -> !todo.isCompleted);
             }).map(todos -> {
               todos.reverse();
               todos;
@@ -144,9 +141,9 @@ class TodoApp extends ImmutableComponent {
           }),
           new TodoFooter({
             store: store,
-            visibility: store.select(data -> data.visibility),
-            totalTodos: store.todos.map(todos -> todos.length),
-            completedTodos: store.todos.where(todo -> todo.isCompleted).map(todos -> todos.length)
+            visibility: store.visibility,
+            totalTodos: store.todos.length,
+            completedTodos: store.todos.filter(todo -> todo.isCompleted).length
           })
         )
       )
@@ -156,9 +153,9 @@ class TodoApp extends ImmutableComponent {
 
 class TodoFooter extends TrackedComponent {
   @prop final store:TodoStore;
-  @observe final visibility:TodoVisibility;
-  @observe final totalTodos:Int;
-  @observe final completedTodos:Int;
+  @prop final visibility:TodoVisibility;
+  @prop final totalTodos:Int;
+  @prop final completedTodos:Int;
 
   public function render(context:Context):Component {
     var total = totalTodos.read();
@@ -212,8 +209,8 @@ class TodoFooter extends TrackedComponent {
 }
 
 class TodoContainer extends TrackedComponent {
-  @observe final total:Int;
-  @observe final todos:Array<Todo>;
+  @prop final total:Int;
+  @prop final todos:Array<Todo>;
 
   function render(context:Context) {
     var len = total.read();
@@ -232,7 +229,7 @@ class TodoContainer extends TrackedComponent {
 }
 
 class TodoItem extends TrackedComponent {
-  @observe final todo:Todo;
+  @prop final todo:Todo;
 
   inline function getClassName() {
     return [

@@ -29,10 +29,10 @@ class TrackedComponentBuilder {
       ]);
       debugger.check();
 
-      if (trackedBuilder.getTrackedObjectProps().length == 0) {
-        Context.warning('No observed properties were found while building this class. Consider extending `pine.ImmutableComponent` instead.',
-          Context.getLocalClass().get().pos);
-      }
+      // if (trackedBuilder.getTrackedObjectProps().length == 0) {
+      //   Context.warning('No observed properties were found while building this class. Consider extending `pine.ImmutableComponent` instead.',
+      //     Context.getLocalClass().get().pos);
+      // }
     }
 
     var initProps:ComplexType = TAnonymous(trackedBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
