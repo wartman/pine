@@ -18,8 +18,9 @@ class ImmutableComponentBuilder {
 
     if (Context.defined('debug')) {
       var debugger = new ClassMetaDebugger(fields, ['prop'], [
-        'observe' =>
-        '`@observe` can only be used on `pine.ReactiveComponent`s. Did you mean to extend `pine.ReactiveComponent` instead of `pine.ImmutableComponent`?',
+        'track' => '`@track` can only be used on `pine.ObserverComponent`s. '
+                    + 'Did you mean to extend `pine.ObserverComponent` instead '
+                    + 'of `pine.ImmutableComponent`?',
         ':prop' => 'Use `@prop` instead of `@:prop`.'
       ]);
       debugger.check();

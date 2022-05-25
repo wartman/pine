@@ -101,6 +101,12 @@ class TrackedPropertyBuilder extends ClassBuilder {
                 add(macro class {
                   inline function $getter():$type return tracked.$name;
                 });
+              case macro:Map<$k, $v>:
+                var type = macro:pine.TrackedMap<$k, $v>;
+                field.kind = FProp('get', 'never', type);
+                add(macro class {
+                  inline function $getter():$type return tracked.$name;
+                });
               default:
                 field.kind = FProp('get', 'set', t);
                 add(macro class {

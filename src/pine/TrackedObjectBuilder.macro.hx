@@ -44,6 +44,15 @@ class TrackedObjectBuilder {
                 builder.add(macro class {
                   public final $name:pine.TrackedArray<$t>;
                 });
+              case macro:Map<$k, $v>:
+                var name = prop.name;
+                if (e == null) e = macro [];
+                var init = macro props.$name == null ? $e : props.$name;
+                inits.push(macro this.$name = new pine.TrackedMap($init));
+                dispose.push(macro this.$name.dispose());
+                builder.add(macro class {
+                  public final $name:pine.TrackedMap<$k, $v>;
+                });
               default:
                 var name = prop.name;
                 var signal = 'signal_$name';

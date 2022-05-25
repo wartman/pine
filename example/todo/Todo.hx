@@ -96,7 +96,7 @@ class TodoStore implements Record {
   }
 
   public function removeCompletedTodos() {
-    todos.set(todos.filter(t -> !t.isCompleted));
+    todos.replace(todos.filter(t -> !t.isCompleted));
   }
 
   public function toJson() {
@@ -229,7 +229,6 @@ class TodoItem extends ObserverComponent {
   }
 
   function render(context:Context) {
-    var todos = TodoStore.from(context);
     return Html.li({
       key: todo.id,
       id: 'todo-${todo.id}',
@@ -249,7 +248,7 @@ class TodoItem extends ObserverComponent {
         ), 
         Html.button({
           className: 'destroy',
-          onclick: _ -> todos.removeTodo(todo)
+          onclick: _ -> TodoStore.from(context).removeTodo(todo)
         })
       ),
       new TodoInput({

@@ -8,7 +8,7 @@ class ObserverElement extends ProxyElement {
     setupObserver();
 
     if (result == null) {
-      result = proxy.render(this);
+      result = render();
     }
 
     child = hydrateElementForComponent(cursor, result, slot);
@@ -20,16 +20,18 @@ class ObserverElement extends ProxyElement {
     }
 
     if (result == null) {
-      result = proxy.render(this);
+      result = render();
     }
 
     child = updateChild(child, result, slot);
   }
 
   function setupObserver() {
+    Debug.assert(observer == null);
+
     var first = true;
     observer = new Observer(() -> {
-      result = proxy.render(this);
+      result = render();
       if (!first) {
         invalidate();
       } else {
