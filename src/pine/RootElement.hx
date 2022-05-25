@@ -1,7 +1,8 @@
 package pine;
 
 abstract class RootElement extends ObjectElement implements Root {
-  // final onChange:Observable<Root>;
+  public final onRenderComplete:Event<Root> = new Event();
+
   var child:Null<Element> = null;
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
@@ -14,7 +15,6 @@ abstract class RootElement extends ObjectElement implements Root {
   public function new(rootComponent:RootComponent) {
     super(rootComponent);
     parent = null; // @todo: We should allow Roots to have parents?
-    // onChange = new Observable<Root>(this);
     root = this;
   }
 
@@ -22,32 +22,33 @@ abstract class RootElement extends ObjectElement implements Root {
     return this;
   }
 
-  // public inline function observe() {
-  //   return onChange;
-  // }
-
   public function bootstrap() {
     mount(null);
   }
 
   override function mount(parent:Null<Element>, ?slot:Slot) {
     super.mount(parent, slot);
-    // onChange.notify();
+    onRenderComplete.trigger(this);
   }
 
   override function update(component:Component) {
     super.update(component);
-    // onChange.notify();
+    onRenderComplete.trigger(this);
   }
 
   override function hydrate(cursor:HydrationCursor, parent:Null<Element>, ?slot:Slot) {
     super.hydrate(cursor, parent, slot);
-    // onChange.notify();
+    onRenderComplete.trigger(this);
   }
 
   override function rebuild() {
     super.rebuild();
-    // onChange.notify();
+    onRenderComplete.trigger(this);
+  }
+
+  override function dispose() {
+    super.dispose();
+    onRenderComplete.dispose();
   }
 
   override function performSetup(parent:Null<Element>, ?slot:Slot) {
@@ -55,12 +56,6 @@ abstract class RootElement extends ObjectElement implements Root {
     this.slot = slot;
     status = Valid;
   }
-
-  // public function scheduleAfterRebuild(cb:() -> Void) {
-  //   var disposable = onChange.next(_ -> cb());
-  //   if (!isScheduled) scheduleRebuildInvalidElements();
-  //   return disposable;
-  // }
 
   public function requestRebuild(child:Element) {
     if (child == this) {
@@ -96,14 +91,14 @@ abstract class RootElement extends ObjectElement implements Root {
     isScheduled = false;
 
     if (invalidElements == null) {
-      // onChange.notify();
+      onRenderComplete.trigger(this);
       return;
     }
 
     var elements = invalidElements.copy();
     invalidElements = null;
     for (el in elements) el.rebuild();
-    // onChange.notify();
+    onRenderComplete.trigger(this);
   }
 
   function performBuild(previousComponent:Null<Component>) {

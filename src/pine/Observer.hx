@@ -1,9 +1,11 @@
-package pine.track;
+package pine;
 
 import haxe.Exception;
 import haxe.ds.List;
 
-@:allow(pine.track)
+using Lambda;
+
+@:allow(pine)
 class Observer implements Disposable {
   static final stack:List<Null<Observer>> = new List();
 
@@ -21,7 +23,7 @@ class Observer implements Disposable {
 
   public function trigger() {
     if (isTriggering) {
-      throw 'Observer was triggered while already running';
+      Debug.error('Observer was triggered while already running');
     }
 
     if (isRunning) {

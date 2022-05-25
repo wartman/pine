@@ -7,7 +7,6 @@ import haxe.Json;
   import pine.html.server.ServerBootstrap;
 #end
 import pine.*;
-import pine.track.*;
 import pine.html.Html;
 
 using Reflect;
@@ -53,23 +52,21 @@ class TodoStore implements Record {
   }
 
   public static function load() {
-    // #if nodejs
+    #if nodejs
       return new TodoStore({uid: 0, todos: [], visibility: All});
-    // #else
-    //   var data = js.Browser.window.localStorage.getItem(BLOK_TODO_STORE);
-    //   var store = if (data == null) {
-    //     new TodoStore({uid: 0, todos: [], visibility: All});
-    //   } else {
-    //     fromJson(Json.parse(data));
-    //   }
-    //   store.observe().bindNext(_ -> save(store));
-    //   return store;
-    // #end
-  }
+    #else
+      var data = js.Browser.window.localStorage.getItem(BLOK_TODO_STORE);
+      var store = if (data == null) {
+        new TodoStore({uid: 0, todos: [], visibility: All});
+      } else {
+        fromJson(Json.parse(data));
+      }
 
-  public static function save(store:TodoStore) {
-    #if !nodejs
-    js.Browser.window.localStorage.setItem(BLOK_TODO_STORE, Json.stringify(store.toJson()));
+      TrackingTools.track(() -> {
+        js.Browser.window.localStorage.setItem(BLOK_TODO_STORE, Json.stringify(store.toJson()));
+      });
+
+      return store;
     #end
   }
 
@@ -99,7 +96,7 @@ class TodoStore implements Record {
   }
 
   public function removeCompletedTodos() {
-    todos = todos.filter(t -> !t.isCompleted);
+    todos.set(todos.filter(t -> !t.isCompleted));
   }
 
   public function toJson() {
@@ -129,21 +126,10 @@ class TodoApp extends ImmutableComponent {
             })
           ),
           new TodoContainer({
-            total: store.todos.map(todos -> todos.length),
-            todos: store.todos.map(todos -> switch store.visibility {
-              case All: todos;
-              case Completed: todos.filter(todo -> todo.isCompleted);
-              case Active: todos.filter(todo -> !todo.isCompleted);
-            }).map(todos -> {
-              todos.reverse();
-              todos;
-            })
+            store: store
           }),
           new TodoFooter({
-            store: store,
-            visibility: store.visibility,
-            totalTodos: store.todos.length,
-            completedTodos: store.todos.filter(todo -> todo.isCompleted).length
+            store: store
           })
         )
       )
@@ -153,13 +139,12 @@ class TodoApp extends ImmutableComponent {
 
 class TodoFooter extends TrackedComponent {
   @prop final store:TodoStore;
-  @prop final visibility:TodoVisibility;
-  @prop final totalTodos:Int;
-  @prop final completedTodos:Int;
 
   public function render(context:Context):Component {
-    var total = totalTodos.read();
-    var todosLeft = total - completedTodos.read();
+    var total = store.todos.length;
+    var todosCompleted = total - store.todos.filter(todo -> !todo.isCompleted).length;
+    var todosLeft = total - store.todos.filter(todo -> todo.isCompleted).length;
+    
     return Html.footer({
       className: 'footer',
       style: if (total == 0) 'display: none' else null
@@ -173,17 +158,17 @@ class TodoFooter extends TrackedComponent {
         )
       ),
       Html.ul({ className: 'filters' },
-        visibilityControl('#/', All, visibility.read()),
-        visibilityControl('#/active', Active, visibility.read()),
-        visibilityControl('#/completed', Completed, visibility.read())
+        visibilityControl('#/', All, store.visibility),
+        visibilityControl('#/active', Active, store.visibility),
+        visibilityControl('#/completed', Completed, store.visibility)
       ),
       Html.button(
         {
           className: 'clear-completed',
-          style: if (completedTodos.read() == 0) 'visibility: hidden' else null,
+          style: if (todosCompleted == 0) 'visibility: hidden' else null,
           onclick: _ -> store.removeCompletedTodos()
         },
-        'Clear completed (${completedTodos.read()})'
+        'Clear completed (${todosCompleted})'
       )
     );
   }
@@ -209,11 +194,16 @@ class TodoFooter extends TrackedComponent {
 }
 
 class TodoContainer extends TrackedComponent {
-  @prop final total:Int;
-  @prop final todos:Array<Todo>;
+  @prop final store:TodoStore;
 
   function render(context:Context) {
-    var len = total.read();
+    var len = store.todos.length;
+    var items = store.todos.filter(todo -> switch store.visibility {
+      case All: true;
+      case Completed: todo.isCompleted;
+      case Active: !todo.isCompleted;
+    });
+    items.reverse();
 
     return Html.section({
       className: 'main',
@@ -221,7 +211,7 @@ class TodoContainer extends TrackedComponent {
       style: if (len == 0) 'visibility: hidden' else null
     }, // @todo: toggles
       Html.ul({className: 'todo-list'}, ...[
-        for (todo in todos.read())
+        for (todo in items)
           new TodoItem({todo: todo, key: todo.id})
       ])
     );
@@ -286,13 +276,6 @@ class TodoInput extends TrackedComponent {
   @observe var value:String;
 
   function render(context:Context):Component {
-    Effect.from(context).add(_ -> {
-      if (isEditing) { 
-        var el:js.html.InputElement = context.getObject();
-        el.focus();
-      }
-    });
-
     return Html.input({
       className: className,
       placeholder: 'What needs doing?',

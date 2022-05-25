@@ -28,26 +28,10 @@ class TrackedComponentBuilder {
         ':observable' => '`@:observable` is not valid Pine metadata -- did you mean to use `@observe` instead?'
       ]);
       debugger.check();
-
-      // if (trackedBuilder.getTrackedObjectProps().length == 0) {
-      //   Context.warning('No observed properties were found while building this class. Consider extending `pine.ImmutableComponent` instead.',
-      //     Context.getLocalClass().get().pos);
-      // }
     }
 
     var initProps:ComplexType = TAnonymous(trackedBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
     var trackedType = trackedBuilder.getTrackedObjectType();
-
-    switch builder.findField('render') {
-      case None:
-      case Some(render):
-        switch render.kind {
-          case FFun(f):
-            var expr = f.expr;
-            f.expr = macro return new pine.track.ObserverComponent({render: _ -> $expr});
-          default:
-        }
-    }
 
     builder.add(macro class {
       static final type = new pine.UniqueId();

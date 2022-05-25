@@ -1,15 +1,15 @@
 package pine;
 
-abstract Effect(Observable<Root>) {
+abstract Effect(Event<Root>) {
   public inline static function from(context:Context) {
     return new Effect(context.getRoot());
   }
 
   public inline function new(root:Root) {
-    this = root.observe();
+    this = root.onRenderComplete;
   }
 
   public inline function add(listener) {
-    return this.next(listener);
+    return this.addListener(listener, { once: true });
   }
 }

@@ -1,4 +1,4 @@
-package pine.track;
+package pine;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -34,36 +34,38 @@ class TrackedObjectBuilder {
       switch ct {
         case TAnonymous(props):
           for (prop in props) switch prop.kind {
-            case FVar(t, e) if (Context.unify(t.toType(), Context.getType('Array'))):
-              var name = prop.name;
-              if (e == null) e = macro [];
-              var init = macro props.$name == null ? $e : props.$name;
-              inits.push(macro this.$name = new pine.track.TrackedArray($init));
-              dispose.push(macro this.$name.dispose());
-              builder.add(macro class {
-                public final $name:pine.track.TrackedArray<$t>;
-              });
-            case FVar(t, e):
-              var name = prop.name;
-              var signal = 'signal_$name';
-              var setter = 'set_$name';
-              var getter = 'get_$name';
-              var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
-
-              inits.push(macro this.$signal = new pine.track.Signal($init));
-              dispose.push(macro this.$signal.dispose());
-              builder.add(macro class {
-                final $signal:pine.track.Signal<$t>;
-
-                public var $name(get, set):$t;
-
-                inline function $getter():$t return this.$signal.get();
-
-                inline function $setter(value):$t return this.$signal.set(value);
-              });
-            default:
-              Context.error('Only vars are allowed here', prop.pos);
-          }
+            case FVar(t, e): switch t {
+              case macro:Array<$t>:
+                var name = prop.name;
+                if (e == null) e = macro [];
+                var init = macro props.$name == null ? $e : props.$name;
+                inits.push(macro this.$name = new pine.TrackedArray($init));
+                dispose.push(macro this.$name.dispose());
+                builder.add(macro class {
+                  public final $name:pine.TrackedArray<$t>;
+                });
+              default:
+                var name = prop.name;
+                var signal = 'signal_$name';
+                var setter = 'set_$name';
+                var getter = 'get_$name';
+                var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
+  
+                inits.push(macro this.$signal = new pine.Signal($init));
+                dispose.push(macro this.$signal.dispose());
+                builder.add(macro class {
+                  final $signal:pine.Signal<$t>;
+  
+                  public var $name(get, set):$t;
+  
+                  inline function $getter():$t return this.$signal.get();
+  
+                  inline function $setter(value):$t return this.$signal.set(value);
+                });
+            }
+          default:
+            Context.error('Only vars are allowed here', prop.pos);
+        }
         default:
           Context.error('Expected an anonymous object', Context.currentPos());
       }

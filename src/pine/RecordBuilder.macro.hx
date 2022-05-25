@@ -1,4 +1,4 @@
-package pine.track;
+package pine;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -39,7 +39,7 @@ class RecordBuilder {
       public function new(props:$initProps) {
         ${trackedBuilder.getInitializers()};
         ${immutableBuilder.getInitializers()};
-        this.tracked = ${trackedBuilder.instantiateTrackedObject()};
+        tracked = ${trackedBuilder.instantiateTrackedObject()};
       }
 
       public function dispose() {

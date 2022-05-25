@@ -48,7 +48,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
 
   public function getTrackedObjectType() {
     var props = getTrackedObjectPropsType();
-    return macro:pine.track.TrackedObject<$props>;
+    return macro:pine.TrackedObject<$props>;
   }
 
   public function getTrackedObjectConstructorArg(propsName = 'props'):Expr {
@@ -67,7 +67,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
   public function instantiateTrackedObject(propsName = 'props') {
     var props = getTrackedObjectPropsType();
     var arg = getTrackedObjectConstructorArg(propsName);
-    return macro new pine.track.TrackedObject<$props>($arg);
+    return macro new pine.TrackedObject<$props>($arg);
   }
 
   function process() {
@@ -94,16 +94,24 @@ class TrackedPropertyBuilder extends ClassBuilder {
               inline function $getter():$t return tracked.$name;
             });
           } else {
-            field.kind = FProp('get', 'set', t);
-
-            add(macro class {
-              inline function $getter():$t return tracked.$name;
-
-              inline function $setter(value) {
-                tracked.$name = value;
-                return value;
-              }
-            });
+            switch t {
+              case macro:Array<$r>:
+                var type = macro:pine.TrackedArray<$r>;
+                field.kind = FProp('get', 'never', type);
+                add(macro class {
+                  inline function $getter():$type return tracked.$name;
+                });
+              default:
+                field.kind = FProp('get', 'set', t);
+                add(macro class {
+                  inline function $getter():$t return tracked.$name;
+    
+                  inline function $setter(value:$t) {
+                    tracked.$name = value;
+                    return value;
+                  }
+                });
+            }
           }
         default:
       }

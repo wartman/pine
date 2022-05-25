@@ -1,4 +1,4 @@
-package pine.track;
+package pine;
 
 abstract Task(Array<Observer>) {
   public static var currentTask:Null<Task>;

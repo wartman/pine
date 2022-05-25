@@ -9,10 +9,10 @@ function main() {
     trackProgress: true
   }));
 
-  var foo = new pine.track.TrackedObject<{foo:String}>({
+  var foo = new pine.TrackedObject<{foo:String}>({
     foo: 'foo'
   });
-  var obs = new pine.track.Observer(() -> {
+  var obs = new pine.Observer(() -> {
     trace(foo.foo);
   });
 

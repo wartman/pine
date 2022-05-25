@@ -1,10 +1,10 @@
-package pine.track;
+package pine;
 
 import haxe.ds.List;
 
 using Lambda;
 
-@:allow(pine.track)
+@:allow(pine)
 class Signal<T> implements Disposable {
   final comparator:(a:T, b:T) -> Bool;
   final observers:List<Observer> = new List();
