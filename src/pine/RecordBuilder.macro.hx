@@ -19,11 +19,9 @@ class RecordBuilder {
     var trackedType = trackedBuilder.getTrackedObjectType();
 
     if (Context.defined('debug')) {
-      var debugger = new ClassMetaDebugger(fields, ['prop', 'observe'], [
+      var debugger = new ClassMetaDebugger(fields, ['prop', 'track'], [
         ':prop' => 'Use `@prop` instead of `@:prop`.',
-        ':observe' => 'Use `@observe` instead of `@:observe`.',
-        'observable' => '`@observable` is not valid Pine metadata -- did you mean to use `@observe` instead?',
-        ':observable' => '`@:observable` is not valid Pine metadata -- did you mean to use `@observe` instead?'
+        ':track' => 'Use `@track` instead of `@:track`.',
       ]);
       debugger.check();
 

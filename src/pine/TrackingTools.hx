@@ -7,7 +7,7 @@ class TrackingTools {
   }
 
   @:noUsing
-  public static function untracked(handler) {
+  public static function peek(handler) {
     return new Observer(handler, true);
   }
 

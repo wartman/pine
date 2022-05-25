@@ -51,10 +51,6 @@ class Signal<T> implements Disposable {
   }
 
   function notify() {
-    if (observers.length > 0) {
-      Task.batch(task -> for (observer in observers) {
-        task.enqueue(observer);
-      });
-    }
+    if (observers.length > 0) Observer.enqueue(observers);
   }
 }

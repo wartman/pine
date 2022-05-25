@@ -71,7 +71,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
   }
 
   function process() {
-    for (field in findFieldsByMeta('observe')) {
+    for (field in findFieldsByMeta('track')) {
       switch field.kind {
         case FVar(t, e):
           var prop = MacroTools.makeField(field.name, t, e != null);

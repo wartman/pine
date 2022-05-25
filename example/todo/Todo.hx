@@ -22,9 +22,9 @@ function main() {
 
 class Todo implements Record {
   @prop public final id:Int;
-  @observe public var description:String;
-  @observe public var isCompleted:Bool;
-  @observe public var isEditing:Bool;
+  @track public var description:String;
+  @track public var isCompleted:Bool;
+  @track public var isEditing:Bool;
 
   public function toJson() {
     return {
@@ -78,9 +78,9 @@ class TodoStore implements Record {
     });
   }
 
-  @observe var uid:Int;
-  @observe public var visibility:TodoVisibility;
-  @observe public var todos:Array<Todo>;
+  @track var uid:Int;
+  @track public var visibility:TodoVisibility;
+  @track public var todos:Array<Todo>;
 
   public function addTodo(description:String) {
     todos.push(new Todo({
@@ -137,7 +137,7 @@ class TodoApp extends ImmutableComponent {
   }
 }
 
-class TodoFooter extends TrackedComponent {
+class TodoFooter extends ObserverComponent {
   @prop final store:TodoStore;
 
   public function render(context:Context):Component {
@@ -193,7 +193,7 @@ class TodoFooter extends TrackedComponent {
   }
 }
 
-class TodoContainer extends TrackedComponent {
+class TodoContainer extends ObserverComponent {
   @prop final store:TodoStore;
 
   function render(context:Context) {
@@ -218,7 +218,7 @@ class TodoContainer extends TrackedComponent {
   }
 }
 
-class TodoItem extends TrackedComponent {
+class TodoItem extends ObserverComponent {
   @prop final todo:Todo;
 
   inline function getClassName() {
@@ -267,13 +267,13 @@ class TodoItem extends TrackedComponent {
   }
 }
 
-class TodoInput extends TrackedComponent {
+class TodoInput extends ObserverComponent {
   @prop final className:String;
   @prop final clearOnComplete:Bool;
   @prop final onSubmit:(data:String) -> Void;
   @prop final onCancel:() -> Void;
   @prop final isEditing:Bool = false;
-  @observe var value:String;
+  @track var value:String;
 
   function render(context:Context):Component {
     return Html.input({
