@@ -19,22 +19,18 @@ class Signal<T> implements Disposable {
 
   public function get():T {
     if (isDisposed) {
-      throw 'Cannot use a signal that has already been disposed.';
+      Debug.error('Cannot use a signal that has already been disposed.');
     }
 
     var observer = Observer.stack.last();
-
-    if (observer != null && !observers.has(observer)) {
-      observers.add(observer);
-      observer.signals.add(this);
-    }
+    if (observer != null) observer.track(this);
 
     return value;
   }
 
   public function set(newValue:T):T {
     if (isDisposed) {
-      throw 'Cannot use a signal that has already been disposed.';
+      Debug.error('Cannot use a signal that has already been disposed.');
     }
 
     if (!comparator(value, newValue)) return value;

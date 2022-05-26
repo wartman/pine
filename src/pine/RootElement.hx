@@ -1,12 +1,10 @@
 package pine;
 
 abstract class RootElement extends ObjectElement implements Root {
-  public final onRenderComplete:Event<Root> = new Event();
-
   var child:Null<Element> = null;
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
-  var rootComponent(get, never):RootComponent;
+  public var rootComponent(get, never):RootComponent;
 
   inline function get_rootComponent():RootComponent {
     return cast component;
@@ -24,31 +22,6 @@ abstract class RootElement extends ObjectElement implements Root {
 
   public function bootstrap() {
     mount(null);
-  }
-
-  override function mount(parent:Null<Element>, ?slot:Slot) {
-    super.mount(parent, slot);
-    onRenderComplete.trigger(this);
-  }
-
-  override function update(component:Component) {
-    super.update(component);
-    onRenderComplete.trigger(this);
-  }
-
-  override function hydrate(cursor:HydrationCursor, parent:Null<Element>, ?slot:Slot) {
-    super.hydrate(cursor, parent, slot);
-    onRenderComplete.trigger(this);
-  }
-
-  override function rebuild() {
-    super.rebuild();
-    onRenderComplete.trigger(this);
-  }
-
-  override function dispose() {
-    super.dispose();
-    onRenderComplete.dispose();
   }
 
   override function performSetup(parent:Null<Element>, ?slot:Slot) {
@@ -91,14 +64,12 @@ abstract class RootElement extends ObjectElement implements Root {
     isScheduled = false;
 
     if (invalidElements == null) {
-      onRenderComplete.trigger(this);
       return;
     }
 
     var elements = invalidElements.copy();
     invalidElements = null;
     for (el in elements) el.rebuild();
-    onRenderComplete.trigger(this);
   }
 
   function performBuild(previousComponent:Null<Component>) {

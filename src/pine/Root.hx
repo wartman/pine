@@ -1,7 +1,6 @@
 package pine;
 
 interface Root {
-  public final onRenderComplete:Event<Root>;
   public function requestRebuild(element:Element):Void;
   public function insertObject(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic):Void;
   public function moveObject(object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic):Void;

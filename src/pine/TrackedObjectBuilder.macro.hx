@@ -111,7 +111,7 @@ class TrackedObjectBuilder {
     var name = switch ct {
       case TAnonymous(fields):
         var sorted = fields.copy();
-        // Ensre the order of fields doesn't matter.
+        // Ensure the order of fields doesn't matter.
         sorted.sort((a, b) -> a.name > b.name ? -1 : a.name < b.name ? 1 : 0);
         sorted.map(f -> f.name + '_' + switch f.kind {
           case FVar(t, _): t.toString();

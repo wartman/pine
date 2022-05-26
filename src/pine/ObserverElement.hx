@@ -6,42 +6,33 @@ class ObserverElement extends ProxyElement {
 
   override function performHydrate(cursor:HydrationCursor) {
     setupObserver();
-
-    if (result == null) {
-      result = render();
-    }
-
+    Debug.alwaysAssert(result != null);
     child = hydrateElementForComponent(cursor, result, slot);
   }
 
   override function performBuild(previousComponent:Null<Component>) {
-    if (previousComponent == null || observer == null) {
+    if (observer == null) {
       setupObserver();
+    } else if (previousComponent != component) {
+      observer.trigger();
     }
-
-    if (result == null) {
-      result = render();
-    }
-
+    Debug.alwaysAssert(result != null);
     child = updateChild(child, result, slot);
   }
 
   function setupObserver() {
     Debug.assert(observer == null);
-
-    var first = true;
+    Debug.assert(status == Building, '`setupObserver` should ONLY be called from `performHydrate` or `performBuild`');
+    
     observer = new Observer(() -> {
       result = render();
-      if (!first) {
-        invalidate();
-      } else {
-        first = false;
-      }
+      if (status != Building) invalidate();
     });
   }
 
   override function dispose() {
     super.dispose();
+    result = null;
     if (observer != null) {
       observer.dispose();
       observer = null;

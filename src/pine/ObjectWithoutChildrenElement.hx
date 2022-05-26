@@ -6,8 +6,9 @@ class ObjectWithoutChildrenElement extends ObjectElement {
       object = objectComponent.createObject(getRoot());
       objectComponent.insertObject(getRoot(), object, slot, findAncestorObject);
     } else {
-      if (previousComponent != component)
+      if (previousComponent != component) {
         objectComponent.updateObject(getRoot(), getObject(), previousComponent);
+      }
     }
   }
 

@@ -1,25 +1,26 @@
 package notebook.data;
 
+import js.Browser.window;
 import pine.*;
-import haxe.Json;
 
 using Reflect;
+using haxe.Json;
 
-typedef StoreProvider = Provider<Store>;
+typedef Provider = pine.Provider<Store>;
 
 class Store implements Record {
   static inline final NOTEBOOK_STORE = 'notebook-store';
 
   public static function load() {
-    var data = js.Browser.window.localStorage.getItem(NOTEBOOK_STORE);
+    var data = window.localStorage.getItem(NOTEBOOK_STORE);
     var store = if (data == null) {
       new Store({uid: 0, notes: []});
     } else {
-      fromJson(Json.parse(data));
+      fromJson(data.parse());
     }
 
     TrackingTools.track(() -> {
-      js.Browser.window.localStorage.setItem(NOTEBOOK_STORE, Json.stringify(store.toJson()));
+      window.localStorage.setItem(NOTEBOOK_STORE, store.toJson().stringify());
     });
 
     return store;
@@ -33,7 +34,7 @@ class Store implements Record {
   }
   
   public static function from(context:Context) {
-    return StoreProvider.from(context);
+    return Provider.from(context);
   }
 
   @track public var uid:Int = 0;

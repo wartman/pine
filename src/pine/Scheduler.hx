@@ -1,9 +1,13 @@
 package pine;
 
-// @todo: Perhaps we should get a bit more ambitious with this scheduler?
-// Look into what React and Solid are doing and make things use more
-// than one thread?
 class Scheduler {
+  public static function from(context:Context) {
+    return switch context.findAncestorOfType(RootElement) {
+      case Some(root): root.rootComponent.scheduler;
+      case None: Scheduler.getInstance();
+    }
+  }
+
   static var instance:Null<Scheduler>;
 
   public static function getInstance():Scheduler {

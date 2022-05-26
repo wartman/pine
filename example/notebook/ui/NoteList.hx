@@ -4,11 +4,11 @@ import pine.*;
 import notebook.data.*;
 import notebook.framework.*;
 
-class NoteList extends ObserverComponent {
-  @prop final store:Store;
+class NoteList extends ImmutableComponent {
+  @prop final notes:Array<Note>;
 
   public function render(context:Context):Component {
-    return if (store.notes.length == 0)
+    return if (notes.length == 0)
       new Box({
         status: Deactivated,
         children: [ 'No notes' ]
@@ -16,7 +16,7 @@ class NoteList extends ObserverComponent {
     else
       new Grid({
         children: [
-          for (note in store.notes) new NoteItem({ note: note, key: note.id }) 
+          for (note in notes) new NoteItem({ note: note, key: note.id }) 
         ]
       });
   }

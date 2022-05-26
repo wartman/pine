@@ -13,8 +13,9 @@ class ObjectWithChildrenElement extends ObjectElement {
       objectComponent.insertObject(getRoot(), object, slot, findAncestorObject);
       initializeChildren();
     } else {
-      if (previousComponent != component)
+      if (previousComponent != component) {
         objectComponent.updateObject(getRoot(), getObject(), previousComponent);
+      }
       rebuildChildren();
     }
   }

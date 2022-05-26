@@ -24,12 +24,13 @@ class Observer implements Disposable {
 
     var task = currentTask = new Task();
     scope(currentTask);
-
-    // Reset the scop in case we trigger any new computations.
-    currentTask = null;
-
-    // Trigger our observers.
-    task.dequeue();
+    
+    // @todo: Is there a better way to schedule things?
+    // We should always be using the same Scheduler across an app.
+    Scheduler.getInstance().schedule(() -> {
+      currentTask = null;
+      task.dequeue();
+    });
   }
 
   final signals:List<Signal<Dynamic>> = new List();
@@ -53,7 +54,7 @@ class Observer implements Disposable {
       var err:Null<Exception> = null;
 
       isTriggering = true;
-      clearDependencies();
+      clearTrackedSignals();
 
       if (isUntracked) {
         stack.push(null);
@@ -76,7 +77,7 @@ class Observer implements Disposable {
 
   public function stop() {
     isRunning = false;
-    clearDependencies();
+    clearTrackedSignals();
   }
 
   public function start() {
@@ -86,7 +87,14 @@ class Observer implements Disposable {
     }
   }
 
-  function clearDependencies() {
+  public function track(signal:Signal<Dynamic>) {
+    if (!signal.observers.has(this)) {
+      signal.observers.add(this);
+      signals.add(signal);
+    }
+  }
+
+  function clearTrackedSignals() {
     for (signal in signals) signal.observers.remove(this);
     signals.clear();
   }

@@ -5,11 +5,7 @@ import pine.*;
 class Portal extends ObjectComponent {
   static final type = new UniqueId();
 
-  #if conifer.server
-    final el:pine.render.Object;
-  #else
-    final el:js.html.Element;
-  #end
+  final el:js.html.Element;
   final child:Component;
   
   public function new(props) {
