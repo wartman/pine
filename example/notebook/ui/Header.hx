@@ -11,7 +11,9 @@ class Header extends ObserverComponent {
   @track var isEditing:Bool = false;
 
   public function render(context:Context):Component {
-    return Html.header({}, 
+    return Html.header({
+      className: Styles.flex
+    }, 
       Html.h1({}, 'Notebook'),
       Html.div({},
         new Button({
@@ -22,14 +24,11 @@ class Header extends ObserverComponent {
       if (isEditing)
         new NoteEditor({
           requestClose: () -> isEditing = false,
-          note: new Note({
-            id: null,
-            title: '',
-            content: ''
-          })
+          title: '',
+          content: ''
         })
       else
-        ''
+        null
     );
   }
 }

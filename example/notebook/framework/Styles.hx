@@ -21,6 +21,10 @@ class Styles {
     backgroundColor: '#e2e2e2',
     color: '#1f1f1f'
   });
+  public static final bgGrey = Css.atoms({
+    backgroundColor: '#5b5b5b',
+    color: '#1f1f1f'
+  });
   public static final bgDark = Css.atoms({
     backgroundColor: '#1f1f1f',
     color: '#e2e2e2'

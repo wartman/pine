@@ -5,44 +5,49 @@ import notebook.data.*;
 import notebook.framework.*;
 
 class NoteEditor extends ObserverComponent {
-  @prop final note:Note;
+  @prop final note:Note = null;
   @prop final requestClose:() -> Void;
+  @track var title:String;
+  @track var content:String;
 
   public function render(context:Context):Component {
-    var prevTitle = note.title;
-    var prevContent = note.content;
-
     return new Modal({
-      title: note.title == '' ? 'Create Note' : 'Edit ${note.title}',
+      title: title == '' ? 'Create Note' : 'Edit ${title}',
       requestClose: requestClose,
       children: [
-        new Input({
-          onSubmit: value -> note.title = value,
-          onInput: value -> note.title = value,
-          onCancel: () -> note.title = prevTitle,
-          initialValue: note.title
-        }),
-        new Input({
-          onSubmit: value -> note.content = value,
-          onInput: value -> note.content = value,
-          onCancel: () -> note.content = prevContent,
-          initialValue: note.content
+        new Form({
+          onSubmit: () -> save(context),
+          children: [
+            new Input({
+              onInput: value -> title = value,
+              initialValue: title
+            }),
+            new Input({
+              onInput: value -> content = value,
+              initialValue: content
+            })
+          ]
         }),
         new Button({
-          onClick: () -> {
-            if (note.id == null) {
-              var store = Store.from(context);
-              store.notes.push(new Note({
-                id: store.id++,
-                title: note.title,
-                content: note.content
-              }));
-            }
-            requestClose();
-          },
+          onClick: () -> save(context),
           child: 'Save'
         })
       ]
     });
+  }
+
+  function save(context:Context) {
+    if (note == null) {
+      var store = Store.from(context);
+      store.notes.push(new Note({
+        id: store.uid++,
+        title: title,
+        content: content
+      }));
+    } else {
+      note.title = title;
+      note.content = content;
+    }
+    requestClose();
   }
 }

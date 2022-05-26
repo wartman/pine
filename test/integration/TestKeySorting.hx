@@ -20,8 +20,7 @@ class TestKeySorting implements TestCase {
       ],
       key: 'fragment'
     }));
-    var obs = root.observe();
-    obs.next(_ -> {
+    root.onRenderComplete.addListener(_ -> {
       // hm
       done();
     });

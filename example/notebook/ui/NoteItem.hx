@@ -10,6 +10,7 @@ class NoteItem extends ObserverComponent {
 
   public function render(context:Context):Component {
     return new Box({
+      onDblClick: _ -> isEditing = true,
       children: [
         new BoxHeader({
           children: [
@@ -30,10 +31,12 @@ class NoteItem extends ObserverComponent {
         if (isEditing)
           new NoteEditor({
             requestClose: () -> isEditing = false,
-            note: note
+            note: note,
+            title: note.title,
+            content: note.content
           })
         else
-          ''
+          null
       ]
     });
   }

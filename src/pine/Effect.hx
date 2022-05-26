@@ -1,5 +1,6 @@
 package pine;
 
+// @todo: Rethink this
 abstract Effect(Event<Root>) {
   public inline static function from(context:Context) {
     return new Effect(context.getRoot());

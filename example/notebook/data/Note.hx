@@ -6,4 +6,12 @@ class Note implements Record {
   @prop public final id:Null<Int>;
   @track public var title:String;
   @track public var content:String;
+
+  public function toJson() {
+    return {
+      id: id,
+      title: title,
+      content: content
+    };
+  }
 }

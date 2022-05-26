@@ -4,6 +4,7 @@ typedef EventListenerOptions = {
   public final once:Bool;
 } 
 
+// @todo: This is overkill and not super useful
 class Event<T> implements Disposable {
   var isDisposed:Bool = false;
   var isDispatching:Bool = false;

@@ -7,9 +7,9 @@ using Nuke;
 
 class Input extends ImmutableComponent {
   @prop final initialValue:String = '';
-  @prop final onSubmit:(value:String) -> Void;
+  @prop final onSubmit:(value:String) -> Void = null;
   @prop final onInput:(value:String) -> Void = null;
-  @prop final onCancel:() -> Void;
+  @prop final onCancel:() -> Void = null;
 
   public function render(context:Context):Component {
     var value = '';
@@ -25,13 +25,13 @@ class Input extends ImmutableComponent {
           onInput(value);
         }
       },
-      onblur: _ -> onCancel(),
+      onblur: _ -> if (onCancel != null) onCancel(),
       onkeydown: e -> {
         var ev:js.html.KeyboardEvent = cast e;
         if (ev.key == 'Enter') {
-          onSubmit(value);
+          if (onSubmit != null) onSubmit(value);
         } else if (ev.key == 'Escape') {
-          onCancel();
+          if (onCancel != null) onCancel();
         }
       }
     });

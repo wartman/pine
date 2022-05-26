@@ -8,10 +8,16 @@ class NoteList extends ObserverComponent {
   @prop final store:Store;
 
   public function render(context:Context):Component {
-    return new Grid({
-      children: [ 
-        for (note in store.notes) new NoteItem({ note: note, key: note.id }) 
-      ]
-    });
+    return if (store.notes.length == 0)
+      new Box({
+        status: Deactivated,
+        children: [ 'No notes' ]
+      });
+    else
+      new Grid({
+        children: [
+          for (note in store.notes) new NoteItem({ note: note, key: note.id }) 
+        ]
+      });
   }
 }

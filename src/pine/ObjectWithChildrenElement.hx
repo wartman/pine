@@ -30,7 +30,9 @@ class ObjectWithChildrenElement extends ObjectElement {
     var previous:Null<Element> = null;
 
     for (i in 0...components.length) {
-      var element = hydrateElementForComponent(objects, components[i], createSlotForChild(i, previous));
+      var comp = components[i];
+      if (comp == null) continue;
+      var element = hydrateElementForComponent(objects, comp, createSlotForChild(i, previous));
       children.push(element);
       previous = element;
     }
@@ -48,7 +50,9 @@ class ObjectWithChildrenElement extends ObjectElement {
     var children:Array<Element> = [];
 
     for (i in 0...components.length) {
-      var element = createElementForComponent(components[i], createSlotForChild(i, previous));
+      var comp = components[i];
+      if (comp == null) continue;
+      var element = createElementForComponent(comp, createSlotForChild(i, previous));
       children.push(element);
       previous = element;
     }
@@ -57,7 +61,7 @@ class ObjectWithChildrenElement extends ObjectElement {
   }
 
   function rebuildChildren() {
-    var components = objectComponent.getChildren();
+    var components:Array<Component> = cast objectComponent.getChildren().filter(c -> c != null);
     children = diffChildren(children, components);
   }
 
