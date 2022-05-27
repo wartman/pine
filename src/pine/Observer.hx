@@ -8,22 +8,16 @@ using Lambda;
 @:allow(pine)
 class Observer implements Disposable {
   static final stack:List<Null<Observer>> = new List();
-  static var currentTask:Null<Task>;
+  static var currentTask:Null<Task> = null;
 
-  static function enqueue(observers:List<Observer>) {
-    inline function scope(task:Task) {
-      for (observer in observers) {
-        task.enqueue(observer);
-      }
-    }
-
+  static function scheduleTrigger(observers:List<Observer>) {
     if (currentTask != null) {
-      scope(currentTask);
+      for (observer in observers) currentTask.enqueue(observer);
       return;
     }
 
     var task = currentTask = new Task();
-    scope(currentTask);
+    for (observer in observers) currentTask.enqueue(observer);
     
     // @todo: Is there a better way to schedule things?
     // We should always be using the same Scheduler across an app.
@@ -33,7 +27,7 @@ class Observer implements Disposable {
     });
   }
 
-  final signals:List<Signal<Dynamic>> = new List();
+  final states:List<State<Dynamic>> = new List();
   final handler:() -> Void;
   var isTriggering:Bool = false;
   var isRunning:Bool = false;
@@ -87,16 +81,16 @@ class Observer implements Disposable {
     }
   }
 
-  public function track(signal:Signal<Dynamic>) {
-    if (!signal.observers.has(this)) {
-      signal.observers.add(this);
-      signals.add(signal);
+  public function track(state:State<Dynamic>) {
+    if (!state.observers.has(this)) {
+      state.observers.add(this);
+      states.add(state);
     }
   }
 
   function clearTrackedSignals() {
-    for (signal in signals) signal.observers.remove(this);
-    signals.clear();
+    for (state in states) state.observers.remove(this);
+    states.clear();
   }
 
   public function dispose() {
@@ -109,7 +103,7 @@ private abstract Task(Array<Observer>) {
     this = [];
   }
 
-  public inline function enqueue(observer) {
+  public inline function enqueue(observer:Observer) {
     if (!this.contains(observer)) this.push(observer);
   }
 

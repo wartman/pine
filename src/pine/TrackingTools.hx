@@ -11,7 +11,7 @@ class TrackingTools {
     return new Observer(handler, true);
   }
 
-  public inline static function createSignal<T>(value, ?comp):Signal<T> {
-    return new Signal(value, comp);
+  public inline static function createSignal<T>(value, ?comp):State<T> {
+    return new State(value, comp);
   }
 }

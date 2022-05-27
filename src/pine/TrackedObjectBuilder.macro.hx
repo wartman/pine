@@ -55,21 +55,21 @@ class TrackedObjectBuilder {
                 });
               default:
                 var name = prop.name;
-                var signal = 'signal_$name';
+                var state = 'state_$name';
                 var setter = 'set_$name';
                 var getter = 'get_$name';
                 var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
   
-                inits.push(macro this.$signal = new pine.Signal($init));
-                dispose.push(macro this.$signal.dispose());
+                inits.push(macro this.$state = new pine.State($init));
+                dispose.push(macro this.$state.dispose());
                 builder.add(macro class {
-                  final $signal:pine.Signal<$t>;
+                  final $state:pine.State<$t>;
   
                   public var $name(get, set):$t;
   
-                  inline function $getter():$t return this.$signal.get();
+                  inline function $getter():$t return this.$state.get();
   
-                  inline function $setter(value):$t return this.$signal.set(value);
+                  inline function $setter(value):$t return this.$state.set(value);
                 });
             }
           default:

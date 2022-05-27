@@ -10,7 +10,7 @@ class TestObserver implements TestCase {
   @:test('Observers work')
   @:test.async
   function testSimple(done) {
-    var value = new Signal(1);
+    var value = new State(1);
     var expected = 1;
     
     new Observer(() -> {

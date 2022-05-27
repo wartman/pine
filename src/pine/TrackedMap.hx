@@ -3,7 +3,7 @@ package pine;
 import haxe.ds.Map;
 
 @:forward
-abstract TrackedMap<K, V>(Signal<Map<K, V>>) {
+abstract TrackedMap<K, V>(State<Map<K, V>>) {
   @:from
   public inline static function ofMap<K, V>(map:Map<K, V>) {
     return new TrackedMap(map);
@@ -15,7 +15,7 @@ abstract TrackedMap<K, V>(Signal<Map<K, V>>) {
   }
 
   public function new(map:Map<K, V>) {
-    this = new Signal(map);
+    this = new State(map);
   }
 
   public inline function replace(map:Map<K, V>) {

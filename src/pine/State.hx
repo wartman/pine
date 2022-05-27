@@ -5,7 +5,7 @@ import haxe.ds.List;
 using Lambda;
 
 @:allow(pine)
-class Signal<T> implements Disposable {
+class State<T> implements Disposable {
   final comparator:(a:T, b:T) -> Bool;
   final observers:List<Observer> = new List();
   var value:T;
@@ -19,7 +19,7 @@ class Signal<T> implements Disposable {
 
   public function get():T {
     if (isDisposed) {
-      Debug.error('Cannot use a signal that has already been disposed.');
+      Debug.error('Cannot use a state that has already been disposed.');
     }
 
     var observer = Observer.stack.last();
@@ -30,7 +30,7 @@ class Signal<T> implements Disposable {
 
   public function set(newValue:T):T {
     if (isDisposed) {
-      Debug.error('Cannot use a signal that has already been disposed.');
+      Debug.error('Cannot use a state that has already been disposed.');
     }
 
     if (!comparator(value, newValue)) return value;
@@ -47,6 +47,6 @@ class Signal<T> implements Disposable {
   }
 
   function notify() {
-    if (observers.length > 0) Observer.enqueue(observers);
+    if (observers.length > 0) Observer.scheduleTrigger(observers);
   }
 }
