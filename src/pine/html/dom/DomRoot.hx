@@ -10,8 +10,7 @@ class DomRoot extends RootComponent {
 
   public function new(props:{
     el:js.html.Element,
-    child:Component,
-    ?scheduler:Scheduler
+    child:Component
   }) {
     super(props);
     this.el = props.el;

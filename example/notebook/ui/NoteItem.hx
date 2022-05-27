@@ -9,6 +9,7 @@ class NoteItem extends ObserverComponent {
   @track var isEditing:Bool = false;
 
   public function render(context:Context):Component {
+    trace('update ${note.id}');
     return new Box({
       onDblClick: _ -> isEditing = true,
       children: [

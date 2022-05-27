@@ -8,22 +8,20 @@ using Lambda;
 @:allow(pine)
 class Observer implements Disposable {
   static final stack:List<Null<Observer>> = new List();
-  static var currentTask:Null<Task> = null;
+  static var currentQueue:Null<ObserverQueue> = null;
 
   static function scheduleTrigger(observers:List<Observer>) {
-    if (currentTask != null) {
-      for (observer in observers) currentTask.enqueue(observer);
+    if (currentQueue != null) {
+      for (observer in observers) currentQueue.enqueue(observer);
       return;
     }
 
-    var task = currentTask = new Task();
-    for (observer in observers) currentTask.enqueue(observer);
-    
-    // @todo: Is there a better way to schedule things?
-    // We should always be using the same Scheduler across an app.
-    Scheduler.getInstance().schedule(() -> {
-      currentTask = null;
-      task.dequeue();
+    var queue = currentQueue = new ObserverQueue();
+    for (observer in observers) currentQueue.enqueue(observer);
+
+    Process.defer(() -> {
+      currentQueue = null;
+      queue.dequeue();
     });
   }
 
@@ -98,7 +96,7 @@ class Observer implements Disposable {
   }
 }
 
-private abstract Task(Array<Observer>) {
+private abstract ObserverQueue(Array<Observer>) {
   public inline function new() {
     this = [];
   }

@@ -35,7 +35,7 @@ abstract class RootElement extends ObjectElement implements Root {
       Debug.assert(status == Invalid);
       isScheduled = true;
       invalidElements = null;
-      rootComponent.scheduler.schedule(() -> {
+      Process.defer(() -> {
         rebuild();
         isScheduled = false;
       });
@@ -57,43 +57,45 @@ abstract class RootElement extends ObjectElement implements Root {
   function scheduleRebuildInvalidElements() {
     if (isScheduled) return;
     isScheduled = true;
-    rootComponent.scheduler.schedule(performRebuildInvalidElements);
+    Process.defer(performRebuildInvalidElements);
   }
 
   function performRebuildInvalidElements() {
-    isScheduled = false;
-
-    if (invalidElements == null) {
-      return;
-    }
-
-    var elements = invalidElements.copy();
-    invalidElements = null;
-    for (el in elements) el.rebuild();
+    Process.scope(() -> {
+      isScheduled = false;
+  
+      if (invalidElements == null) {
+        return;
+      }
+  
+      var elements = invalidElements.copy();
+      invalidElements = null;
+      for (el in elements) el.rebuild();
+    });
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    if (previousComponent == null) {
-      object = rootComponent.createObject(this);
-    } else {
-      if (previousComponent != component) rootComponent.updateObject(this, previousComponent);
-    }
-    performBuildChild();
+    Process.scope(() -> {
+      if (previousComponent == null) {
+        object = rootComponent.createObject(this);
+      } else {
+        if (previousComponent != component) rootComponent.updateObject(this, previousComponent);
+      }
+      child = updateChild(child, (cast component : RootComponent).child, slot);
+    });
   }
 
   function performHydrate(cursor:HydrationCursor) {
-    object = cursor.current();
-    var objects = cursor.currentChildren();
-    var comp = (cast component : RootComponent).child;
-    if (comp != null) {
-      child = hydrateElementForComponent(objects, comp, slot);
-      cursor.next();
-    }
-    Debug.assert(objects.current() == null);
-  }
-
-  function performBuildChild() {
-    child = updateChild(child, (cast component : RootComponent).child, slot);
+    Process.scope(() -> {
+      object = cursor.current();
+      var objects = cursor.currentChildren();
+      var comp = (cast component : RootComponent).child;
+      if (comp != null) {
+        child = hydrateElementForComponent(objects, comp, slot);
+        cursor.next();
+      }
+      Debug.assert(objects.current() == null);
+    });
   }
 
   function visitChildren(visitor:ElementVisitor) {

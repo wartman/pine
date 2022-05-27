@@ -10,8 +10,7 @@ class ServerRoot extends RootComponent {
 
   public function new(props:{
     el:Object,
-    child:Component,
-    ?scheduler:Scheduler
+    child:Component
   }) {
     super(props);
     this.el = props.el;
