@@ -7,7 +7,6 @@ using Lambda;
 @:forward
 abstract Process(Queue) {
   static final stack:List<Process> = new List();
-  // static var isScheduled:Bool = false;
   
   public static function current():Process {
     var process = stack.last();
