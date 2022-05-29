@@ -271,8 +271,17 @@ class TodoInput extends ObserverComponent {
   @prop final clearOnComplete:Bool;
   @prop final onSubmit:(data:String) -> Void;
   @prop final onCancel:() -> Void;
-  @prop final isEditing:Bool = false;
+  @track var isEditing:Bool = false;
   @track var value:String;
+          
+  override function init(context:InitContext) {
+    Effect.from(context).add(() -> {
+      if (isEditing) Process.defer(() -> {
+        var el:js.html.InputElement = cast context.getObject();
+        el.focus();
+      });
+    });
+  }
 
   function render(context:Context):Component {
     return Html.input({
