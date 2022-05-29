@@ -29,6 +29,7 @@ class TrackedObjectBuilder {
     if (!path.typePathExists()) {
       var builder = new ClassBuilder([]);
       var inits:Array<Expr> = [];
+      var updates:Array<Expr> = [];
       var dispose:Array<Expr> = [];
 
       switch ct {
@@ -40,6 +41,7 @@ class TrackedObjectBuilder {
                 if (e == null) e = macro [];
                 var init = macro props.$name == null ? $e : props.$name;
                 inits.push(macro this.$name = new pine.TrackedArray($init));
+                updates.push(macro this.$name.replace(props.$name));
                 dispose.push(macro this.$name.dispose());
                 builder.add(macro class {
                   public final $name:pine.TrackedArray<$t>;
@@ -49,6 +51,7 @@ class TrackedObjectBuilder {
                 if (e == null) e = macro [];
                 var init = macro props.$name == null ? $e : props.$name;
                 inits.push(macro this.$name = new pine.TrackedMap($init));
+                updates.push(macro this.$name.replace(props.$name));
                 dispose.push(macro this.$name.dispose());
                 builder.add(macro class {
                   public final $name:pine.TrackedMap<$k, $v>;
@@ -61,6 +64,7 @@ class TrackedObjectBuilder {
                 var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
   
                 inits.push(macro this.$state = new pine.State($init));
+                updates.push(macro this.$state.set(props.$name));
                 dispose.push(macro this.$state.dispose());
                 builder.add(macro class {
                   final $state:pine.State<$t>;
@@ -86,6 +90,10 @@ class TrackedObjectBuilder {
 
         public function dispose() {
           $b{dispose}
+        }
+
+        public function replace(props) {
+          $b{updates};
         }
       });
 

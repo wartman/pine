@@ -15,7 +15,12 @@ enum abstract HydratingStatus(Bool) to Bool {
   var NotHydrating = false;
 }
 
-abstract class Element implements Context implements Disposable implements DisposableHost {
+abstract class Element 
+  implements Context 
+  implements InitContext
+  implements Disposable 
+  implements DisposableHost 
+{
   final disposables:Array<Disposable> = [];
   var component:Component;
   var slot:Null<Slot> = null;

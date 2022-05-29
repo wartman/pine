@@ -4,13 +4,24 @@ import haxe.macro.Expr;
 
 using Lambda;
 
+typedef TrackedPropertyBuilderOptions = {
+  public final trackedName:String;
+  public final trackerIsNullable:Bool;
+} 
+
 class TrackedPropertyBuilder extends ClassBuilder {
   var inits:Array<Expr> = [];
   var props:Array<Field> = [];
   var initProps:Array<Field> = [];
 
-  public function new(fields) {
+  final options:TrackedPropertyBuilderOptions;
+
+  public function new(fields, ?options) {
     super(fields);
+    this.options = options == null ? {
+      trackedName: 'tracked',
+      trackerIsNullable: false 
+    } : options;
     process();
   }
 
@@ -70,6 +81,17 @@ class TrackedPropertyBuilder extends ClassBuilder {
     return macro new pine.TrackedObject<$props>($arg);
   }
 
+  public function getTrackedObjectExpr() {
+    var name = options.trackedName;
+    if (options.trackerIsNullable) {
+      return macro {
+        pine.Debug.alwaysAssert(this.$name != null);
+        this.$name;
+      }
+    }
+    return macro this.$name;
+  }
+
   function process() {
     for (field in findFieldsByMeta('track')) {
       switch field.kind {
@@ -78,6 +100,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
           var name = field.name;
           var getter = 'get_$name';
           var setter = 'set_$name';
+          var tracked = this.getTrackedObjectExpr();
 
           addInitProp(prop);
           addProp(prop);
@@ -91,7 +114,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
           if (field.access.contains(AFinal)) {
             field.kind = FProp('get', 'never', t);
             add(macro class {
-              inline function $getter():$t return tracked.$name;
+              inline function $getter():$t return $tracked.$name;
             });
           } else {
             switch t {
@@ -99,21 +122,21 @@ class TrackedPropertyBuilder extends ClassBuilder {
                 var type = macro:pine.TrackedArray<$r>;
                 field.kind = FProp('get', 'never', type);
                 add(macro class {
-                  inline function $getter():$type return tracked.$name;
+                  inline function $getter():$type return $tracked.$name;
                 });
               case macro:Map<$k, $v>:
                 var type = macro:pine.TrackedMap<$k, $v>;
                 field.kind = FProp('get', 'never', type);
                 add(macro class {
-                  inline function $getter():$type return tracked.$name;
+                  inline function $getter():$type return $tracked.$name;
                 });
               default:
                 field.kind = FProp('get', 'set', t);
                 add(macro class {
-                  inline function $getter():$t return tracked.$name;
+                  inline function $getter():$t return $tracked.$name;
     
                   inline function $setter(value:$t) {
-                    tracked.$name = value;
+                    $tracked.$name = value;
                     return value;
                   }
                 });

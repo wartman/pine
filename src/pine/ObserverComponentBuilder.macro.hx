@@ -15,7 +15,7 @@ class ObserverComponentBuilder {
   public static function build() {
     var fields = MacroTools.getBuildFieldsSafe();
     var builder = new ClassBuilder(fields);
-    var trackedBuilder = new TrackedPropertyBuilder(fields);
+    var trackedBuilder = new TrackedPropertyBuilder(fields, { trackedName: 'trackedObject', trackerIsNullable: true });
     var immutableBuilder = new ImmutablePropertyBuilder(fields);
 
     immutableBuilder.addProp(MacroTools.makeField('key', macro:pine.Key, true));
@@ -28,13 +28,15 @@ class ObserverComponentBuilder {
       debugger.check();
     }
 
+    var trackedObjectProps:ComplexType = trackedBuilder.getTrackedObjectPropsType();
     var initProps:ComplexType = TAnonymous(trackedBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
     var trackedType = trackedBuilder.getTrackedObjectType();
 
     builder.add(macro class {
       static final type = new pine.UniqueId();
 
-      final tracked:$trackedType;
+      var trackedObject:Null<$trackedType> = null;
+      final trackedObjectProps:$trackedObjectProps;
 
       public function getComponentType() {
         return type;
@@ -44,7 +46,22 @@ class ObserverComponentBuilder {
         super(props.key);
         ${trackedBuilder.getInitializers()};
         ${immutableBuilder.getInitializers()};
-        tracked = ${trackedBuilder.instantiateTrackedObject()};
+        trackedObjectProps = ${trackedBuilder.getTrackedObjectConstructorArg()};
+      }
+
+      function getTrackedObject() {
+        return trackedObject;
+      }
+
+      function createTrackedObject() {
+        trackedObject = ${trackedBuilder.instantiateTrackedObject('trackedObjectProps')};
+        return trackedObject;
+      }
+
+      function reuseTrackedObject(trackedObject:Dynamic) {
+        this.trackedObject = trackedObject;
+        this.trackedObject.replace(this.trackedObjectProps);
+        return this.trackedObject;
       }
     });
 

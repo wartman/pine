@@ -13,10 +13,12 @@ class ProxyElement extends Element {
   }
 
   function performHydrate(cursor:HydrationCursor) {
+    proxy.init(this);
     child = hydrateElementForComponent(cursor, render(), slot);
   }
 
   function performBuild(previousComponent:Null<Component>) {
+    if (previousComponent == null) proxy.init(this);
     child = updateChild(child, render(), slot);
   }
 
