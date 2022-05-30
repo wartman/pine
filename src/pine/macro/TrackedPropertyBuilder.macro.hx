@@ -85,7 +85,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
     var name = options.trackedName;
     if (options.trackerIsNullable) {
       return macro {
-        pine.Debug.alwaysAssert(this.$name != null);
+        pine.Debug.assert(this.$name != null);
         this.$name;
       }
     }

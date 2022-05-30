@@ -1,31 +1,17 @@
 package pine;
 
-class Effect implements Disposable implements DisposableHost {
-  public static function from(context:InitContext) {
+abstract Effect(InitContext) {
+  public inline static function from(context:InitContext) {
     return new Effect(context);
   }
-  
-  var isDisposed:Bool = false;
-  final context:InitContext;
-  final disposables:Array<Disposable> = [];
-  
-  public function new(context) {
-    this.context = context;
-    this.context.addDisposable(this);
+
+  public inline function new(context) {
+    this = context;
   }
-  
-  public function add(effect:()->Void) {
-    if (isDisposed) return;
-    addDisposable(new Observer(effect));
-  }
-  
-  public function addDisposable(disposable:Disposable) {
-    disposables.push(disposable);
-  }
-  
-  public function dispose() {
-    if (isDisposed) return;
-    isDisposed = true;
-    for (disposable in disposables) disposable.dispose();
+
+  public inline function add(effect:()->Void) {
+    Process.defer(() -> {
+      this.addDisposable(new Observer(effect));
+    });
   }
 }

@@ -14,7 +14,7 @@ class Debug {
   }
 
   static public macro function error(expr:haxe.macro.Expr.ExprOf<String>) {
-    return macro throw new pine.PineException($expr);
+    return macro @:pos(expr.pos) throw new pine.PineException($expr);
   }
 
   #if macro

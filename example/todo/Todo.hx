@@ -277,12 +277,11 @@ class TodoInput extends ObserverComponent {
   override function init(context:InitContext) {
     Effect.from(context).add(() -> {
       if (isEditing) {
-        Process.defer(() -> {
-          var el:js.html.InputElement = cast context.getObject();
-          el.focus();
-        });
+        var el:js.html.InputElement = cast context.getObject();
+        el.focus();
       }
     });
+    context.addDisposable(() -> trace('removed'));
   }
 
   function render(context:Context):Component {

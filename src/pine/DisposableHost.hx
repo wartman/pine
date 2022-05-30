@@ -1,5 +1,5 @@
 package pine;
 
 interface DisposableHost {
-  public function addDisposable(disposable:Disposable):Void;
+  public function addDisposable(disposable:DisposableItem):Void;
 }
