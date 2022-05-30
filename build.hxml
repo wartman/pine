@@ -14,15 +14,15 @@
 
 --each
 
--main todo.Todo
+# -main todo.Todo
 
--js dist/assets/app.js
+# -js dist/assets/app.js
 
 # --next
 
-# -main notebook.Notebook
+-main notebook.Notebook
 
-# -js dist/note/app.js
+-js dist/note/app.js
 
 --next
 

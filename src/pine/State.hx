@@ -33,6 +33,15 @@ class State<T> implements Disposable {
       Debug.error('Cannot use a state that has already been disposed.');
     }
 
+    Debug.assert(
+      Observer.stack.length == 0, 
+      'Updating a state while inside an Observer is not allowed.'
+      + ' This could potentially lead to endless loops.'
+      + ' If you really need this behavior, you can use `Process.defer(() -> [set your state here])`'
+      + ' as an escape hatch, but be very careful that you\'re not updating'
+      + ' states the current Observer is tracking.'
+    );
+
     if (!comparator(value, newValue)) return value;
 
     value = newValue;
