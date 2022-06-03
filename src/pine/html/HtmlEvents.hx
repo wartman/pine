@@ -1,7 +1,7 @@
 package pine.html;
 
 #if (js && !nodejs)
-import js.html.Event;
+typedef Event = js.html.Event;
 #else
 typedef Event = Dynamic;
 #end

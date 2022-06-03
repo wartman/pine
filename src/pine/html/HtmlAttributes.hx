@@ -4,6 +4,7 @@ package pine.html;
 // Taken from: https://github.com/haxetink/tink_domspec/blob/master/src/tink/domspec/Aria.hx
 typedef AriaAttributes = {
   @:html('aria-label') @:optional final ariaLabel:String;
+  @:html('aria-current') @:optional final ariaCurrent:String;
   @:html('aria-labeledby') @:optional final ariaLabelledby:String;
   @:html('aria-describedby') @:optional final ariaDescribedby:String;
   @:html('aria-autocomplete') @:optional final ariaAutocomplete:String;
