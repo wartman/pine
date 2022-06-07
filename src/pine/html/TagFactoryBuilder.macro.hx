@@ -39,6 +39,7 @@ class TagFactoryBuilder {
     var tagPath:TypePath = {pack: pack, name: name};
 
     if (!tagPath.typePathExists()) {
+      var pos = Context.currentPos();
       var tags = getTags(type);
       var builder = new ClassBuilder([]);
 
@@ -83,7 +84,7 @@ class TagFactoryBuilder {
       Context.defineType({
         pack: pack,
         name: name,
-        pos: (macro null).pos,
+        pos: pos,
         kind: TDClass(),
         fields: builder.export()
       });

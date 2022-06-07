@@ -2,14 +2,9 @@ package pine;
 
 abstract class RootComponent extends ObjectComponent {
   public final child:Null<Component>;
-  // public final scheduler:Scheduler;
 
-  public function new(props:{
-    // ?scheduler:Scheduler,
-    ?child:Component
-  }) {
+  public function new(props:{ ?child:Component }) {
     super(null);
-    // scheduler = props.scheduler == null ? Scheduler.current() : props.scheduler;
     child = props.child;
   }
 

@@ -40,6 +40,7 @@ class State<T> implements Disposable {
       + ' If you really need this behavior, you can use `Process.defer(() -> [set your state here])`'
       + ' as an escape hatch, but be very careful that you\'re not updating'
       + ' states the current Observer is tracking.'
+      + ' [triggered for value: ${newValue}]'
     );
 
     if (!comparator(value, newValue)) return value;

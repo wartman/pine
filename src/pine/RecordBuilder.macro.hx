@@ -31,6 +31,8 @@ class RecordBuilder {
       }
     }
 
+    // @todo: Implement @transition methods
+
     trackedBuilder.add(macro class {
       final tracked:$trackedType;
 

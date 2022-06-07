@@ -9,4 +9,5 @@ interface Context {
   public function findAncestorOfType<T:Element>(kind:Class<T>):Option<T>;
   public function queryAncestors(query:(parent:Element) -> Bool):Option<Element>;
   public function visitChildren(visitor:ElementVisitor):Void;
+  public function findChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>>;
 }
