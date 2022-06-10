@@ -1,20 +1,8 @@
 package pine.html;
 
 abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
-  static final types:Map<String, UniqueId> = [];
-
-  public static function getTypeForTag(tag:String):UniqueId {
-    var type = types.get(tag);
-    if (type == null) {
-      type = new UniqueId();
-      types.set(tag, type);
-    }
-    return type;
-  }
-
   final tag:String;
   final attrs:Attrs;
-  final type:UniqueId;
   final isSvg:Bool;
   final children:Null<Array<Component>>;
 
@@ -27,7 +15,6 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
   }) {
     super(props.key);
     tag = props.tag;
-    type = getTypeForTag(props.tag);
     attrs = props.attrs;
     isSvg = props.isSvg == null ? false : props.isSvg;
     children = props.children;
@@ -35,10 +22,6 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
 
   public function getChildren() {
     return children == null ? [] : children;
-  }
-
-  public function getComponentType() {
-    return type;
   }
 
   public function createObject(root:Root):Dynamic {

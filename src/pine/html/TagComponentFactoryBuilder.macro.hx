@@ -52,13 +52,13 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
     var pos = Context.currentPos();
     var props = tag.type.toComplexType();
 
-    // builder.add(macro class {
-    //   static final type = new pine.UniqueId();
+    builder.add(macro class {
+      static final type:pine.UniqueId = pine.html.TagTypes.getTypeForTag($v{tag.name});
       
-    //   public function getComponentType() {
-    //     return type;
-    //   }
-    // });
+      public function getComponentType() {
+        return type;
+      }
+    });
 
     var attrs = switch tag.kind {
       case TagNormal:
