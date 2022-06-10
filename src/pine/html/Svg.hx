@@ -1,3 +1,4 @@
 package pine.html;
 
-typedef Svg = TagFactory<SvgTags, true>;
+@:genericBuild(pine.html.TagComponentFactoryBuilder.buildGeneric('pine.html.SvgTags', true))
+class Svg<@:const Tag> {}

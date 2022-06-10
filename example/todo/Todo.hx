@@ -7,7 +7,7 @@ import haxe.Json;
   import pine.html.server.ServerBootstrap;
 #end
 import pine.*;
-import pine.html.Html;
+import pine.html.*;
 
 using Reflect;
 
@@ -83,7 +83,7 @@ class TodoStore implements Record {
   @track public var todos:Array<Todo>;
 
   public function addTodo(description:String) {
-    todos.push(new Todo({
+    todos.unshift(new Todo({
       id: uid++,
       description: description,
       isEditing: false,
@@ -113,26 +113,36 @@ class TodoApp extends ImmutableComponent {
     return new TodoProvider({
       create: TodoStore.load,
       dispose: store -> store.dispose(),
-      render: store -> Html.div({ className: 'todomvc-wrapper' },
-        Html.section({ className: 'todoapp' },
-          Html.header({ className: 'header', role: 'header' },
-            Html.h1({}, 'todos'),
-            new TodoInput({ 
-              className: 'new-todo',
-              value: '',
-              clearOnComplete: true,
-              onCancel: () -> null,
-              onSubmit: data -> store.addTodo(data)
-            })
-          ),
-          new TodoContainer({
-            store: store
-          }),
-          new TodoFooter({
-            store: store
+      render: store -> new Html<'div'>({
+        className: 'todomvc-wrapper',
+        children: [
+          new Html<'section'>({
+            className: 'todoapp',
+            children: [
+              new Html<'header'>({
+                className: 'header',
+                role: 'header',
+                children: [
+                  new Html<'h1'>({ children: [ 'todos' ] }),
+                  new TodoInput({ 
+                    className: 'new-todo',
+                    value: '',
+                    clearOnComplete: true,
+                    onCancel: () -> null,
+                    onSubmit: data -> store.addTodo(data)
+                  })
+                ]
+              }),
+              new TodoContainer({
+                store: store
+              }),
+              new TodoFooter({
+                store: store
+              })
+            ]
           })
-        )
-      )
+        ] 
+      })
     });
   }
 }
@@ -145,32 +155,35 @@ class TodoFooter extends ObserverComponent {
     var todosCompleted = total - store.todos.filter(todo -> !todo.isCompleted).length;
     var todosLeft = total - store.todos.filter(todo -> todo.isCompleted).length;
     
-    return Html.footer({
+    return new Html<'footer'>({
       className: 'footer',
-      style: if (total == 0) 'display: none' else null
-    },
-      Html.span({ className: 'todo-count' },
-        Html.strong({},
-          switch todosLeft {
-            case 1: '${todosLeft} item left';
-            default: '${todosLeft} items left';
-          }
-        )
-      ),
-      Html.ul({ className: 'filters' },
-        visibilityControl('#/', All, store.visibility),
-        visibilityControl('#/active', Active, store.visibility),
-        visibilityControl('#/completed', Completed, store.visibility)
-      ),
-      Html.button(
-        {
+      style: if (total == 0) 'display: none' else null,
+      children: [
+        new Html<'span'>({
+          className: 'todo-count',
+          children: [
+            new Html<'strong'>({ children: [ switch todosLeft {
+              case 1: '${todosLeft} item left';
+              default: '${todosLeft} items left';
+            } ] })
+          ]
+        }),
+        new Html<'ul'>({
+          className: 'filters',
+          children: [
+            visibilityControl('#/', All, store.visibility),
+            visibilityControl('#/active', Active, store.visibility),
+            visibilityControl('#/completed', Completed, store.visibility)
+          ]
+        }),
+        new Html<'button'>({
           className: 'clear-completed',
           style: if (todosCompleted == 0) 'visibility: hidden' else null,
-          onclick: _ -> store.removeCompletedTodos()
-        },
-        'Clear completed (${todosCompleted})'
-      )
-    );
+          onclick: _ -> store.removeCompletedTodos(),
+          children: [ 'Clear completed (${todosCompleted})' ]
+        })
+      ]
+    });
   }
 
   inline function visibilityControl(
@@ -178,18 +191,16 @@ class TodoFooter extends ObserverComponent {
     visibility:TodoVisibility,
     actualVisibility:TodoVisibility
   ) {
-    return Html.li(
-      {
-        onclick: _ -> store.visibility = visibility
-      },
-      Html.a(
-        {
+    return new Html<'li'>({
+      onclick: _ -> store.visibility = visibility,
+      children: [
+        new Html<'a'>({
           href: url,
-          className: if (visibility == actualVisibility) 'selected' else null
-        },
-        (visibility:String)
-      )
-    );
+          className: if (visibility == actualVisibility) 'selected' else null,
+          children: [ (visibility:String) ]
+        })
+      ]
+    });
   }
 }
 
@@ -203,18 +214,22 @@ class TodoContainer extends ObserverComponent {
       case Completed: todo.isCompleted;
       case Active: !todo.isCompleted;
     });
-    items.reverse();
 
-    return Html.section({
+    return new Html<'section'>({
       className: 'main',
       ariaHidden: len == 0,
-      style: if (len == 0) 'visibility: hidden' else null
-    }, // @todo: toggles
-      Html.ul({className: 'todo-list'}, ...[
-        for (todo in items)
-          new TodoItem({todo: todo, key: todo.id})
-      ])
-    );
+      style: if (len == 0) 'visibility: hidden' else null,
+      children: [
+        // @todo: toggles
+        new Html<'ul'>({
+          className: 'todo-list',
+          children: [
+            for (todo in items)
+              new TodoItem({todo: todo, key: todo.id})
+          ]
+        })
+      ]
+    });
   }
 }
 
@@ -229,40 +244,45 @@ class TodoItem extends ObserverComponent {
   }
 
   function render(context:Context) {
-    return Html.li({
+    return new Html<'li'>({
       key: todo.id,
       id: 'todo-${todo.id}',
-      className: getClassName()
-    },
-      Html.div({className: 'view'}, 
-        Html.input({
-          className: 'toggle',
-          type: Checkbox,
-          checked: todo.isCompleted,
-          onclick: _ -> todo.isCompleted = !todo.isCompleted
-        }), 
-        Html.label({
-            ondblclick: _ -> todo.isEditing = true
-          }, 
-          todo.description
-        ), 
-        Html.button({
-          className: 'destroy',
-          onclick: _ -> TodoStore.from(context).removeTodo(todo)
+      className: getClassName(),
+      children: [ 
+        new Html<'div'>({
+          className: 'view',
+          children: [
+            new Html<'input'>({
+              className: 'toggle',
+              type: Checkbox,
+              checked: todo.isCompleted,
+              onclick: _ -> todo.isCompleted = !todo.isCompleted
+            }), 
+            new Html<'label'>({
+              ondblclick: _ -> todo.isEditing = true,
+              children: [
+                todo.description,
+                new Html<'button'>({
+                  className: 'destroy',
+                  onclick: _ -> TodoStore.from(context).removeTodo(todo)
+                })
+              ]
+            }),
+          ]
+        }),
+        new TodoInput({
+          className: 'edit',
+          value: todo.description,
+          clearOnComplete: false,
+          isEditing: todo.isEditing,
+          onCancel: () -> todo.isEditing = false,
+          onSubmit: data -> {
+            todo.description = data;
+            todo.isEditing = false;
+          }
         })
-      ),
-      new TodoInput({
-        className: 'edit',
-        value: todo.description,
-        clearOnComplete: false,
-        isEditing: todo.isEditing,
-        onCancel: () -> todo.isEditing = false,
-        onSubmit: data -> {
-          todo.description = data;
-          todo.isEditing = false;
-        }
-      })
-    );
+      ]
+    });
   }
 }
 
@@ -275,17 +295,17 @@ class TodoInput extends ObserverComponent {
   @track var value:String;
 
   override function init(context:InitContext) {
-    Effect.from(context).add(() -> {
+    Effect.on(context).add(() -> {
       if (isEditing) {
         var el:js.html.InputElement = cast context.getObject();
         el.focus();
       }
     });
-    context.addDisposable(() -> trace('removed'));
+    Cleanup.on(context).add(() -> trace('removed'));
   }
 
   function render(context:Context):Component {
-    return Html.input({
+    return new Html<'input'>({
       className: className,
       placeholder: 'What needs doing?',
       autofocus: true,

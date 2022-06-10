@@ -5,7 +5,11 @@ class ProxyElement extends Element {
   var proxy(get, never):ProxyComponent;
 
   inline function get_proxy():ProxyComponent {
-    return cast component;
+    return getComponent();
+  }
+
+  public function new(component:ProxyComponent) {
+    super(component);
   }
 
   function render() {

@@ -1,3 +1,4 @@
 package pine.html;
 
-typedef Html = TagFactory<HtmlTags, false>;
+@:genericBuild(pine.html.TagComponentFactoryBuilder.buildGeneric('pine.html.HtmlTags'))
+class Html<@:const Tag> {}

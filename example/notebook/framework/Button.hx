@@ -10,7 +10,7 @@ class Button extends ImmutableComponent {
   @prop final onClick:() -> Void;
 
   public function render(context:Context) {
-    return Html.button({
+    return new Html<'button'>({
       className: Css.atoms({
         outline: 'none',
         border: 'none',
@@ -22,7 +22,8 @@ class Button extends ImmutableComponent {
       onclick: e -> {
         e.preventDefault();
         onClick();
-      }
-    }, child);
+      },
+      children: [ child ]
+    });
   }
 }

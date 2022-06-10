@@ -1,9 +1,7 @@
 package pine;
 
 abstract class ProxyComponent extends Component {
-  public function init(context:InitContext) {
-    // noop
-  }
+  public function init(context:InitContext) {}
 
   abstract public function render(context:Context):Component;
 

@@ -9,10 +9,9 @@ class BoxTitle extends ImmutableComponent {
   @prop final child:String;
 
   public function render(context:Context):Component {
-    return Html.h2({
-      className: Css.atoms({
-        flexGrow: 3
-      })
-    }, child);
+    return new Html<'h2'>({
+      className: Css.atoms({ flexGrow: 3 }),
+      children: [ child ]
+    });
   }
 }

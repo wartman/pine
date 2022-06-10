@@ -18,7 +18,7 @@ class Box extends ImmutableComponent {
   @prop final onDblClick:(e:js.html.Event) -> Void = null;
 
   public function render(context:Context):Component {
-    return Html.div({
+    return new Html<'div'>({
       onclick: onClick,
       ondblclick: onDblClick,
       className: Styles.rounded
@@ -26,8 +26,9 @@ class Box extends ImmutableComponent {
           case Normal: Styles.bgWhite;
           case Deactivated: Styles.bgGrey;
         })
-        .with(className)
+        .with(className),
+      children: children
       // className: 'p-6 bg-white rounded-xl'
-    }, ...children);
+    });
   }
 }

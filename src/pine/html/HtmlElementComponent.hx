@@ -1,6 +1,6 @@
 package pine.html;
 
-class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
+abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
   static final types:Map<String, UniqueId> = [];
 
   public static function getTypeForTag(tag:String):UniqueId {

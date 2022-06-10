@@ -10,7 +10,7 @@ class Form extends ImmutableComponent {
   @prop final children:Array<HtmlChild>;
 
   public function render(context:Context):Component {
-    return Html.form({
+    return new Html<'form'>({
       onsubmit: e -> {
         e.preventDefault();
         onSubmit();
@@ -20,7 +20,8 @@ class Form extends ImmutableComponent {
         if (ev.key == 'Enter') {
           onSubmit();
         }
-      }
-    }, ...children);
+      },
+      children: children
+    });
   }
 }

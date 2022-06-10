@@ -14,7 +14,7 @@ class Input extends ImmutableComponent {
   public function render(context:Context):Component {
     var value = '';
 
-    return Html.input({
+    return new Html<'input'>({
       autofocus: true,
       value: initialValue,
       name: 'input_' + new UniqueId(),

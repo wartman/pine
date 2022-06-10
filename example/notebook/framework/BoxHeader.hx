@@ -9,12 +9,13 @@ class BoxHeader extends ImmutableComponent {
   @prop final children:Array<HtmlChild>;
   
   public function render(context:Context) {
-    return Html.header({
+    return new Html<'header'>({
       className: Css.atoms({
         width: 100.pct(),
         alignItems: 'center'
       }).with(Styles.gapBottom)
-        .with(Styles.flex)
-    }, ...children);
+        .with(Styles.flex),
+      children: children
+    });
   }
 }

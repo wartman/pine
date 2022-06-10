@@ -20,9 +20,6 @@ class TestKeySorting implements TestCase {
       ],
       key: 'fragment'
     }));
-    root.onRenderComplete.addListener(_ -> {
-      // hm
-      done();
-    });
+    root.afterBuild.enqueue(done);
   }
 }

@@ -19,25 +19,17 @@ class Scope extends ProxyComponent {
     this.doDispose = props.dispose;
   }
 
+  override function init(context:InitContext) {
+    if (doDispose != null) {
+      Cleanup.on(context).add(() -> doDispose(context));
+    }
+  }
+
   public function getComponentType():UniqueId {
     return type;
   }
 
   public function render(context:Context):Component {
     return doRender(context);
-  }
-
-  override function createElement():Element {
-    return new ScopeElement(this);
-  }
-}
-
-class ScopeElement extends ProxyElement {
-  override function dispose() {
-    var scope:Scope = cast component;
-    if (scope.doDispose != null) {
-      scope.doDispose(this);
-    }
-    super.dispose();
   }
 }

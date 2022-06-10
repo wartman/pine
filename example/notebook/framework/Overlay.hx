@@ -10,7 +10,7 @@ class Overlay extends ImmutableComponent {
   @prop final child:HtmlChild;
 
   public function render(context:Context):Component {
-    return Html.div({
+    return new Html<'div'>({
       onclick: _ -> onClick(),
       className: Css.atoms({
         backgroundColor: rgba(0, 0, 0, 0.9),
@@ -21,7 +21,8 @@ class Overlay extends ImmutableComponent {
         left: 0,
         alignItems: 'center',
         justifyContent: 'center'
-      }).with(Styles.flex)
-    }, child);
+      }).with(Styles.flex),
+      children: [child]
+    });
   }
 }

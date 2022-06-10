@@ -124,8 +124,8 @@ abstract class Element
     disposables.push(disposable);
   }
 
-  public final inline function getComponent():Null<Component> {
-    return component;
+  public final inline function getComponent<T:Component>():Null<T> {
+    return cast component;
   }
 
   public function isHydrating():Bool {

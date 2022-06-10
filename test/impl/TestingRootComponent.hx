@@ -32,7 +32,7 @@ class TestingRootComponent extends RootComponent {
 }
 
 class TestingRootElement extends ObjectRootElement {
-  var queue:Null<Array<() -> Void>> = null;
+  public final afterBuild:Queue = new Queue();
 
   public function setChild(component:ObjectComponent, ?next:() -> Void) {
     var prev:TestingRootComponent = cast this.component;
@@ -43,8 +43,7 @@ class TestingRootElement extends ObjectRootElement {
     });
 
     if (next != null) {
-      if (queue == null) queue = [];
-      queue.push(next);
+      afterBuild.enqueue(next);
     }
 
     invalidate();
@@ -52,10 +51,7 @@ class TestingRootElement extends ObjectRootElement {
 
   override function performBuild(previousComponent:Null<Component>) {
     super.performBuild(previousComponent);
-    if (queue != null) {
-      for (fx in queue) fx();
-      queue = null;
-    }
+    afterBuild.dequeue();
   }
 
   public function toString() {
