@@ -49,6 +49,10 @@ class FragmentElement extends Element {
   var children:Array<Element> = [];
   var marker:Null<Dynamic>;
 
+  public function new(fragment:Fragment) {
+    super(fragment);
+  }
+
   override function getObject():Dynamic {
     Debug.alwaysAssert(root != null);
 

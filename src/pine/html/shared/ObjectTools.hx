@@ -3,9 +3,6 @@ package pine.html.shared;
 import haxe.DynamicAccess;
 
 // @todo: Make this work with null safety.
-//        Frankly it should be fine right now -- I think the compiler just isn't
-//        catching the null checks that are being done already. Or I'm missing
-//        something.
 @:nullSafety(Off)
 class ObjectTools {
   static final EMPTY = {};

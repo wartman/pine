@@ -7,7 +7,11 @@ class ObserverElement extends ProxyElement {
   var observerComponent(get, never):ObserverComponent;
 
   inline function get_observerComponent():ObserverComponent {
-    return cast component;
+    return getComponent();
+  }
+
+  public function new(component:ObserverComponent) {
+    super(component);
   }
 
   override function performHydrate(cursor:HydrationCursor) {

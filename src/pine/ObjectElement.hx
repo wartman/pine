@@ -5,7 +5,11 @@ abstract class ObjectElement extends Element {
   var objectComponent(get, never):ObjectComponent;
 
   inline function get_objectComponent():ObjectComponent {
-    return cast component;
+    return getComponent();
+  }
+
+  public function new(component:ObjectComponent) {
+    super(component);
   }
 
   override function getObject():Dynamic {

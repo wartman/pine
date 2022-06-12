@@ -64,21 +64,18 @@ typedef HtmlTags = {
     var dl:GlobalAttr;
     var dt:GlobalAttr;
     var dd:GlobalAttr;
-    var details:#if haxe4 DetailsAttr #else GlobalAttr #end;
+    var details:DetailsAttr;
     var summary:GlobalAttr;
     var figure:GlobalAttr;
     var figcaption:GlobalAttr;
   }
   var opaque:{
-    var textarea:TextAreaAttr; // right?
+    var textarea:TextAreaAttr;
     var script:ScriptAttr;
     var style:StyleAttr;
   }
   var void:{
-    // var area:GlobalAttr; //a bit hard to make type safe
-    // var base:GlobalAttr; //not needed, I hope
     var br:GlobalAttr;
-    // var col:GlobalAttr; //is more of an HTML4 thing
     var embed:EmbedAttr;
     var hr:GlobalAttr;
     var img:ImageAttr;
