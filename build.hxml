@@ -14,17 +14,17 @@
 
 --each
 
-# -main todo.Todo
+-main todo.Todo
 
-# -js dist/assets/app.js
-
-# --next
-
--main notebook.Notebook
-
--js dist/note/app.js
+-js dist/assets/app.js
 
 --next
+
+# -main notebook.Notebook
+
+# -js dist/note/app.js
+
+# --next
 
 -main Run
 -js dist/test/index.js

@@ -62,7 +62,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
 
     var attrs = switch tag.kind {
       case TagNormal:
-        var attrs = macro:$props & pine.html.HtmlEvents & { ?children:Array<pine.html.HtmlChild>, ?key:pine.Key};
+        var attrs = macro:$props & pine.html.HtmlEvents & { ?children:pine.html.HtmlChildren, ?key:pine.Key};
         builder.add(macro class {
           public function new(props:$attrs) {
             var children = props.children == null ? [] : props.children;

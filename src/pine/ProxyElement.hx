@@ -2,9 +2,9 @@ package pine;
 
 class ProxyElement extends Element {
   var child:Null<Element> = null;
-  var proxy(get, never):ProxyComponent;
+  var proxyComponent(get, never):ProxyComponent;
 
-  inline function get_proxy():ProxyComponent {
+  inline function get_proxyComponent():ProxyComponent {
     return getComponent();
   }
 
@@ -13,16 +13,16 @@ class ProxyElement extends Element {
   }
 
   function render() {
-    return proxy.render(this);
+    return proxyComponent.render(this);
   }
 
   function performHydrate(cursor:HydrationCursor) {
-    proxy.init(this);
+    proxyComponent.init(this);
     child = hydrateElementForComponent(cursor, render(), slot);
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    if (previousComponent == null) proxy.init(this);
+    if (previousComponent == null) proxyComponent.init(this);
     child = updateChild(child, render(), slot);
   }
 

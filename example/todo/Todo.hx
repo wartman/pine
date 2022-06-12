@@ -141,7 +141,7 @@ class TodoApp extends ImmutableComponent {
               })
             ]
           })
-        ] 
+        ]
       })
     });
   }
@@ -161,12 +161,10 @@ class TodoFooter extends ObserverComponent {
       children: [
         new Html<'span'>({
           className: 'todo-count',
-          children: [
-            new Html<'strong'>({ children: [ switch todosLeft {
-              case 1: '${todosLeft} item left';
-              default: '${todosLeft} items left';
-            } ] })
-          ]
+          children: new Html<'strong'>({ children: switch todosLeft {
+            case 1: '${todosLeft} item left';
+            default: '${todosLeft} items left';
+          } })
         }),
         new Html<'ul'>({
           className: 'filters',
@@ -180,7 +178,7 @@ class TodoFooter extends ObserverComponent {
           className: 'clear-completed',
           style: if (todosCompleted == 0) 'visibility: hidden' else null,
           onclick: _ -> store.removeCompletedTodos(),
-          children: [ 'Clear completed (${todosCompleted})' ]
+          children: 'Clear completed (${todosCompleted})'
         })
       ]
     });
@@ -197,7 +195,7 @@ class TodoFooter extends ObserverComponent {
         new Html<'a'>({
           href: url,
           className: if (visibility == actualVisibility) 'selected' else null,
-          children: [ (visibility:String) ]
+          children: (visibility:String)
         })
       ]
     });
