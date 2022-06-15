@@ -8,7 +8,7 @@ abstract class RootComponent extends ObjectComponent {
     child = props.child;
   }
 
-  function createObject(_:Root) {
+  override function createObject(_:Root) {
     return getRootObject();
   }
 

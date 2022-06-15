@@ -4,16 +4,22 @@ abstract class RootElement extends ObjectElement implements Root {
   var child:Null<Element> = null;
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
-  public var rootComponent(get, never):RootComponent;
+  final applicators:ObjectApplicatorCollection;
 
+  public var rootComponent(get, never):RootComponent;
   inline function get_rootComponent():RootComponent {
     return cast component;
   }
 
-  public function new(rootComponent:RootComponent) {
+  public function new(rootComponent:RootComponent, applicators) {
     super(rootComponent);
+    this.applicators = applicators;
     parent = null; // @todo: We should allow Roots to have parents?
     root = this;
+  }
+
+  public function getApplicator<T:ObjectComponent>(component:T):ObjectApplicator<T> {
+    return applicators.getForComponent(component);
   }
 
   override function getRoot():Root {

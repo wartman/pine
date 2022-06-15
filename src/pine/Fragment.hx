@@ -48,6 +48,8 @@ class FragmentSlot extends Slot {
 class FragmentElement extends Element {
   var children:Array<Element> = [];
   var marker:Null<Dynamic>;
+  var fragment(get, never):Fragment;
+  function get_fragment():Fragment return getComponent();
 
   public function new(fragment:Fragment) {
     super(fragment);
@@ -63,7 +65,7 @@ class FragmentElement extends Element {
     if (child == null) {
       if (marker == null) {
         marker = root.createPlaceholderObject(component);
-        root.insertObject(marker, slot, findAncestorObject);
+        root.getDefaultApplicator().insert(marker, slot, findAncestorObject);
       }
       return marker;
     }
@@ -88,7 +90,7 @@ class FragmentElement extends Element {
   }
 
   function initializeChildren() {
-    var components = (cast component : Fragment).getChildren();
+    var components = fragment.getChildren();
     var previous:Null<Element> = slot != null ? slot.previous : null;
     var children:Array<Element> = [];
 
@@ -104,13 +106,13 @@ class FragmentElement extends Element {
   function performHydrate(cursor:HydrationCursor) {
     Debug.alwaysAssert(root != null);
 
-    var components = (cast component : Fragment).getChildren();
+    var components = fragment.getChildren();
     var previous:Null<Element> = slot != null ? slot.previous : null;
     var children:Array<Element> = [];
 
     if (components.length == 0) {
       marker = root.createPlaceholderObject(component);
-      root.insertObject(marker, slot, findAncestorObject);
+      root.getDefaultApplicator().insert(marker, slot, findAncestorObject);
       cursor.move(marker);
       cursor.next();
       return;
@@ -128,12 +130,12 @@ class FragmentElement extends Element {
   function rebuildChildren() {
     Debug.alwaysAssert(root != null);
 
-    var components = (cast component : Fragment).getChildren();
+    var components = fragment.getChildren();
     children = diffChildren(children, components);
 
     // @todo: Test to make sure this is a good idea.
     if (children.length > 0 && marker != null) {
-      root.removeObject(marker, slot);
+      root.getDefaultApplicator().remove(marker, slot);
       marker = null;
     }
   }
@@ -144,7 +146,7 @@ class FragmentElement extends Element {
     var previousSlot = this.slot;
     this.slot = slot;
     if (marker != null)
-      root.moveObject(marker, previousSlot, slot, findAncestorObject);
+      root.getDefaultApplicator().move(marker, previousSlot, slot, findAncestorObject);
     for (i in 0...children.length) {
       var previous = i == 0 ? slot.previous : children[i - 1];
       children[i].updateSlot(createSlotForChild(i, previous));
@@ -158,7 +160,7 @@ class FragmentElement extends Element {
 
   override function dispose() {
     if (marker != null && root != null)
-      root.removeObject(marker, slot);
+      root.getDefaultApplicator().remove(marker, slot);
     super.dispose();
   }
 }

@@ -1,7 +1,13 @@
 package pine.render;
 
-abstract class ObjectRootElement extends RootElement {
-  public function insertObject(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
+abstract class BaseObjectApplicator<T:ObjectComponent> implements ObjectApplicator<T> {
+  public function new() {}
+
+	abstract public function create(component:T):Dynamic;
+
+	abstract public function update(object:Dynamic, component:T, ?previousComponent:T):Void;
+
+  public function insert(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
     var obj:Object = object;
     if (slot != null && slot.previous != null) {
       var relative:Object = slot.previous.getObject();
@@ -21,7 +27,7 @@ abstract class ObjectRootElement extends RootElement {
     }
   }
 
-  public function moveObject(object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
+  public function move(object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
     var obj:Object = object;
 
     Debug.alwaysAssert(to != null);
@@ -47,7 +53,7 @@ abstract class ObjectRootElement extends RootElement {
     parent.insert(index + 1, obj);
   }
 
-  public function removeObject(object:Dynamic, slot:Null<Slot>) {
+  public function remove(object:Dynamic, slot:Null<Slot>) {
     var obj:Object = object;
     obj.remove();
   }

@@ -1,10 +1,12 @@
 package pine.html;
 
 abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
-  final tag:String;
-  final attrs:Attrs;
-  final isSvg:Bool;
-  final children:Null<Array<Component>>;
+  static public final applicatorType = new UniqueId();
+
+  public final tag:String;
+  public final attrs:Attrs;
+  public final isSvg:Bool;
+  public final children:Null<Array<Component>>;
 
   public function new(props:{
     tag:String,
@@ -20,23 +22,12 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     children = props.children;
   }
 
+  public function getApplicatorType():UniqueId {
+    return applicatorType;
+  }
+
   public function getChildren() {
     return children == null ? [] : children;
-  }
-
-  public function createObject(root:Root):Dynamic {
-    Debug.assert(root is HtmlRoot, 'HtmlElementComponent can only be used with a pine.Root that implements pine.html.HtmlRoot.');
-    var html:HtmlRoot = cast root;
-    var object = html.createHtmlElement(tag, attrs, isSvg);
-    return object;
-  }
-
-  public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
-    Debug.assert(root is HtmlRoot, 'HtmlElementComponent can only be used with a pine.Root that implements pine.html.HtmlRoot.');
-    var html:HtmlRoot = cast root;
-    var prev:Null<HtmlElementComponent<Attrs>> = cast previousComponent;
-    html.updateHtmlElement(object, attrs, prev != null ? prev.attrs : null);
-    return object;
   }
 
   public function createElement():Element {

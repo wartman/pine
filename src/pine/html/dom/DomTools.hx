@@ -11,7 +11,7 @@ class DomTools {
     var isSvg = el.namespaceURI == svgNamespace;
     switch name {
       case 'ref' | 'key':
-        // noop
+      // noop
       case 'className':
         updateNodeAttribute(el, 'class', oldValue, newValue);
       case 'xmlns' if (isSvg): // skip

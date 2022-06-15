@@ -257,7 +257,11 @@ class TodoItem extends ObserverComponent {
               onclick: _ -> todo.isCompleted = !todo.isCompleted
             }), 
             new Html<'label'>({
-              ondblclick: _ -> todo.isEditing = true,
+              ondblclick: e -> todo.isEditing = true,
+              onclick: e -> {
+                e.preventDefault();
+                e.stopPropagation();
+              },
               children: [
                 todo.description,
                 new Html<'button'>({
