@@ -7,6 +7,8 @@ abstract class BaseDomApplicator<T:ObjectComponent> implements ObjectApplicator<
 
   abstract public function update(object:Dynamic, component:T, ?previousComponent:T):Void;
 
+  public function new() {}
+
   public function insert(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
     var el:js.html.Element = object;
     if (slot != null && slot.previous != null) {

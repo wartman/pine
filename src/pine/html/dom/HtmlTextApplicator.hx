@@ -1,8 +1,6 @@
 package pine.html.dom;
 
 class HtmlTextApplicator extends BaseDomApplicator<HtmlTextComponent> {
-  public function new() {}
-
   public function create(component:HtmlTextComponent):Dynamic {
     return new js.html.Text(component.content);
   }

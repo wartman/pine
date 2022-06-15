@@ -47,7 +47,7 @@ class FragmentSlot extends Slot {
 
 class FragmentElement extends Element {
   var children:Array<Element> = [];
-  var marker:Null<Dynamic>;
+  var marker:Null<Element>;
   var fragment(get, never):Fragment;
   function get_fragment():Fragment return getComponent();
 
@@ -64,10 +64,9 @@ class FragmentElement extends Element {
 
     if (child == null) {
       if (marker == null) {
-        marker = root.createPlaceholderObject(component);
-        root.getDefaultApplicator().insert(marker, slot, findAncestorObject);
+        marker = createElementForComponent(root.createPlaceholder(), slot);
       }
-      return marker;
+      return marker.getObject();
     }
 
     return child.getObject();
@@ -111,10 +110,7 @@ class FragmentElement extends Element {
     var children:Array<Element> = [];
 
     if (components.length == 0) {
-      marker = root.createPlaceholderObject(component);
-      root.getDefaultApplicator().insert(marker, slot, findAncestorObject);
-      cursor.move(marker);
-      cursor.next();
+      marker = createElementForComponent(root.createPlaceholder(), slot);
       return;
     }
 
@@ -135,7 +131,7 @@ class FragmentElement extends Element {
 
     // @todo: Test to make sure this is a good idea.
     if (children.length > 0 && marker != null) {
-      root.getDefaultApplicator().remove(marker, slot);
+      marker.dispose();
       marker = null;
     }
   }
@@ -143,10 +139,9 @@ class FragmentElement extends Element {
   override function updateSlot(slot:Slot) {
     Debug.alwaysAssert(root != null);
 
-    var previousSlot = this.slot;
     this.slot = slot;
     if (marker != null)
-      root.getDefaultApplicator().move(marker, previousSlot, slot, findAncestorObject);
+      marker.updateSlot(slot);
     for (i in 0...children.length) {
       var previous = i == 0 ? slot.previous : children[i - 1];
       children[i].updateSlot(createSlotForChild(i, previous));
@@ -159,8 +154,10 @@ class FragmentElement extends Element {
   }
 
   override function dispose() {
-    if (marker != null && root != null)
-      root.getDefaultApplicator().remove(marker, slot);
+    if (marker != null) {
+      marker.dispose();
+      marker = null;
+    }
     super.dispose();
   }
 }

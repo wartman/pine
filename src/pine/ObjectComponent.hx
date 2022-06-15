@@ -9,6 +9,8 @@ abstract class ObjectComponent extends Component {
     return root.getApplicator(this).create(this);
   }
 
+  // @todo: We might be able to move all this Applicator business into the
+  // ObjectElement.
   public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
     root.getApplicator(this).update(object, this, cast previousComponent);
     return object;

@@ -24,9 +24,9 @@
 
 # -js dist/note/app.js
 
-# --next
+--next
 
-# -main Run
-# -js dist/test/index.js
+-main Run
+-js dist/test/index.js
 
-# -cmd node dist/test
+-cmd node dist/test

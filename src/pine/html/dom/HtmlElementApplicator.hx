@@ -5,10 +5,10 @@ import js.Browser;
 using pine.html.shared.ObjectTools;
 
 class HtmlElementApplicator extends BaseDomApplicator<HtmlElementComponent<{}>> {
-  public function new() {}
-
   public function create(component:HtmlElementComponent<{}>):Dynamic {
-    var el = component.isSvg ? Browser.document.createElementNS(DomTools.svgNamespace, component.tag) : Browser.document.createElement(component.tag);
+    var el = component.isSvg 
+      ? Browser.document.createElementNS(DomTools.svgNamespace, component.tag) 
+      : Browser.document.createElement(component.tag);
     update(el, component);
     return el;
   }

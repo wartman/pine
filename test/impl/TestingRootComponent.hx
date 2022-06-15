@@ -22,17 +22,25 @@ class TestingRootComponent extends RootComponent {
     return new TestingRootElement(this);
   }
 
-  public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component) {
+  override function updateObject(root:Root, object:Dynamic, ?previousComponent:Component) {
     return object;
   }
 
   public function getRootObject():Dynamic {
     return object;
   }
+
+  public function getApplicatorType():UniqueId {
+    return TextComponent.type;
+  }
 }
 
-class TestingRootElement extends ObjectRootElement {
+class TestingRootElement extends RootElement {
   public final afterBuild:Queue = new Queue();
+
+  public function new(root) {
+    super(root, new ObjectApplicatorCollection([TextComponent.type => new TestingApplicator()]));
+  }
 
   public function setChild(component:ObjectComponent, ?next:() -> Void) {
     var prev:TestingRootComponent = cast this.component;
@@ -58,7 +66,7 @@ class TestingRootElement extends ObjectRootElement {
     return (getObject() : TestingObject).toString();
   }
 
-  public function createPlaceholderObject(component:Component):Dynamic {
-    return new TestingObject('<marker>');
+  public function createPlaceholder() {
+    return new TextComponent({ content: '<marker>' });
   }
 }

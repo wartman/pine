@@ -26,15 +26,7 @@ class TextComponent extends ObjectComponent {
     return new ObjectWithoutChildrenElement(this);
   }
 
-  public function createObject(root:Root):Dynamic {
-    var obj = new TestingObject(content);
-    if (ref != null)
-      ref(obj);
-    return obj;
-  }
-
-  public function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
-    (object : TestingObject).content = content;
-    return object;
-  }
+	public function getApplicatorType():UniqueId {
+    return type;
+	}
 }
