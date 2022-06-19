@@ -19,7 +19,7 @@ private typedef TagInfo = {
   name:String,
   kind:TagKind,
   type:Type,
-  element:Type
+  element:ComplexType
 }
 
 @:persistent private final taginfos:Map<String, Array<TagInfo>> = [];
@@ -62,7 +62,10 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
 
     var attrs = switch tag.kind {
       case TagNormal:
-        var attrs = macro:$props & pine.html.HtmlEvents & { ?children:pine.html.HtmlChildren, ?key:pine.Key};
+        var attrs = macro:$props & pine.html.HtmlEvents & {
+          ?children:pine.html.HtmlChildren, 
+          ?key:pine.Key
+        };
         builder.add(macro class {
           public function new(props:$attrs) {
             var children = props.children == null ? [] : props.children;
@@ -82,7 +85,9 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
         });
         attrs;
       default:
-        var attrs = macro:$props & pine.html.HtmlEvents & { ?key:pine.Key};
+        var attrs = macro:$props & pine.html.HtmlEvents & {
+          ?key:pine.Key
+        };
         builder.add(macro class {
           public function new(props:$attrs) {
             super({
@@ -133,23 +138,27 @@ private function getTags(typeName:String):Array<TagInfo> {
       default: throw 'assert';
     }
     for (f in fields) {
-      var element = switch f.meta.extract(':element') {
-        case []: 
-          switch f.type {
-            case TType(_.get() => {module: 'pine.html.HtmlAttributes', name: name}, params):
-              var prefix = switch name.split('Attr') {
-                case ['Global', '']: '';
-                case [name, '']: name;
-                default: throw 'assert';
-              }
-              Context.getType('js.html.${prefix}Element');
-            default: throw 'assert';
-          }
-        case [{params: [path]}]:
-          Context.getType(path.toString());
-        default:
-          Context.error('Invalid @:element', f.pos);
-          throw 'assert';
+      var element = if (Context.defined('js') && !Context.defined('nodejs')) 
+        switch f.meta.extract(':element') {
+          case []: 
+            switch f.type {
+              case TType(_.get() => {module: 'pine.html.HtmlAttributes', name: name}, params):
+                var prefix = switch name.split('Attr') {
+                  case ['Global', '']: '';
+                  case [name, '']: name;
+                  default: throw 'assert';
+                }
+                Context.getType('js.html.${prefix}Element').toComplexType();
+              default: throw 'assert';
+            }
+          case [{params: [path]}]:
+            Context.getType(path.toString()).toComplexType();
+          default:
+            Context.error('Invalid @:element', f.pos);
+            throw 'assert';
+        }
+      else {
+        macro:Dynamic;
       }
       tags.push({
         name: f.name,
