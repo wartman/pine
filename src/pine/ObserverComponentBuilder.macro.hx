@@ -33,7 +33,7 @@ class ObserverComponentBuilder {
     var trackedType = trackedBuilder.getTrackedObjectType();
 
     builder.add(macro class {
-      static final type = new pine.UniqueId();
+      public static final type = new pine.UniqueId();
 
       var trackedObject:Null<$trackedType> = null;
       final trackedObjectProps:$trackedObjectProps;

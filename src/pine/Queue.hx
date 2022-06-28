@@ -1,5 +1,7 @@
 package pine;
 
+// @todo: I'm unsure if this module is actually useful.
+
 typedef QueueLink = {
   public function cancel():Void;
 }

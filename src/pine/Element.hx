@@ -161,10 +161,34 @@ abstract class Element
     }
   }
 
+  // @todo: This is a potentially costly method. Is there a way we can make it
+  // work better? Or should we simply discourage it?
   public function queryChildren(query:(child:Element) -> Bool):Option<Array<Element>> {
     var found:Array<Element> = [];
-    visitChildren(child -> if (query(child)) found.push(child));
+    visitChildren(child -> {
+      if (query(child)) found.push(child);
+      switch child.queryChildren(query) {
+        case Some(children): for (c in children) found.push(c);
+        case None:
+      }
+    });
     return if (found.length == 0) None else Some(found);
+  }
+
+  public function queryFirstChild(query:(child:Element) -> Bool):Option<Element> {
+    var found:Null<Element> = null;
+    visitChildren(child -> {
+      if (found != null) return;
+      if (query(child))
+        found = child;
+      else 
+        switch child.queryFirstChild(query) {
+          case Some(child) if (found == null):
+            found = child;
+          default:
+        }
+    });
+    return if (found == null) None else Some(found);
   }
 
   public function findChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>> {
