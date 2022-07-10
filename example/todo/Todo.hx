@@ -62,8 +62,8 @@ class TodoStore implements Record {
         fromJson(Json.parse(data));
       }
 
-      TrackingTools.track(() -> {
-        js.Browser.window.localStorage.setItem(BLOK_TODO_STORE, Json.stringify(store.toJson()));
+      new Observer(() -> {
+        js.Browser.window.localStorage.setItem(TodoStore.BLOK_TODO_STORE, Json.stringify(store.toJson()));
       });
 
       return store;

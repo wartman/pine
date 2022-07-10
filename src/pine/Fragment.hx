@@ -3,7 +3,7 @@ package pine;
 class Fragment extends Component {
   static final type = new UniqueId();
 
-  final children:Array<Component>;
+  final children:Array<Null<Component>>;
 
   public function new(props:{
     children:Array<Component>,
@@ -13,8 +13,8 @@ class Fragment extends Component {
     children = props.children;
   }
 
-  public inline function getChildren() {
-    return children;
+  public inline function getChildren():Array<Component> {
+    return cast children.filter(c -> c != null);
   }
 
   public function getComponentType():UniqueId {
@@ -82,9 +82,9 @@ class FragmentElement extends Element {
 
   public function visitChildren(visitor:ElementVisitor) {
     if (children != null) {
-      for (child in children)
-        if (child != null)
-          visitor.visit(child);
+      for (child in children) {
+        if (child != null) visitor.visit(child);
+      }
     }
   }
 

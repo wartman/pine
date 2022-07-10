@@ -3,9 +3,9 @@ package pine.render;
 abstract class BaseObjectApplicator<T:ObjectComponent> implements ObjectApplicator<T> {
   public function new() {}
 
-	abstract public function create(component:T):Dynamic;
+  abstract public function create(component:T):Dynamic;
 
-	abstract public function update(object:Dynamic, component:T, ?previousComponent:T):Void;
+  abstract public function update(object:Dynamic, component:T, ?previousComponent:T):Void;
 
   public function insert(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
     var obj:Object = object;
