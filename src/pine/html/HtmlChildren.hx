@@ -1,5 +1,6 @@
 package pine.html;
 
+@:forward(iterator)
 abstract HtmlChildren(Array<HtmlChild>) from Array<HtmlChild> to Array<HtmlChild> {
   @:from
   public inline static function ofComponent(child:Component):HtmlChildren {
