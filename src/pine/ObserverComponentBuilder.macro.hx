@@ -11,60 +11,58 @@ using Lambda;
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
 
-class ObserverComponentBuilder {
-  public static function build() {
-    var fields = MacroTools.getBuildFieldsSafe();
-    var builder = new ClassBuilder(fields);
-    var trackedBuilder = new TrackedPropertyBuilder(fields, { trackedName: 'trackedObject', trackerIsNullable: true });
-    var immutableBuilder = new ImmutablePropertyBuilder(fields);
+function build() {
+  var fields = MacroTools.getBuildFieldsSafe();
+  var builder = new ClassBuilder(fields);
+  var trackedBuilder = new TrackedPropertyBuilder(fields, { trackedName: 'trackedObject', trackerIsNullable: true });
+  var immutableBuilder = new ImmutablePropertyBuilder(fields);
 
-    immutableBuilder.addProp(MacroTools.makeField('key', macro:pine.Key, true));
+  immutableBuilder.addProp(MacroTools.makeField('key', macro:pine.Key, true));
 
-    if (Context.defined('debug')) {
-      var debugger = new ClassMetaDebugger(fields, ['prop', 'track'], [
-        ':prop' => 'Use `@prop` instead of `@:prop`.',
-        ':track' => 'Use `@track` instead of `@:track`.'
-      ]);
-      debugger.check();
+  if (Context.defined('debug')) {
+    var debugger = new ClassMetaDebugger(fields, ['prop', 'track'], [
+      ':prop' => 'Use `@prop` instead of `@:prop`.',
+      ':track' => 'Use `@track` instead of `@:track`.'
+    ]);
+    debugger.check();
+  }
+
+  var trackedObjectProps:ComplexType = trackedBuilder.getTrackedObjectPropsType();
+  var initProps:ComplexType = TAnonymous(trackedBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
+  var trackedType = trackedBuilder.getTrackedObjectType();
+
+  builder.add(macro class {
+    public static final type = new pine.UniqueId();
+
+    var trackedObject:Null<$trackedType> = null;
+    final trackedObjectProps:$trackedObjectProps;
+
+    public function getComponentType() {
+      return type;
     }
 
-    var trackedObjectProps:ComplexType = trackedBuilder.getTrackedObjectPropsType();
-    var initProps:ComplexType = TAnonymous(trackedBuilder.getInitializerProps().concat(immutableBuilder.getProps()));
-    var trackedType = trackedBuilder.getTrackedObjectType();
+    public function new(props:$initProps) {
+      super(props.key);
+      ${trackedBuilder.getInitializers()};
+      ${immutableBuilder.getInitializers()};
+      trackedObjectProps = ${trackedBuilder.getTrackedObjectConstructorArg()};
+    }
 
-    builder.add(macro class {
-      public static final type = new pine.UniqueId();
+    function getTrackedObject() {
+      return trackedObject;
+    }
 
-      var trackedObject:Null<$trackedType> = null;
-      final trackedObjectProps:$trackedObjectProps;
+    function createTrackedObject() {
+      trackedObject = ${trackedBuilder.instantiateTrackedObject('trackedObjectProps')};
+      return trackedObject;
+    }
 
-      public function getComponentType() {
-        return type;
-      }
+    function reuseTrackedObject(trackedObject:Dynamic) {
+      this.trackedObject = trackedObject;
+      this.trackedObject.replace(this.trackedObjectProps);
+      return this.trackedObject;
+    }
+  });
 
-      public function new(props:$initProps) {
-        super(props.key);
-        ${trackedBuilder.getInitializers()};
-        ${immutableBuilder.getInitializers()};
-        trackedObjectProps = ${trackedBuilder.getTrackedObjectConstructorArg()};
-      }
-
-      function getTrackedObject() {
-        return trackedObject;
-      }
-
-      function createTrackedObject() {
-        trackedObject = ${trackedBuilder.instantiateTrackedObject('trackedObjectProps')};
-        return trackedObject;
-      }
-
-      function reuseTrackedObject(trackedObject:Dynamic) {
-        this.trackedObject = trackedObject;
-        this.trackedObject.replace(this.trackedObjectProps);
-        return this.trackedObject;
-      }
-    });
-
-    return builder.merge(immutableBuilder).merge(trackedBuilder).export();
-  }
+  return builder.merge(immutableBuilder).merge(trackedBuilder).export();
 }

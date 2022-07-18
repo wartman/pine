@@ -2,8 +2,7 @@ package pine;
 
 class ObserverElement extends ProxyElement {
   var trackedObject:Null<Dynamic> = null;
-  var observer:Null<Observer> = null;
-  var result:Null<Component> = null;
+  var computedRender:Null<Computation<Component>> = null;
   var observerComponent(get, never):ObserverComponent;
 
   inline function get_observerComponent():ObserverComponent {
@@ -18,10 +17,11 @@ class ObserverElement extends ProxyElement {
     trackedObject = observerComponent.createTrackedObject();
     observerComponent.init(this);
 
-    setupObserver();
+    if (computedRender == null) {
+      computedRender = createRenderComputation();
+    }
 
-    Debug.alwaysAssert(result != null);
-    child = hydrateElementForComponent(cursor, result, slot);
+    child = hydrateElementForComponent(cursor, computedRender.get(), slot);
   }
 
   override function performBuild(previousComponent:Null<Component>) {
@@ -35,32 +35,29 @@ class ObserverElement extends ProxyElement {
       observerComponent.init(this);
     }
 
-    if (observer == null) {
-      setupObserver();
-    } else if (previousComponent != component) {
-      observer.trigger();
+    if (computedRender == null) {
+      computedRender = createRenderComputation();
     }
 
-    Debug.alwaysAssert(result != null);
-    child = updateChild(child, result, slot);
+    child = updateChild(child, computedRender.get(), slot);
   }
 
-  function setupObserver() {
-    Debug.assert(observer == null);
+  function createRenderComputation() {
+    Debug.assert(computedRender == null);
     Debug.assert(status == Building, '`setupObserver` should ONLY be called from `performHydrate` or `performBuild`');
     
-    observer = new Observer(() -> {
-      result = render();
+    return new Computation(() -> {
+      var result = render();
       if (status != Building) invalidate();
+      return result;
     });
   }
 
   override function dispose() {
     super.dispose();
-    result = null;
-    if (observer != null) {
-      observer.dispose();
-      observer = null;
+    if (computedRender != null) {
+      computedRender.dispose();
+      computedRender = null;
     }
   }
 }
