@@ -45,7 +45,7 @@ enum abstract TodoVisibility(String) from String to String {
 typedef TodoProvider = Provider<TodoStore>;
 
 class TodoStore implements Record {
-  static inline final BLOK_TODO_STORE = 'blok-todo-store';
+  static inline final storageId = 'blok-todo-store';
 
   public inline static function from(context:Context) {
     return TodoProvider.from(context);
@@ -55,7 +55,7 @@ class TodoStore implements Record {
     #if nodejs
       return new TodoStore({uid: 0, todos: [], visibility: All});
     #else
-      var data = js.Browser.window.localStorage.getItem(BLOK_TODO_STORE);
+      var data = js.Browser.window.localStorage.getItem(storageId);
       var store = if (data == null) {
         new TodoStore({uid: 0, todos: [], visibility: All});
       } else {
@@ -63,7 +63,7 @@ class TodoStore implements Record {
       }
 
       new Observer(() -> {
-        js.Browser.window.localStorage.setItem(TodoStore.BLOK_TODO_STORE, Json.stringify(store.toJson()));
+        js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(store.toJson()));
       });
 
       return store;

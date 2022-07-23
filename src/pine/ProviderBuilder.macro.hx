@@ -20,11 +20,6 @@ function buildGeneric() {
   }
 }
 
-function createProvider(value:Expr, child:Expr) {
-  var type = Context.typeof(value).toComplexType();
-  return macro new blok.provide.Provider<$type>($value, $child);
-}
-
 function resolveProvider(el:Expr, kind:Expr) {
   var type = kind.resolveComplexType().toType();
   var tp = switch buildProvider(type) {
