@@ -17,6 +17,12 @@ class State<T> implements Disposable {
     notify();
   }
 
+  public function peek():T {
+    Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
+
+    return value;
+  }
+
   public function get():T {
     if (isDisposed) {
       Debug.error('Cannot use a state that has already been disposed.');
