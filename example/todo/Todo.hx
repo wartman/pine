@@ -62,7 +62,7 @@ class TodoStore implements Record {
         fromJson(Json.parse(data));
       }
 
-      new Observer(() -> {
+      ObserverTools.track(() -> {
         js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(store.toJson()));
       });
 
@@ -296,15 +296,17 @@ class TodoInput extends ObserverComponent {
   @track var isEditing:Bool = false;
   @track var value:String;
 
-  override function init(context:InitContext) {
-    Effect.on(context).add(() -> {
-      if (isEditing) {
-        var el:js.html.InputElement = cast context.getObject();
-        el.focus();
-      }
-    });
-    Cleanup.on(context).add(() -> trace('removed'));
-  }
+  #if (js && !nodejs)
+    override function init(context:InitContext) {
+      Effect.on(context).track(() -> {
+        if (isEditing) {
+          var el:js.html.InputElement = cast context.getObject();
+          el.focus();
+        }
+      });
+      Cleanup.on(context).add(() -> trace('removed'));
+    }
+  #end
 
   function render(context:Context):Component {
     return new Html<'input'>({
