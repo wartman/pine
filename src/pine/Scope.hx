@@ -7,7 +7,7 @@ class Scope extends ProxyComponent {
   static final type = new UniqueId();
 
   final doRender:(context:Context) -> Component;
-  final doDispose:Null<(context:Context) -> Void>;
+  public final doDispose:Null<(context:Context) -> Void>;
 
   public function new(props:{
     render:(context:Context) -> Component,
@@ -19,17 +19,22 @@ class Scope extends ProxyComponent {
     this.doDispose = props.dispose;
   }
 
-  override function init(context:InitContext) {
-    if (doDispose != null) {
-      Cleanup.on(context).add(() -> doDispose(context));
-    }
-  }
-
   public function getComponentType():UniqueId {
     return type;
   }
 
   public function render(context:Context):Component {
     return doRender(context);
+  }
+}
+
+class ScopeElement extends ProxyElement {
+  override function dispose() {
+    Debug.assert(status != Disposed);
+
+    var scope:Scope = getComponent();
+    if (scope != null) scope.doDispose(this);
+    
+    super.dispose();
   }
 }
