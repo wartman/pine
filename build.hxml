@@ -9,7 +9,7 @@
 -D debug
 -D analyzer-optimize
 
-# --dce full
+--dce full
 --macro nullSafety("pine")
 
 --each
@@ -17,12 +17,6 @@
 -main todo.Todo
 
 -js dist/assets/app.js
-
-# --next
-
-# -main notebook.Notebook
-
-# -js dist/note/app.js
 
 --next
 

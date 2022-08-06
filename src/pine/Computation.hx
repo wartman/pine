@@ -7,7 +7,7 @@ class Computation<T> extends State<T>  {
     super(null);
     observer = new Observer(() -> {
       value = compute();
-      Process.defer(notify);
+      notify(); // I think this is ok? We may need to defer it though.
     }, untracked);
   }
 

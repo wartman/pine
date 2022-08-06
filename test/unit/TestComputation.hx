@@ -3,6 +3,7 @@ package unit;
 import pine.*;
 
 using Medic;
+using medic.PineAssert;
 
 class TestComputation implements TestCase {
   public function new() {}
@@ -17,17 +18,13 @@ class TestComputation implements TestCase {
     });
     var expected = 2;
 
-    new Observer(() -> {
+    (done -> {
       computation.get().equals(expected);
-      if (expected == 4) {
-        done();
-      } else {
-        expected = 4;
-        Process.defer(() -> {
-          foo.set(2);
-          bar.set(2);
-        });
-      }
-    });
+      if (expected == 4) done();
+    }).asTracked(done);
+
+    expected = 4;
+    foo.set(2);
+    bar.set(2);
   }
 }

@@ -19,14 +19,11 @@ class State<T> implements Disposable {
 
   public function peek():T {
     Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
-
     return value;
   }
 
   public function get():T {
-    if (isDisposed) {
-      Debug.error('Cannot use a state that has already been disposed.');
-    }
+    Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
 
     var observer = Observer.stack.last();
     if (observer != null) observer.track(this);
@@ -35,10 +32,7 @@ class State<T> implements Disposable {
   }
 
   public function set(newValue:T):T {
-    if (isDisposed) {
-      Debug.error('Cannot use a state that has already been disposed.');
-    }
-
+    Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
     Debug.assert(
       Observer.stack.length == 0, 
       'Updating a state while inside an Observer is not allowed.'

@@ -7,7 +7,7 @@ class Scope extends ProxyComponent {
   static final type = new UniqueId();
 
   final doRender:(context:Context) -> Component;
-  public final doDispose:Null<(context:Context) -> Void>;
+  final doDispose:Null<(context:Context) -> Void>;
 
   public function new(props:{
     render:(context:Context) -> Component,
@@ -26,9 +26,13 @@ class Scope extends ProxyComponent {
   public function render(context:Context):Component {
     return doRender(context);
   }
+
+  override function createElement():Element {
+    return new ScopeElement(this);
+  }
 }
 
-class ScopeElement extends ProxyElement {
+private class ScopeElement extends ProxyElement {
   override function dispose() {
     Debug.assert(status != Disposed);
 

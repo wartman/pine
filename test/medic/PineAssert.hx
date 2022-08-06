@@ -4,23 +4,30 @@ import haxe.PosInfos;
 import impl.*;
 import pine.*;
 
-class PineAssert {
-  public inline static function mount(component:Component, ?handler:(result:TestingObject) -> Void) {
-    var boot = new TestingBootstrap();
-    var root = boot.mount(component);
-    if (handler != null) handler(root.getObject());
-    return root;
-  }
+inline function mount(component:Component, ?handler:(result:TestingObject) -> Void) {
+  var boot = new TestingBootstrap();
+  var root = boot.mount(component);
+  if (handler != null) handler(root.getObject());
+  return root;
+}
 
-  public static function renders(widget:Component, expected:String, next:() -> Void, ?p:PosInfos) {
-    mount(widget, actual -> {
-      Assert.equals(actual.toString(), expected, p);
-      next();
-    });
-  }
+function renders(widget:Component, expected:String, next:() -> Void, ?p:PosInfos) {
+  mount(widget, actual -> {
+    Assert.equals(actual.toString(), expected, p);
+    next();
+  });
+}
 
-  public static function renderWithoutAssert(component:Component) {
-    var boot = new TestingBootstrap();
-    boot.mount(component);
-  }
+function renderWithoutAssert(component:Component) {
+  var boot = new TestingBootstrap();
+  boot.mount(component);
+}
+
+function asTracked(handler:(next:()->Void)->Void, next:()->Void) {
+  var deffered = () -> Process.defer(next);
+  return new Observer(() -> {
+    // Note: This ensures that we don't trigger the next test while still
+    // inside the current Observer.
+    handler(deffered);
+  });
 }

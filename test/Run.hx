@@ -17,9 +17,11 @@ function main() {
 
 function addUnitTests(tests:Runner) {
   tests.add(new TestFragment());
-
+  
   tests.add(new TestObserver());
   tests.add(new TestComputation());
+
+  tests.add(new TestTrackedObject());
 }
 
 function addIntegrationTests(tests:Runner) {

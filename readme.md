@@ -75,7 +75,7 @@ package example;
 import pine.*;
 import pine.html.*;
 
-class HelloWorld extends ImmutableComponent {
+class HelloWorld extends ObserverComponent {
   @prop final greeting:State<String>;
   @prop final location:State<String>;
 
@@ -95,7 +95,7 @@ package example;
 import pine.*;
 import pine.html.*;
 
-class HelloWorld extends ImmutableComponent {
+class HelloWorld extends ObserverComponent {
   @track var greeting:String;
   @track var location:String;
 
@@ -105,7 +105,7 @@ class HelloWorld extends ImmutableComponent {
         new Html<'button'>({
           onclick: _ -> {
             greeting = 'hey';
-            location = 'earth'
+            location = 'earth';
           },
           children: 'Make hey earth'
         }),
@@ -116,4 +116,8 @@ class HelloWorld extends ImmutableComponent {
 }
 ```
 
-Note that we don't have to use `set` and `get` with `@track` vars.
+Note that we don't have to use `set` and `get` with `@track` vars -- a macro will convert them into properties with getters and setters to handle that for you.
+
+In all of the above examples, simply changing a State (such as in the `onclick` handler in the `Html<'button'>`) is all you need to do to invalidate a component and cause it to re-render. No special syntax or `setState` needed -- you can just write code like you would if it wasn't reactive and Pine will track things for you.
+
+> Note: More documentation on the way.
