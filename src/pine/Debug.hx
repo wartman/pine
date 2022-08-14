@@ -17,7 +17,13 @@ class Debug {
   }
 
   static public macro function error(expr:haxe.macro.Expr.ExprOf<String>) {
-    return macro @:pos(expr.pos) throw new pine.PineException($expr);
+    var type = haxe.macro.Context.getLocalType();
+    var elementType = haxe.macro.Context.getType('pine.Element');
+    return if (haxe.macro.Context.unify(elementType, type)) {
+      macro @:pos(expr.pos) throw new pine.PineElementException(this, $expr);
+    } else {
+      macro @:pos(expr.pos) throw new pine.PineException($expr);
+    }
   }
 
   #if macro

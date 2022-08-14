@@ -41,7 +41,7 @@ abstract class Element
   public function mount(parent:Null<Element>, ?slot:Slot) {
     performSetup(parent, slot);
     status = Building;
-    performBuild(null);
+    performBuildWithDebugging(null);
     status = Valid;
   }
 
@@ -49,7 +49,7 @@ abstract class Element
     hydratingStatus = IsHydrating;
     performSetup(parent, slot);
     status = Building;
-    performHydrate(cursor);
+    performHydrateWithDebugging(cursor);
     status = Valid;
     hydratingStatus = NotHydrating;
   }
@@ -60,7 +60,7 @@ abstract class Element
     status = Building;
     var previousComponent = this.component;
     this.component = component;
-    performBuild(previousComponent);
+    performBuildWithDebugging(previousComponent);
     status = Valid;
   }
 
@@ -72,7 +72,7 @@ abstract class Element
     }
 
     status = Building;
-    performBuild(component);
+    performBuildWithDebugging(component);
     status = Valid;
   }
 
@@ -114,6 +114,32 @@ abstract class Element
     }
   }
 
+  inline function performBuildWithDebugging(previousComponent:Null<Component>) {
+    #if debug
+      try performBuild(previousComponent) catch (e:PineException) {
+        // @todo: Probably a better way to handle this.
+        throw e;
+      } catch (e) {
+        throw new PineElementException(this, e.message);
+      }
+    #else
+      performBuild(prepreviousComponent);
+    #end
+  }
+
+  inline function performHydrateWithDebugging(cursor:HydrationCursor) {
+    #if debug
+      try performHydrate(cursor) catch (e:PineException) {
+        // @todo: Probably a better way to handle this.
+        throw e;
+      } catch (e) {
+        throw new PineElementException(this, e.message);
+      }
+    #else
+      performHydrate(cursor);
+    #end
+  }
+
   abstract function performHydrate(cursor:HydrationCursor):Void;
 
   abstract function performBuild(previousComponent:Null<Component>):Void;
@@ -130,6 +156,10 @@ abstract class Element
 
   public function isHydrating():Bool {
     return hydratingStatus;
+  }
+
+  public function getParent():Null<Element> {
+    return parent;
   }
 
   public function queryAncestors(query:(parent:Element) -> Bool):Option<Element> {

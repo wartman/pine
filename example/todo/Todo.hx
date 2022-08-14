@@ -304,7 +304,6 @@ class TodoInput extends ObserverComponent {
           el.focus();
         }
       });
-      Cleanup.on(context).add(() -> trace('removed'));
     }
   #end
 
