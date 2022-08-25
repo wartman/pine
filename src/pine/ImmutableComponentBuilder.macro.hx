@@ -26,7 +26,7 @@ function build() {
   }
 
   builder.add(macro class {
-    public static final type = new pine.UniqueId();
+    public static final componentType = new pine.UniqueId();
 
     public function new(props:$propsType) {
       super(props.key);
@@ -34,7 +34,7 @@ function build() {
     }
 
     function getComponentType() {
-      return type;
+      return componentType;
     }
   });
 

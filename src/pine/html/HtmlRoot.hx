@@ -7,7 +7,7 @@ abstract class HtmlRoot<T> extends RootComponent {
 
   public function new(props:{
     el:T,
-    child:Component
+    child:Null<Component>
   }) {
     super(props);
     this.el = props.el;

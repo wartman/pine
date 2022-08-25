@@ -4,6 +4,7 @@ abstract class RootElement extends ObjectElement implements Root {
   var child:Null<Element> = null;
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
+  final portalContextFactory:PortalFactory;
   final applicators:ObjectApplicatorCollection;
 
   public var rootComponent(get, never):RootComponent;
@@ -11,9 +12,10 @@ abstract class RootElement extends ObjectElement implements Root {
     return cast component;
   }
 
-  public function new(rootComponent:RootComponent, applicators) {
+  public function new(rootComponent:RootComponent, applicators, portalContextFactory) {
     super(rootComponent);
     this.applicators = applicators;
+    this.portalContextFactory = portalContextFactory;
     parent = null; // @todo: We should allow Roots to have parents?
     root = this;
   }
@@ -87,7 +89,7 @@ abstract class RootElement extends ObjectElement implements Root {
       } else {
         if (previousComponent != component) rootComponent.updateObject(this, previousComponent);
       }
-      child = updateChild(child, (cast component : RootComponent).child, slot);
+      child = updateChild(child, rootComponent.child, createSlotForChild(0, null));
     });
   }
 
@@ -95,9 +97,9 @@ abstract class RootElement extends ObjectElement implements Root {
     Process.scope(() -> {
       object = cursor.current();
       var objects = cursor.currentChildren();
-      var comp = (cast component : RootComponent).child;
+      var comp = rootComponent.child;
       if (comp != null) {
-        child = hydrateElementForComponent(objects, comp, slot);
+        child = hydrateElementForComponent(objects, comp, createSlotForChild(0, null));
         cursor.next();
       }
       Debug.assert(objects.current() == null);
@@ -106,5 +108,9 @@ abstract class RootElement extends ObjectElement implements Root {
 
   function visitChildren(visitor:ElementVisitor) {
     if (child != null) visitor.visit(child);
+  }
+
+  public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {
+    return portalContextFactory(target, child);
   }
 }

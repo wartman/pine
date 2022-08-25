@@ -32,13 +32,13 @@ function build() {
   var trackedType = trackedBuilder.getTrackedObjectType();
 
   builder.add(macro class {
-    public static final type = new pine.UniqueId();
+    public static final componentType = new pine.UniqueId();
 
     var trackedObject:Null<$trackedType> = null;
     final trackedObjectProps:$trackedObjectProps;
 
     public function getComponentType() {
-      return type;
+      return componentType;
     }
 
     public function new(props:$initProps) {

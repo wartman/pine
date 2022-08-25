@@ -25,7 +25,7 @@ function build() {
     debugger.check();
 
     if (trackedBuilder.getTrackedObjectProps().length == 0) {
-      Context.warning('No observed properties were found while building this class. Consider using a plain class (perhaps using `@:structInit`) or an anonymous object instead of `pine.State`.',
+      Context.warning('No observed properties were found while building this class. Consider using a plain class (perhaps using `@:structInit`) or an anonymous object instead of `pine.Record`.',
         Context.getLocalClass().get().pos);
     }
   }

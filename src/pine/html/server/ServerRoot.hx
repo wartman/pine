@@ -8,6 +8,6 @@ class ServerRoot extends HtmlRoot<Object> {
     return new HtmlRootElement<Object>(this, new ObjectApplicatorCollection([
       HtmlElementComponent.applicatorType => new HtmlElementApplicator(),
       HtmlTextComponent.applicatorType => new HtmlTextApplicator()
-    ]));
+    ]), (target, ?child) -> new ServerRoot({ el: target, child: child }));
   }
 }

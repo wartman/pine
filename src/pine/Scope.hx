@@ -37,7 +37,7 @@ private class ScopeElement extends ProxyElement {
     Debug.assert(status != Disposed);
 
     var scope:Scope = getComponent();
-    if (scope != null) scope.doDispose(this);
+    if (scope != null && scope.doDispose != null) scope.doDispose(this);
     
     super.dispose();
   }

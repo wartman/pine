@@ -7,6 +7,6 @@ class DomRoot extends HtmlRoot<js.html.Element> {
     return new HtmlRootElement<js.html.Element>(this, new ObjectApplicatorCollection([
       HtmlElementComponent.applicatorType => new HtmlElementApplicator(),
       HtmlTextComponent.applicatorType => new HtmlTextApplicator()
-    ]));
+    ]), (target, ?child) -> new DomRoot({ el: target, child: child }));
   }
 }

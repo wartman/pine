@@ -116,6 +116,16 @@ class TodoApp extends ImmutableComponent {
       render: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
         children: [
+          new Portal({
+            target: js.Browser.document.head,
+            child: new Isolate({ 
+              wrap: _ -> {
+                var total = store.todos.length;
+                var todosLeft = total - store.todos.filter(todo -> todo.isCompleted).length;
+                return new Html<'title'>({ children: 'TodoMVC | Pine | ${todosLeft} / ${total}' });
+              }
+            })
+          }),
           new Html<'section'>({
             className: 'todoapp',
             children: [

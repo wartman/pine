@@ -9,9 +9,9 @@ class TestingRootComponent extends RootComponent {
 
   public final object:TestingObject;
 
-  public function new(props) {
-    object = props.object;
+  public function new(props:{ ?child:Component, object:TestingObject }) {
     super(props);
+    object = props.object;
   }
 
   public function getComponentType():UniqueId {
@@ -39,7 +39,11 @@ class TestingRootElement extends RootElement {
   public final afterBuild:Queue = new Queue();
 
   public function new(root) {
-    super(root, new ObjectApplicatorCollection([TextComponent.type => new TestingApplicator()]));
+    super(
+      root,
+      new ObjectApplicatorCollection([TextComponent.type => new TestingApplicator()]),
+      (target, ?child) -> new TestingRootComponent({ child: child, object: target })
+    );
   }
 
   public function setChild(component:ObjectComponent, ?next:() -> Void) {
