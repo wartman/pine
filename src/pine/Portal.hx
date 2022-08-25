@@ -66,10 +66,7 @@ class PortalElement extends Element {
     ) {
       portalRoot.dispose();
       portalRoot = getRoot().createPortalRoot(portal.target, portal.child).createElement();
-      return;
-    }
-
-    if (portalRoot != null) {
+    } else if (portalRoot != null) {
       portalRoot.update(getRoot().createPortalRoot(portal.target, portal.child));
     }
 
