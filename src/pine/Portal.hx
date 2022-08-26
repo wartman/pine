@@ -39,13 +39,6 @@ class PortalElement extends Element {
     super(component);
   }
 
-  override function performSetup(parent:Null<Element>, ?slot:Slot) {
-    super.performSetup(parent, slot);
-
-    portalRoot = getRoot().createPortalRoot(portal.target, null).createElement();
-    portalRoot.mount(null);
-  }
-
   override function dispose() {
     if (portalRoot != null) {
       portalRoot.dispose();
@@ -55,18 +48,29 @@ class PortalElement extends Element {
   }
 
   function performHydrate(cursor:HydrationCursor) {
-    // noop?
+    Debug.assert(portalRoot == null);
+
+    var portalCursor = cursor.clone();
+    portalCursor.move(portal.target);
+    
+    portalRoot = createRoot(portal.child);
+    portalRoot.hydrate(portalCursor, this);
+
+    child = updateChild(null, getRoot().createPlaceholder(), slot);
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    if (
+    if (portalRoot == null) {
+      portalRoot = createRoot(portal.child);
+      portalRoot.mount(this);
+    } else if (
       previousComponent != null 
-      && (cast previousComponent:Portal).target != portal.target 
-      && portalRoot != null
+      && (cast previousComponent:Portal).target != portal.target
     ) {
       portalRoot.dispose();
-      portalRoot = getRoot().createPortalRoot(portal.target, portal.child).createElement();
-    } else if (portalRoot != null) {
+      portalRoot = createRoot(portal.child);
+      portalRoot.mount(this);
+    } else {
       portalRoot.update(getRoot().createPortalRoot(portal.target, portal.child));
     }
 
@@ -75,5 +79,10 @@ class PortalElement extends Element {
 
   public function visitChildren(visitor:ElementVisitor) {
     if (child != null) visitor.visit(child);
+  }
+
+  function createRoot(child) {
+    var root = getRoot().createPortalRoot(portal.target, child).createElement();
+    return root;
   }
 }

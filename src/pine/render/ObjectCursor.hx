@@ -35,4 +35,8 @@ class ObjectCursor implements HydrationCursor {
   public function move(current:Dynamic) {
     object = current;
   }
+
+  public function clone() {
+    return new ObjectCursor(object);
+  }
 }

@@ -26,4 +26,8 @@ class DomHydrationCursor implements HydrationCursor {
   public function move(current:Dynamic) {
     node = current;
   }
+
+  public function clone():HydrationCursor {
+    return new DomHydrationCursor(node);
+  }
 }

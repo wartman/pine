@@ -32,12 +32,6 @@ abstract class RootElement extends ObjectElement implements Root {
     mount(null);
   }
 
-  override function performSetup(parent:Null<Element>, ?slot:Slot) {
-    Debug.assert(parent == null, 'Root elements should not have a parent');
-    this.slot = slot;
-    status = Valid;
-  }
-
   public function requestRebuild(child:Element) {
     if (child == this) {
       Debug.assert(status == Invalid);

@@ -119,7 +119,11 @@ class TodoApp extends ImmutableComponent {
           new Portal({
             target: js.Browser.document.head,
             child: new Isolate({ 
-              wrap: _ -> {
+              wrap: context -> {
+                // note: We could use `store` from the wrapping scope,
+                // but this shows that `context` is passed down even through
+                // portals.
+                var store = TodoStore.from(context);
                 var total = store.todos.length;
                 var todosLeft = total - store.todos.filter(todo -> todo.isCompleted).length;
                 return new Html<'title'>({ children: 'TodoMVC | Pine | ${todosLeft} / ${total}' });
