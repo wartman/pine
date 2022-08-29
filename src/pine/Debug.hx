@@ -1,8 +1,5 @@
 package pine;
 
-// @todo: Assertions should be able to take a Context and use it to figure out
-// where an error happened in the Component/Element tree. This is a longer
-// term thing, but we can start building in the infastructure. 
 class Debug {
   static public macro function assert(expr:haxe.macro.Expr.ExprOf<Bool>, ?message:haxe.macro.Expr.ExprOf<String>) {
     if (haxe.macro.Context.defined('debug')) {

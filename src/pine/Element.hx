@@ -15,6 +15,9 @@ enum abstract HydratingStatus(Bool) to Bool {
   var NotHydrating = false;
 }
 
+// @todo: Figure out how to wrap errors that occour during
+// rendering. This may work best with some sort of 
+// ErrorBoundary component.
 abstract class Element 
   implements Context 
   implements InitContext
@@ -41,7 +44,7 @@ abstract class Element
   public function mount(parent:Null<Element>, ?slot:Slot) {
     performSetup(parent, slot);
     status = Building;
-    performBuildWithDebugging(null);
+    performBuild(null);
     status = Valid;
   }
 
@@ -49,7 +52,7 @@ abstract class Element
     hydratingStatus = IsHydrating;
     performSetup(parent, slot);
     status = Building;
-    performHydrateWithDebugging(cursor);
+    performHydrate(cursor);
     status = Valid;
     hydratingStatus = NotHydrating;
   }
@@ -60,7 +63,7 @@ abstract class Element
     status = Building;
     var previousComponent = this.component;
     this.component = component;
-    performBuildWithDebugging(previousComponent);
+    performBuild(previousComponent);
     status = Valid;
   }
 
@@ -72,7 +75,7 @@ abstract class Element
     }
 
     status = Building;
-    performBuildWithDebugging(component);
+    performBuild(component);
     status = Valid;
   }
 
@@ -114,32 +117,6 @@ abstract class Element
     if (root != null) {
       root.requestRebuild(this);
     }
-  }
-
-  inline function performBuildWithDebugging(previousComponent:Null<Component>) {
-    #if debug
-      try performBuild(previousComponent) catch (e:PineException) {
-        // @todo: Probably a better way to handle this.
-        throw e;
-      } catch (e) {
-        throw new PineElementException(this, e.message);
-      }
-    #else
-      performBuild(prepreviousComponent);
-    #end
-  }
-
-  inline function performHydrateWithDebugging(cursor:HydrationCursor) {
-    #if debug
-      try performHydrate(cursor) catch (e:PineException) {
-        // @todo: Probably a better way to handle this.
-        throw e;
-      } catch (e) {
-        throw new PineElementException(this, e.message);
-      }
-    #else
-      performHydrate(cursor);
-    #end
   }
 
   abstract function performHydrate(cursor:HydrationCursor):Void;

@@ -6,7 +6,7 @@ using pine.debug.DebugTools;
 class PineElementException extends PineException {
   public final element:Element;
 
-  public function new(element:Element, message) {
+  public function new(element:Element, message, ?previous) {
     super([
       message,
       'In element tree:',

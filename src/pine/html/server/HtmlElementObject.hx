@@ -9,8 +9,8 @@ class HtmlElementObject extends Object {
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr',
   ];
 
-  final tag:String;
-  final attributes:{};
+  public final tag:String;
+  public final attributes:{};
 
   public function new(tag, attributes) {
     this.tag = tag;
