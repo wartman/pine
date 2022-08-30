@@ -98,7 +98,7 @@ abstract class Element
     this.parent = parent;
     this.slot = slot;
     
-    if (parent != null) this.root = parent.root;
+    if (parent != null) this.root = parent.getRoot();
 
     status = Valid;
   }

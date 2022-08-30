@@ -16,8 +16,6 @@ abstract class RootElement extends ObjectElement implements Root {
     super(rootComponent);
     this.applicators = applicators;
     this.portalContextFactory = portalContextFactory;
-    parent = null; // @todo: We should allow Roots to have parents?
-    root = this;
   }
 
   public function getApplicator<T:ObjectComponent>(component:T):ObjectApplicator<T> {
