@@ -19,7 +19,7 @@ class State<T> implements Disposable {
   public function get():T {
     if (isDisposed) return peek();
 
-    var observer = Engine.get().current;
+    var observer = StateEngine.get().current;
     if (observer != null) addObserver(observer);
     return value;
   }
@@ -56,7 +56,7 @@ class State<T> implements Disposable {
   function notify() {
     if (isDisposed) return;
     for (observer in observers) observer.invalidate();
-    Engine.get().validate();
+    StateEngine.get().validate();
   }
 
   public function dispose() {

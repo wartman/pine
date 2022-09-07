@@ -1,14 +1,16 @@
 package pine;
 
-@:allow(pine)
-class Action {
-  final handler:() -> Void;
+@:callable
+abstract Action(() -> Void) from () -> Void {
+  inline public static function run(handler) {
+    StateEngine.get().batch(handler);
+  }
   
   public function new(handler) {
-    this.handler = handler;
+    this = () -> StateEngine.get().batch(handler);
   }
 
-  public function trigger() {
-    Engine.get().batch(handler);
+  public inline function trigger() {
+    this();
   }
 }

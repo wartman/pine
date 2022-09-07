@@ -19,21 +19,21 @@ class Observer implements Disposable {
     this.handler = handler;
 
     invalidate();
-    Engine.get().validate();
+    StateEngine.get().validate();
   }
 
-  public function invalidate() {
+  function invalidate() {
     switch status {
       case Validating:
         Debug.error('Cycle detected');
       case Invalid | Inactive:
       case Valid:
         status = Invalid;
-        Engine.get().enqueue(this);
+        StateEngine.get().enqueue(this);
     }
   }
 
-  public function validate() {
+  function validate() {
     if (status == Validating) {
       Debug.error('Cycle detected');
     }

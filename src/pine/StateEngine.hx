@@ -1,11 +1,11 @@
 package pine;
 
 @:allow(pine)
-class Engine {
-  static var instance:Null<Engine> = null;
+class StateEngine {
+  static var instance:Null<StateEngine> = null;
 
-  public static function get():Engine {
-    if (instance == null) instance = new Engine();
+  public static function get():StateEngine {
+    if (instance == null) instance = new StateEngine();
     return instance;
   }
 

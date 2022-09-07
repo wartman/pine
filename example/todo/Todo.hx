@@ -292,10 +292,10 @@ class TodoItem extends ObserverComponent {
           clearOnComplete: false,
           isEditing: todo.isEditing,
           onCancel: () -> todo.isEditing = false,
-          onSubmit: data -> {
+          onSubmit: data -> Action.run(() -> {
             todo.description = data;
             todo.isEditing = false;
-          }
+          })
         })
       ]
     });
