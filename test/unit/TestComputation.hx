@@ -19,16 +19,16 @@ class TestComputation implements TestCase {
       return foo.get() + bar.get();
     });
 
-    new Observer(() -> {
+    Observer.track(() -> {
       computation.get().equals(expected);
     });
 
     expected = 4;
 
-    new Action(() -> {
+    Action.run(() -> {
       foo.set(2);
       bar.set(2);
-    }).trigger();
+    });
 
     tests.equals(2);
   }

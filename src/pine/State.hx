@@ -1,5 +1,7 @@
 package pine;
 
+import pine.internal.Tracking;
+
 @:allow(pine)
 class State<T> implements Disposable {
   var observers:Array<Observer> = [];
@@ -19,7 +21,7 @@ class State<T> implements Disposable {
   public function get():T {
     if (isDisposed) return peek();
 
-    var observer = StateEngine.get().current;
+    var observer = currentObserver;
     if (observer != null) addObserver(observer);
     return value;
   }
@@ -42,7 +44,7 @@ class State<T> implements Disposable {
     
     if (!observers.contains(observer)) {
       observers.push(observer);
-      observer.addDependency(this);
+      observer.trackDependency(this);
     }
   }
 
@@ -50,13 +52,13 @@ class State<T> implements Disposable {
     if (isDisposed) return;
 
     observers.remove(observer);
-    observer.removeDependency(this);
+    observer.untrackDependency(this);
   }
 
   function notify() {
     if (isDisposed) return;
     for (observer in observers) observer.invalidate();
-    StateEngine.get().validate();
+    validateObservers();
   }
 
   public function dispose() {
@@ -66,6 +68,6 @@ class State<T> implements Disposable {
 
     var toRemove = observers.copy();
     observers = [];
-    for (observer in toRemove) observer.removeDependency(this);
+    for (observer in toRemove) observer.untrackDependency(this);
   }
 }

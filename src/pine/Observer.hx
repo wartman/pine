@@ -1,6 +1,7 @@
 package pine;
 
 import haxe.Exception;
+import pine.internal.Tracking;
 
 enum ObserverStatus {
   Inactive;
@@ -11,6 +12,10 @@ enum ObserverStatus {
 
 @:allow(pine)
 class Observer implements Disposable {
+  inline public static function track(handler) {
+    return new Observer(handler);
+  }
+
   final handler:()->Void;
   final dependencies:Array<State<Dynamic>> = [];
   var status:ObserverStatus = Valid;
@@ -19,7 +24,7 @@ class Observer implements Disposable {
     this.handler = handler;
 
     invalidate();
-    StateEngine.get().validate();
+    validateObservers();
   }
 
   function invalidate() {
@@ -29,7 +34,7 @@ class Observer implements Disposable {
       case Invalid | Inactive:
       case Valid:
         status = Invalid;
-        StateEngine.get().enqueue(this);
+        enqueueObserver(this);
     }
   }
 
@@ -43,7 +48,7 @@ class Observer implements Disposable {
     var err:Null<Exception> = null;
     status = Validating;
 
-    for (signal in dependencies) signal.removeObserver(this);
+    for (state in dependencies) state.removeObserver(this);
     try {
       handler();
     } catch (e) {
@@ -54,17 +59,17 @@ class Observer implements Disposable {
     if (err != null) throw err;
   }
 
-  inline function addDependency(signal:State<Dynamic>) {
-    if (!dependencies.contains(signal)) dependencies.push(signal);
+  inline function trackDependency(state:State<Dynamic>) {
+    if (!dependencies.contains(state)) dependencies.push(state);
   }
 
-  inline function removeDependency(signal:State<Dynamic>) {
-    dependencies.remove(signal);
+  inline function untrackDependency(state:State<Dynamic>) {
+    dependencies.remove(state);
   }
 
   public function dispose() {
     status = Inactive;
     var toRemove = dependencies.copy();
-    for (signal in toRemove) signal.removeObserver(this);
+    for (state in toRemove) state.removeObserver(this);
   }
 }

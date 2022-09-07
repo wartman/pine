@@ -2,14 +2,14 @@ package pine;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import pine.macro.ClassBuilder;
-import pine.macro.ClassMetaDebugger;
-import pine.macro.ImmutablePropertyBuilder;
-import pine.macro.TrackedPropertyBuilder;
+import pine.internal.ClassBuilder;
+import pine.internal.ClassMetaDebugger;
+import pine.internal.ImmutablePropertyBuilder;
+import pine.internal.TrackedPropertyBuilder;
 
 using Lambda;
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.internal.MacroTools;
 
 function build() {
   var fields = MacroTools.getBuildFieldsSafe();

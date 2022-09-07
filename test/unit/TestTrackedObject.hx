@@ -13,7 +13,7 @@ class TestTrackedObject implements TestCase {
     var expected = 'foo';
     var tests = 0;
     
-    new Observer(() -> {
+    Observer.track(() -> {
       tests++;
       obj.foo.equals(expected);
     });
@@ -30,16 +30,16 @@ class TestTrackedObject implements TestCase {
     var expected = 0;
     var tests = 0;
 
-    new Observer(() -> {
+    Observer.track(() -> {
       tests++;
       obj.foos.length.equals(expected);
     });
 
     expected = 2;
-    new Action(() -> {
+    Action.run(() -> {
       obj.foos.push('one');
       obj.foos.push('two');
-    }).trigger();
+    });
 
     tests.equals(2);
   }

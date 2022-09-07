@@ -3,10 +3,10 @@ package pine;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
-import pine.macro.ClassBuilder;
+import pine.internal.ClassBuilder;
 
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.internal.MacroTools;
 
 function buildGeneric() {
   return switch Context.getLocalType() {

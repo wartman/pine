@@ -21,13 +21,19 @@ var location = new pine.State('world');
 var observer = new pine.Observer(() -> trace('${greeting.get()} ${location.get()}'));
 
 // `pine.State#set` will cause any `pine.Observer`s that are tracking it to
-// be re-computed. Note that this will happen using `Process.defer`, which 
-// generally means using `requestAnimationFrame` on any modern browser. This 
-// ensures that Pine can batch updates and only trigger the Observers 
-// it needs to once. For example, if we set both our states like this:
+// be re-computed.
 greeting.set('hey');
 location.set('earth');
-// ... you will ONLY see `hey earth` traced, not `hey world` and then `hey earth`.
+
+// Note that the above will cause the observer to be recomputed *twice*.
+// To batch changes, use a `pine.Action`:
+var action = new Action(() -> {
+  greeting.set('hey');
+  location.set('earth');
+});
+
+// ...then call the action to notify the observers:
+action();
 ```
 
 You can also create a State that's dependent on other states, which Pine calls a `Computation`:

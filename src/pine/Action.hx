@@ -1,13 +1,15 @@
 package pine;
 
+import pine.internal.Tracking;
+
 @:callable
 abstract Action(() -> Void) from () -> Void {
   inline public static function run(handler) {
-    StateEngine.get().batch(handler);
+    batchInvalidateStates(handler);
   }
   
   public function new(handler) {
-    this = () -> StateEngine.get().batch(handler);
+    this = () -> batchInvalidateStates(handler);
   }
 
   public inline function trigger() {

@@ -5,7 +5,7 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.internal.MacroTools;
 
 function buildGeneric() {
   return switch Context.getLocalType() {

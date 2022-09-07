@@ -13,7 +13,7 @@ class TestObserver implements TestCase {
     var expected = 1;
     var tests = 0;
 
-    new Observer(() -> {
+    Observer.track(() -> {
       tests++;
       value.get().equals(expected);
     });
@@ -21,6 +21,26 @@ class TestObserver implements TestCase {
     expected = 2;
     value.set(2);
     tests.equals(2);
+  }
+
+  @:test('Cycles are caught')
+  function testCycles() {
+    var value = new State(0, (_, _) -> true);
+    try {
+      var i = 0;
+      Observer.track(() -> {
+        if (i++ > 10) {
+          Assert.fail('Did not catch cycles');
+          return;
+        }
+        value.get();
+        value.set(0);
+      });
+    } catch (e:PineException) {
+      Assert.pass();
+    } catch (e) {
+      Assert.fail('Unexpected exception');
+    }
   }
 
   // @todo: more :P

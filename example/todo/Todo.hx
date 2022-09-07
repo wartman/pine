@@ -62,7 +62,7 @@ class TodoStore implements Record {
         fromJson(Json.parse(data));
       }
 
-      ObserverTools.track(() -> {
+      Observer.track(() -> {
         js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(store.toJson()));
       });
 
@@ -292,6 +292,8 @@ class TodoItem extends ObserverComponent {
           clearOnComplete: false,
           isEditing: todo.isEditing,
           onCancel: () -> todo.isEditing = false,
+          // Note: Using `Action` is not required, but it can help
+          // ensure changes are batched.
           onSubmit: data -> Action.run(() -> {
             todo.description = data;
             todo.isEditing = false;
