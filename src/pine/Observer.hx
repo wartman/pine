@@ -28,7 +28,7 @@ class Observer implements Disposable {
   final states:List<State<Dynamic>> = new List();
   final handler:() -> Void;
   var isTriggering:Bool = false;
-  var isRunning:Bool = false;
+  var isActive:Bool = false;
   var isUntracked:Bool = false;
 
   public function new(handler, untracked = false) {
@@ -42,11 +42,11 @@ class Observer implements Disposable {
       Debug.error('Observer was triggered while already running');
     }
 
-    if (isRunning) {
+    if (isActive) {
       var err:Null<Exception> = null;
 
       isTriggering = true;
-      clearTrackedSignals();
+      clearTrackedStates();
 
       if (isUntracked) {
         stack.push(null);
@@ -68,13 +68,13 @@ class Observer implements Disposable {
   }
 
   public function stop() {
-    isRunning = false;
-    clearTrackedSignals();
+    isActive = false;
+    clearTrackedStates();
   }
 
   public function start() {
-    if (!isRunning) {
-      isRunning = true;
+    if (!isActive) {
+      isActive = true;
       trigger();
     }
   }
@@ -86,7 +86,7 @@ class Observer implements Disposable {
     }
   }
 
-  function clearTrackedSignals() {
+  function clearTrackedStates() {
     for (state in states) state.observers.remove(this);
     states.clear();
   }
@@ -102,7 +102,9 @@ private abstract ObserverQueue(Array<Observer>) {
   }
 
   public inline function enqueue(observer:Observer) {
-    if (!this.contains(observer)) this.push(observer);
+    if (!this.contains(observer)) {
+      this.push(observer);
+    }
   }
 
   public inline function dequeue() {
