@@ -1,55 +1,71 @@
 package pine;
 
-import haxe.ds.List;
-
-using Lambda;
-
 @:allow(pine)
 class State<T> implements Disposable {
-  final comparator:(a:T, b:T) -> Bool;
-  final observers:List<Observer> = new List();
+  var observers:Array<Observer> = [];
   var value:T;
   var isDisposed:Bool = false;
+  final comparator:(a:T, b:T) -> Bool;
 
-  public function new(initialValue, ?comparator) {
+  public function new(value, ?comparator) {
+    this.value = value;
     this.comparator = comparator != null ? comparator : (a, b) -> a != b;
-    value = initialValue;
-    notify();
   }
 
-  public function peek():T {
-    Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
+  public function peek() {
     return value;
   }
 
   public function get():T {
-    Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
+    if (isDisposed) return peek();
 
-    var observer = Observer.stack.last();
-    if (observer != null) observer.track(this);
-
+    var observer = Engine.get().current;
+    if (observer != null) addObserver(observer);
     return value;
   }
 
-  public function set(newValue:T):T {
-    Debug.assert(!isDisposed, 'Cannot use a state that has already been disposed.');
-
-    if (!comparator(value, newValue)) {
-      return value;
+  public function set(value:T):T {
+    if (isDisposed) return value;
+    
+    if (!comparator(this.value, value)) {
+      return this.value;
     }
 
-    value = newValue;
+    this.value = value;
     notify();
 
-    return value;
+    return this.value;
   }
 
-  public function dispose() {
-    observers.clear();
-    isDisposed = true;
+  function addObserver(observer:Observer) {
+    if (isDisposed) return;
+    
+    if (!observers.contains(observer)) {
+      observers.push(observer);
+      observer.addDependency(this);
+    }
+  }
+
+  function removeObserver(observer:Observer) {
+    if (isDisposed) return;
+
+    observers.remove(observer);
+    observer.removeDependency(this);
   }
 
   function notify() {
-    if (observers.length > 0) Observer.scheduleTrigger(observers);
+    if (isDisposed) return;
+    for (observer in observers) observer.invalidate();
+    Engine.get().validate();
+  }
+
+  public function dispose() {
+    if (isDisposed) return;
+    
+    isDisposed = true;
+
+    var toRemove = observers.copy();
+    observers = [];
+    for (observer in toRemove) observer.removeDependency(this);
   }
 }

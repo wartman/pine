@@ -4,9 +4,9 @@ inline function track(handler) {
   return new Observer(handler);
 }
 
-inline function untrack(handler) {
-  return new Observer(handler, true);
-}
+// inline function untrack(handler) {
+//   return new Observer(handler, true);
+// }
 
 inline function compute(compute) {
   return new Computation(compute);

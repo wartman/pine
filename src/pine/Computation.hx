@@ -1,20 +1,20 @@
 package pine;
 
-class Computation<T> extends State<T>  {
+class Computation<T> extends State<T> {
   final observer:Observer;
 
-  public function new(compute:()->T, untracked = false) {
-    super(null);
+  public function new(handler:() -> T, ?comparator) {
+    super(null, comparator);
     var first = true;
-    observer = new Observer(() -> {
-      value = compute();
+    this.observer = new Observer(() -> {
+      value = handler();
       if (!first) notify();
       first = false;
-    }, untracked);
+    });
   }
 
   override function dispose() {
-    observer.dispose();
     super.dispose();
+    observer.dispose();
   }
 }

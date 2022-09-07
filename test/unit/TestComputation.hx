@@ -9,22 +9,27 @@ class TestComputation implements TestCase {
   public function new() {}
 
   @:test
-  @:test.async
-  function computationWorks(done) {
+  function computationWorks() {
     var foo = new State(1);
     var bar = new State(1);
+    var expected = 2;
+    var tests = 0;
     var computation = new Computation(() -> {
+      tests++;
       return foo.get() + bar.get();
     });
-    var expected = 2;
 
-    (done -> {
+    new Observer(() -> {
       computation.get().equals(expected);
-      if (expected == 4) done();
-    }).asTracked(done);
+    });
 
     expected = 4;
-    foo.set(2);
-    bar.set(2);
+
+    new Action(() -> {
+      foo.set(2);
+      bar.set(2);
+    }).trigger();
+
+    tests.equals(2);
   }
 }

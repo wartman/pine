@@ -3,39 +3,44 @@ package unit;
 import pine.*;
 
 using Medic;
-using medic.PineAssert;
 
 class TestTrackedObject implements TestCase {
   public function new() {}
 
   @:test('Simple tracked object behavior works')
-  @:test.async
-  public function testSimpleObject(done) {
+  public function testSimpleObject() {
     var obj = new TrackedObject<{foo:String}>({ foo: 'foo' });
     var expected = 'foo';
-
-    (done -> {
+    var tests = 0;
+    
+    new Observer(() -> {
+      tests++;
       obj.foo.equals(expected);
-      if (expected == 'bar') done();
-    }).asTracked(done);
-
+    });
+    
     expected = 'bar';
     obj.foo = 'bar';
+
+    tests.equals(2);
   }
 
   @:test('Arrays are automatically made into TrackedArrays')
-  @:test.async
-  public function testAutoArray(done) {
+  public function testAutoArray() {
     var obj = new TrackedObject<{ foos:Array<String> }>({ foos: [] });
     var expected = 0;
+    var tests = 0;
 
-    (done -> {
+    new Observer(() -> {
+      tests++;
       obj.foos.length.equals(expected);
-      if (expected == 2) done();
-    }).asTracked(done);
+    });
 
     expected = 2;
-    obj.foos.push('one');
-    obj.foos.push('two');
+    new Action(() -> {
+      obj.foos.push('one');
+      obj.foos.push('two');
+    }).trigger();
+
+    tests.equals(2);
   }
 }

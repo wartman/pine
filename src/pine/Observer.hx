@@ -1,117 +1,70 @@
 package pine;
 
 import haxe.Exception;
-import haxe.ds.List;
 
-using Lambda;
+enum ObserverStatus {
+  Inactive;
+  Valid;
+  Invalid;
+  Validating;
+}
 
 @:allow(pine)
 class Observer implements Disposable {
-  static final stack:List<Null<Observer>> = new List();
-  static var currentQueue:Null<ObserverQueue> = null;
+  final handler:()->Void;
+  final dependencies:Array<State<Dynamic>> = [];
+  var status:ObserverStatus = Valid;
 
-  static function scheduleTrigger(observers:List<Observer>) {
-    if (currentQueue != null) {
-      for (observer in observers) currentQueue.enqueue(observer);
-      return;
-    }
-
-    var queue = currentQueue = new ObserverQueue();
-    for (observer in observers) currentQueue.enqueue(observer);
-
-    Process.defer(() -> {
-      currentQueue = null;
-      queue.dequeue();
-    });
-  }
-
-  final states:List<State<Dynamic>> = new List();
-  final handler:() -> Void;
-  var isTriggering:Bool = false;
-  var isActive:Bool = false;
-  var isUntracked:Bool = false;
-
-  public function new(handler, untracked = false) {
+  public function new(handler) {
     this.handler = handler;
-    this.isUntracked = untracked;
-    start();
+
+    invalidate();
+    Engine.get().validate();
   }
 
-  public function trigger() {
-    if (isTriggering) {
-      Debug.error('Observer was triggered while already running');
-    }
-
-    if (isActive) {
-      var err:Null<Exception> = null;
-
-      isTriggering = true;
-      clearTrackedStates();
-
-      if (isUntracked) {
-        stack.push(null);
-      } else {
-        stack.push(this);
-      }
-
-      try {
-        handler();
-      } catch (e) {
-        err = e;
-      }
-
-      stack.pop();
-      isTriggering = false;
-
-      if (err != null) throw err;
+  public function invalidate() {
+    switch status {
+      case Validating:
+        Debug.error('Cycle detected');
+      case Invalid | Inactive:
+      case Valid:
+        status = Invalid;
+        Engine.get().enqueue(this);
     }
   }
 
-  public function stop() {
-    isActive = false;
-    clearTrackedStates();
-  }
-
-  public function start() {
-    if (!isActive) {
-      isActive = true;
-      trigger();
+  public function validate() {
+    if (status == Validating) {
+      Debug.error('Cycle detected');
     }
-  }
 
-  public function track(state:State<Dynamic>) {
-    if (!state.observers.has(this)) {
-      state.observers.add(this);
-      states.add(state);
+    if (status == Inactive || status == Valid) return;
+
+    var err:Null<Exception> = null;
+    status = Validating;
+
+    for (signal in dependencies) signal.removeObserver(this);
+    try {
+      handler();
+    } catch (e) {
+      err = e;
     }
+
+    status = Valid;
+    if (err != null) throw err;
   }
 
-  function clearTrackedStates() {
-    for (state in states) state.observers.remove(this);
-    states.clear();
+  inline function addDependency(signal:State<Dynamic>) {
+    if (!dependencies.contains(signal)) dependencies.push(signal);
+  }
+
+  inline function removeDependency(signal:State<Dynamic>) {
+    dependencies.remove(signal);
   }
 
   public function dispose() {
-    stop();
-  }
-}
-
-private abstract ObserverQueue(Array<Observer>) {
-  public inline function new() {
-    this = [];
-  }
-
-  public inline function enqueue(observer:Observer) {
-    if (!this.contains(observer)) {
-      this.push(observer);
-    }
-  }
-
-  public inline function dequeue() {
-    var observer = this.pop();
-    while (observer != null) {
-      observer.trigger();
-      observer = this.pop();
-    }
+    status = Inactive;
+    var toRemove = dependencies.copy();
+    for (signal in toRemove) signal.removeObserver(this);
   }
 }
