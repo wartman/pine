@@ -36,7 +36,7 @@ typedef RectAttr = BaseAttr & {
 typedef CircleAttr = BaseAttr & {
   @:optional var cx:String;
   @:optional var cy:String;
-  var r:String;
+  @:optional var r:String;
 }
 
 typedef EllipseAttr = BaseAttr & {
