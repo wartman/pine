@@ -36,7 +36,7 @@ class TestingRootComponent extends RootComponent {
 }
 
 class TestingRootElement extends RootElement {
-  public final afterBuild:Queue = new Queue();
+  public final afterBuild:Array<()->Void> = [];
 
   public function new(root) {
     super(
@@ -55,7 +55,7 @@ class TestingRootElement extends RootElement {
     });
 
     if (next != null) {
-      afterBuild.enqueue(next);
+      afterBuild.push(next);
     }
 
     invalidate();
@@ -63,7 +63,11 @@ class TestingRootElement extends RootElement {
 
   override function performBuild(previousComponent:Null<Component>) {
     super.performBuild(previousComponent);
-    afterBuild.dequeue();
+    var effect = afterBuild.pop();
+    while (effect != null) {
+      effect();
+      effect = afterBuild.pop();
+    }
   }
 
   public function toString() {

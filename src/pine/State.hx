@@ -1,7 +1,5 @@
 package pine;
 
-import pine.internal.Tracking;
-
 @:allow(pine)
 class State<T> implements Disposable {
   var observers:Array<Observer> = [];
@@ -21,7 +19,7 @@ class State<T> implements Disposable {
   public function get():T {
     if (isDisposed) return peek();
 
-    var observer = currentObserver;
+    var observer = Observer.currentObserver;
     if (observer != null) addObserver(observer);
     return value;
   }
@@ -58,7 +56,7 @@ class State<T> implements Disposable {
   function notify() {
     if (isDisposed) return;
     for (observer in observers) observer.invalidate();
-    validateObservers();
+    Observer.validateObservers();
   }
 
   public function dispose() {

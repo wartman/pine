@@ -3,11 +3,11 @@ package pine.html;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
-import pine.internal.ClassBuilder;
+import pine.macro.ClassBuilder;
 
 using Lambda;
 using haxe.macro.Tools;
-using pine.internal.MacroTools;
+using pine.macro.MacroTools;
 
 private enum abstract TagKind(String) to String {
   var TagVoid = 'void';

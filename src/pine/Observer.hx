@@ -1,7 +1,6 @@
 package pine;
 
 import haxe.Exception;
-import pine.internal.Tracking;
 
 enum ObserverStatus {
   Inactive;
@@ -10,8 +9,37 @@ enum ObserverStatus {
   Validating;
 }
 
+private var pending:Array<Observer> = [];
+private var depth:Int = 0;
+
 @:allow(pine)
 class Observer implements Disposable {
+  static var currentObserver:Null<Observer>;
+  
+  static function validateObservers() {
+    if (depth > 0) return;
+  
+    var queue = pending.copy();
+    var prev = currentObserver;
+    pending = [];
+    for (observer in queue) {
+      currentObserver = observer;
+      observer.validate();
+      currentObserver = prev;
+    }
+  }
+
+  static function enqueueObserver(observer:Observer) {
+    if (!pending.contains(observer)) pending.push(observer);
+  }
+
+  static function batchValidateObservers(compute:()->Void) {
+    depth++;
+    compute();
+    depth--;
+    validateObservers();
+  }
+
   inline public static function track(handler) {
     return new Observer(handler);
   }

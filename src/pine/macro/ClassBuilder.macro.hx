@@ -1,4 +1,4 @@
-package pine.internal;
+package pine.macro;
 
 import haxe.ds.Option;
 import haxe.macro.Expr;

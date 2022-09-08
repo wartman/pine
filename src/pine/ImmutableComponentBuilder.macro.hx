@@ -1,11 +1,11 @@
 package pine;
 
 import haxe.macro.Context;
-import pine.internal.ClassMetaDebugger;
-import pine.internal.ImmutablePropertyBuilder;
+import pine.macro.ClassMetaDebugger;
+import pine.macro.ImmutablePropertyBuilder;
 
 using Lambda;
-using pine.internal.MacroTools;
+using pine.macro.MacroTools;
 
 function build() {
   var fields = MacroTools.getBuildFieldsSafe();

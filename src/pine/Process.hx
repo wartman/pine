@@ -5,7 +5,7 @@ import haxe.ds.List;
 using Lambda;
 
 @:forward
-abstract Process(Queue) {
+abstract Process(Array<() -> Void>) {
   static final stack:List<Process> = new List();
   
   public static function current():Process {
@@ -33,8 +33,21 @@ abstract Process(Queue) {
     return process;
   }
 
-  public inline function new() {
-    this = new Queue();
+  public inline function new(?effects) {
+    this = effects != null ? effects : [];
+  }
+
+  public function enqueue(effect:() -> Void):()->Void {
+    this.push(effect);
+    return () -> this.remove(effect);
+  }
+
+  public function dequeue() {
+    var effect = this.pop();
+    while (effect != null) {
+      effect();
+      effect = this.pop();
+    }
   }
 }
 
