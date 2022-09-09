@@ -10,7 +10,7 @@ abstract class RootComponent extends ObjectComponent {
     child = props.child;
   }
 
-  override function createObject(_:Root) {
+  override function createObject(_:Adapter) {
     return getRootObject();
   }
 
@@ -20,15 +20,15 @@ abstract class RootComponent extends ObjectComponent {
 
   abstract public function getRootObject():Dynamic;
 
-  override function insertObject(root:Root, object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
+  override function insertObject(adapter:Adapter, object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
     throw 'Invalid action on a root object';
   }
 
-  override function moveObject(root:Root, object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
+  override function moveObject(adapter:Adapter, object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
     throw 'Invalid action on a root object';
   }
 
-  override function removeObject(root:Root, object:Dynamic, slot:Null<Slot>) {
+  override function removeObject(adapter:Adapter, object:Dynamic, slot:Null<Slot>) {
     throw 'Invalid action on a root object';
   }
 }

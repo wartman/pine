@@ -10,7 +10,7 @@ abstract Effect(InitContext) {
   }
 
   public inline function track(effect:()->Void) {
-    Process.defer(() -> {
+    Process.from(this).defer(() -> {
       Cleanup.on(this).add(new Observer(effect));
     });
   }

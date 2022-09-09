@@ -64,7 +64,7 @@ class FragmentElement extends Element {
 
     if (child == null) {
       if (marker == null) {
-        marker = createElementForComponent(root.createPlaceholder(), slot);
+        marker = createElementForComponent(Adapter.from(this).createPlaceholder(), slot);
       }
       return marker.getObject();
     }
@@ -110,7 +110,7 @@ class FragmentElement extends Element {
     var children:Array<Element> = [];
 
     if (components.length == 0) {
-      marker = createElementForComponent(root.createPlaceholder(), slot);
+      marker = createElementForComponent(Adapter.from(this).createPlaceholder(), slot);
       return;
     }
 

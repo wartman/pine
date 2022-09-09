@@ -1,25 +1,23 @@
 package pine;
 
-abstract class RootElement extends ObjectElement implements Root {
+class RootElement extends ObjectElement implements Root {
+  final adapter:Adapter;
   var child:Null<Element> = null;
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
-  final portalContextFactory:PortalFactory;
-  final applicators:ObjectApplicatorCollection;
 
   public var rootComponent(get, never):RootComponent;
   inline function get_rootComponent():RootComponent {
     return cast component;
   }
 
-  public function new(rootComponent:RootComponent, applicators, portalContextFactory) {
+  public function new(rootComponent:RootComponent, adapter) {
     super(rootComponent);
-    this.applicators = applicators;
-    this.portalContextFactory = portalContextFactory;
+    this.adapter = adapter;
   }
 
-  public function getApplicator<T:ObjectComponent>(component:T):ObjectApplicator<T> {
-    return applicators.getForComponent(component);
+  public function getAdapter() {
+    return adapter;
   }
 
   override function getRoot():Root {
@@ -35,7 +33,7 @@ abstract class RootElement extends ObjectElement implements Root {
       Debug.assert(status == Invalid);
       isScheduled = true;
       invalidElements = null;
-      Process.defer(() -> {
+      adapter.getProcess().defer(() -> {
         rebuild();
         isScheduled = false;
       });
@@ -57,52 +55,42 @@ abstract class RootElement extends ObjectElement implements Root {
   function scheduleRebuildInvalidElements() {
     if (isScheduled) return;
     isScheduled = true;
-    Process.defer(performRebuildInvalidElements);
+    adapter.getProcess().defer(performRebuildInvalidElements);
   }
 
   function performRebuildInvalidElements() {
-    Process.scope(() -> {
-      isScheduled = false;
-  
-      if (invalidElements == null) {
-        return;
-      }
-  
-      var elements = invalidElements.copy();
-      invalidElements = null;
-      for (el in elements) el.rebuild();
-    });
+    isScheduled = false;
+
+    if (invalidElements == null) {
+      return;
+    }
+
+    var elements = invalidElements.copy();
+    invalidElements = null;
+    for (el in elements) el.rebuild();
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    Process.scope(() -> {
-      if (previousComponent == null) {
-        object = rootComponent.createObject(this);
-      } else {
-        if (previousComponent != component) rootComponent.updateObject(this, previousComponent);
-      }
-      child = updateChild(child, rootComponent.child, createSlotForChild(0, null));
-    });
+    if (previousComponent == null) {
+      object = rootComponent.createObject(adapter);
+    } else {
+      if (previousComponent != component) rootComponent.updateObject(adapter, previousComponent);
+    }
+    child = updateChild(child, rootComponent.child, createSlotForChild(0, null));
   }
 
   function performHydrate(cursor:HydrationCursor) {
-    Process.scope(() -> {
-      object = cursor.current();
-      var objects = cursor.currentChildren();
-      var comp = rootComponent.child;
-      if (comp != null) {
-        child = hydrateElementForComponent(objects, comp, createSlotForChild(0, null));
-        cursor.next();
-      }
-      Debug.assert(objects.current() == null);
-    });
+    object = cursor.current();
+    var objects = cursor.currentChildren();
+    var comp = rootComponent.child;
+    if (comp != null) {
+      child = hydrateElementForComponent(objects, comp, createSlotForChild(0, null));
+      cursor.next();
+    }
+    Debug.assert(objects.current() == null);
   }
 
   function visitChildren(visitor:ElementVisitor) {
     if (child != null) visitor.visit(child);
-  }
-
-  public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {
-    return portalContextFactory(target, child);
   }
 }

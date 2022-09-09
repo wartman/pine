@@ -22,7 +22,7 @@ class TestingRootComponent extends RootComponent {
     return new TestingRootElement(this);
   }
 
-  override function updateObject(root:Root, object:Dynamic, ?previousComponent:Component) {
+  override function updateObject(adapter:Adapter, object:Dynamic, ?previousComponent:Component) {
     return object;
   }
 
@@ -35,15 +35,40 @@ class TestingRootComponent extends RootComponent {
   }
 }
 
+class TestingProcess extends Process {
+  function nextFrame(exec:() -> Void) {
+    haxe.Timer.delay(() -> exec(), 10);
+  }
+}
+
+class TestingAdaptor extends Adapter {
+  static final applicator = new TestingApplicator();
+  static final process = new TestingProcess();
+
+  public function new() {}
+
+  public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic> {
+    return applicator;
+  }
+
+  public function getProcess():Process {
+    return process;
+  }
+
+  public function createPlaceholder():Component {
+    return new TextComponent({ content: '<marker>' });
+  }
+
+  public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {
+    return new TestingRootComponent({ object: target, child: child });
+  }
+}
+
 class TestingRootElement extends RootElement {
   public final afterBuild:Array<()->Void> = [];
 
   public function new(root) {
-    super(
-      root,
-      new ObjectApplicatorCollection([TextComponent.type => new TestingApplicator()]),
-      (target, ?child) -> new TestingRootComponent({ child: child, object: target })
-    );
+    super(root, new TestingAdaptor());
   }
 
   public function setChild(component:ObjectComponent, ?next:() -> Void) {
@@ -72,9 +97,5 @@ class TestingRootElement extends RootElement {
 
   public function toString() {
     return (getObject() : TestingObject).toString();
-  }
-
-  public function createPlaceholder() {
-    return new TextComponent({ content: '<marker>' });
   }
 }

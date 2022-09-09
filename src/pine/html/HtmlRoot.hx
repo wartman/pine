@@ -27,13 +27,7 @@ abstract class HtmlRoot<T> extends RootComponent {
 
   abstract public function createElement():Element;
 
-  override function updateObject(root:Root, object:Dynamic, ?previousComponent:Component):Dynamic {
+  override function updateObject(adapter:Adapter, object:Dynamic, ?previousComponent:Component):Dynamic {
     return object;
-  }
-}
-
-class HtmlRootElement<T> extends RootElement {
-  public function createPlaceholder():Component {
-    return new HtmlTextComponent({content: ''});
   }
 }
