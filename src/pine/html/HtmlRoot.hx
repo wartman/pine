@@ -13,10 +13,6 @@ abstract class HtmlRoot<T> extends RootComponent {
     this.el = props.el;
   }
 
-  public function getApplicatorType():UniqueId {
-    return HtmlElementComponent.applicatorType;
-  }
-
   public function getComponentType():UniqueId {
     return type;
   }
@@ -26,8 +22,4 @@ abstract class HtmlRoot<T> extends RootComponent {
   }
 
   abstract public function createElement():Element;
-
-  override function updateObject(adapter:Adapter, object:Dynamic, ?previousComponent:Component):Dynamic {
-    return object;
-  }
 }

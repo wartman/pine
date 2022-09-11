@@ -7,6 +7,7 @@ abstract class Adapter {
 
   abstract public function getProcess():Process;
   abstract public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
+  abstract public function getTextApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
   abstract public function createPlaceholder():Component;
   abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
 }

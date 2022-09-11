@@ -2,7 +2,7 @@ package pine;
 
 abstract class Process {
   public inline static function from(context:Context) {
-    return context.getRoot().getAdapter().getProcess();
+    return Adapter.from(context).getProcess();
   }
 
   final effects:Array<() -> Void> = [];
@@ -15,21 +15,15 @@ abstract class Process {
     return () -> effects.remove(effect);
   }
 
-  function dequeue() {
-    var effect = effects.pop();
-    while (effect != null) {
-      effect();
-      effect = effects.pop();
-    }
-  }
-
   public function defer(effect:() -> Void) {
     var cancel = enqueue(effect);
     if (!isStarted) {
       isStarted = true;
       nextFrame(() -> {
-        dequeue();
         isStarted = false;
+        var fx = effects.copy();
+        effects.resize(0);
+        for (effect in fx) effect();
       });
     }
     return cancel;

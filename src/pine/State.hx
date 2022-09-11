@@ -20,7 +20,7 @@ class State<T> implements Disposable {
     if (isDisposed) return peek();
 
     var observer = Observer.currentObserver;
-    if (observer != null) addObserver(observer);
+    if (observer != null) observer.trackDependency(this);
     return value;
   }
 
@@ -35,22 +35,6 @@ class State<T> implements Disposable {
     notify();
 
     return this.value;
-  }
-
-  function addObserver(observer:Observer) {
-    if (isDisposed) return;
-    
-    if (!observers.contains(observer)) {
-      observers.push(observer);
-      observer.trackDependency(this);
-    }
-  }
-
-  function removeObserver(observer:Observer) {
-    if (isDisposed) return;
-
-    observers.remove(observer);
-    observer.untrackDependency(this);
   }
 
   function notify() {

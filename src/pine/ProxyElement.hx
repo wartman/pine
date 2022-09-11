@@ -17,13 +17,13 @@ class ProxyElement extends Element {
   }
 
   function performHydrate(cursor:HydrationCursor) {
-    proxyComponent.init(this);
     child = hydrateElementForComponent(cursor, render(), slot);
+    proxyComponent.init(this);
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    if (previousComponent == null) proxyComponent.init(this);
     child = updateChild(child, render(), slot);
+    if (previousComponent == null) proxyComponent.init(this);
   }
 
   public function visitChildren(visitor:ElementVisitor) {

@@ -2,14 +2,12 @@ package pine;
 
 class ObjectWithoutChildrenElement extends ObjectElement {
   public function performBuild(previousComponent:Null<Component>) {
-    var adapter = Adapter.from(this);
-
     if (previousComponent == null) {
-      object = objectComponent.createObject(adapter);
-      objectComponent.insertObject(adapter, object, slot, findAncestorObject);
+      object = applicator.create(component);
+      applicator.insert(object, slot, findAncestorObject);
     } else {
       if (previousComponent != component) {
-        objectComponent.updateObject(adapter, getObject(), previousComponent);
+        applicator.update(getObject(), component, previousComponent);
       }
     }
   }
@@ -17,13 +15,12 @@ class ObjectWithoutChildrenElement extends ObjectElement {
   function performHydrate(cursor:HydrationCursor) {
     object = cursor.current();
     Debug.alwaysAssert(object != null);
-    objectComponent.updateObject(Adapter.from(this), object);
+    applicator.update(object, component);
     cursor.next();
   }
 
   override function dispose() {
-    if (object != null)
-      objectComponent.removeObject(Adapter.from(this), object, slot);
+    if (object != null) applicator.remove(object, slot);
     super.dispose();
     object = null;
   }

@@ -1,8 +1,6 @@
 package pine.html;
 
 abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
-  static public final applicatorType = new UniqueId();
-
   public final tag:String;
   public final attrs:Attrs;
   public final isSvg:Bool;
@@ -20,10 +18,6 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     attrs = props.attrs;
     isSvg = props.isSvg == null ? false : props.isSvg;
     children = props.children;
-  }
-
-  public function getApplicatorType():UniqueId {
-    return applicatorType;
   }
 
   public function getChildren() {

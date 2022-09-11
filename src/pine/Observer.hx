@@ -20,9 +20,9 @@ class Observer implements Disposable {
     if (depth > 0) return;
   
     var queue = pending.copy();
-    var prev = currentObserver;
     pending = [];
     for (observer in queue) {
+      var prev = currentObserver;
       currentObserver = observer;
       observer.validate();
       currentObserver = prev;
@@ -76,7 +76,8 @@ class Observer implements Disposable {
     var err:Null<Exception> = null;
     status = Validating;
 
-    for (state in dependencies) state.removeObserver(this);
+    untrackAllDependencies();
+    
     try {
       handler();
     } catch (e) {
@@ -88,16 +89,24 @@ class Observer implements Disposable {
   }
 
   inline function trackDependency(state:State<Dynamic>) {
-    if (!dependencies.contains(state)) dependencies.push(state);
+    if (!state.observers.contains(this)) {
+      state.observers.push(this);
+      this.dependencies.push(state);
+    }
   }
 
   inline function untrackDependency(state:State<Dynamic>) {
     dependencies.remove(state);
+    state.observers.remove(this);
+  }
+
+  inline function untrackAllDependencies() {
+    var toRemove = dependencies.copy();
+    for (state in toRemove) untrackDependency(state);
   }
 
   public function dispose() {
     status = Inactive;
-    var toRemove = dependencies.copy();
-    for (state in toRemove) state.removeObserver(this);
+    untrackAllDependencies();
   }
 }

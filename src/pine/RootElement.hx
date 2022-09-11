@@ -72,9 +72,9 @@ class RootElement extends ObjectElement implements Root {
 
   function performBuild(previousComponent:Null<Component>) {
     if (previousComponent == null) {
-      object = rootComponent.createObject(adapter);
+      object = rootComponent.getRootObject();
     } else {
-      if (previousComponent != component) rootComponent.updateObject(adapter, previousComponent);
+      if (previousComponent != component) applicator.update(getObject(), component, previousComponent);
     }
     child = updateChild(child, rootComponent.child, createSlotForChild(0, null));
   }

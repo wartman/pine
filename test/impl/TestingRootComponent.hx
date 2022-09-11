@@ -1,7 +1,6 @@
 package impl;
 
 import pine.*;
-import pine.render.*;
 import pine.RootComponent;
 
 class TestingRootComponent extends RootComponent {
@@ -20,10 +19,6 @@ class TestingRootComponent extends RootComponent {
 
   function createElement():Element {
     return new TestingRootElement(this);
-  }
-
-  override function updateObject(adapter:Adapter, object:Dynamic, ?previousComponent:Component) {
-    return object;
   }
 
   public function getRootObject():Dynamic {
@@ -48,6 +43,10 @@ class TestingAdaptor extends Adapter {
   public function new() {}
 
   public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic> {
+    return applicator;
+  }
+  
+  public function getTextApplicator(component:ObjectComponent):ObjectApplicator<Dynamic> {
     return applicator;
   }
 

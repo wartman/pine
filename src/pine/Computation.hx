@@ -17,4 +17,8 @@ class Computation<T> extends State<T> {
     super.dispose();
     observer.dispose();
   }
+
+  override function set(value:T):T {
+    Debug.error('Computations are read-only');
+  }
 }

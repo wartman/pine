@@ -53,7 +53,7 @@ class PortalElement extends Element {
     var portalCursor = cursor.clone();
     portalCursor.move(portal.target);
     
-    portalRoot = createRoot(portal.child);
+    portalRoot = createRootElement();
     portalRoot.hydrate(portalCursor, this);
 
     child = updateChild(null, Adapter.from(this).createPlaceholder(), slot);
@@ -61,17 +61,17 @@ class PortalElement extends Element {
 
   function performBuild(previousComponent:Null<Component>) {
     if (portalRoot == null) {
-      portalRoot = createRoot(portal.child);
+      portalRoot = createRootElement();
       portalRoot.mount(this);
     } else if (
       previousComponent != null 
       && (cast previousComponent:Portal).target != portal.target
     ) {
       portalRoot.dispose();
-      portalRoot = createRoot(portal.child);
+      portalRoot = createRootElement();
       portalRoot.mount(this);
     } else {
-      portalRoot.update(Adapter.from(this).createPortalRoot(portal.target, portal.child));
+      portalRoot.update(createRootComponent());
     }
 
     child = updateChild(child, Adapter.from(this).createPlaceholder(), slot);
@@ -81,8 +81,11 @@ class PortalElement extends Element {
     if (child != null) visitor.visit(child);
   }
 
-  function createRoot(child) {
-    var root = Adapter.from(this).createPortalRoot(portal.target, child).createElement();
-    return root;
+  inline function createRootComponent() {
+    return Adapter.from(this).createPortalRoot(portal.target, portal.child);
+  }
+
+  inline function createRootElement() {
+    return createRootComponent().createElement();
   }
 }
