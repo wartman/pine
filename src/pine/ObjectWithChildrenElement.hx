@@ -66,15 +66,6 @@ class ObjectWithChildrenElement extends ObjectElement {
     children = diffChildren(children, components);
   }
 
-  override function updateSlot(slot:Slot) {
-    Debug.alwaysAssert(object != null);
-
-    var previousSlot = this.slot;
-    this.slot = slot;
-
-    applicator.move(object, previousSlot, slot, findAncestorObject);
-  }
-
   override function dispose() {
     if (object != null) applicator.remove(object, slot);
     super.dispose();

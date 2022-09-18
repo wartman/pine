@@ -28,4 +28,13 @@ abstract class ObjectElement extends Element {
     super.dispose();
     currentApplicator = null;
   }
+
+  override function updateSlot(slot:Slot) {
+    Debug.alwaysAssert(object != null);
+
+    var previousSlot = this.slot;
+    this.slot = slot;
+
+    applicator.move(object, previousSlot, slot, findAncestorObject);
+  }
 }
