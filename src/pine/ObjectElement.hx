@@ -1,7 +1,6 @@
 package pine;
 
 abstract class ObjectElement extends Element {
-  var currentApplicator:Null<ObjectApplicator<Dynamic>> = null;
   var object:Null<Dynamic> = null;
   
   var objectComponent(get, never):ObjectComponent;
@@ -9,10 +8,10 @@ abstract class ObjectElement extends Element {
     return getComponent();
   }
 
-  var applicator(get, never):ObjectApplicator<Dynamic>;
+  @:isVar var applicator(get, null):Null<ObjectApplicator<Dynamic>>;
   function get_applicator():ObjectApplicator<Dynamic> {
-    if (currentApplicator == null) currentApplicator = objectComponent.getApplicator(this);
-    return currentApplicator;
+    if (this.applicator == null) this.applicator = objectComponent.getApplicator(this);
+    return this.applicator;
   }
 
   public function new(component:ObjectComponent) {
@@ -26,7 +25,7 @@ abstract class ObjectElement extends Element {
 
   override function dispose() {
     super.dispose();
-    currentApplicator = null;
+    this.applicator = null;
   }
 
   override function updateSlot(slot:Slot) {

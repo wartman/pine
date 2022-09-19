@@ -75,7 +75,6 @@ class ObjectWithChildrenElement extends ObjectElement {
   }
 
   function visitChildren(visitor:ElementVisitor) {
-    for (child in children)
-      visitor.visit(child);
+    for (child in children) visitor.visit(child);
   }
 }
