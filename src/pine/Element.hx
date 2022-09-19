@@ -15,11 +15,12 @@ enum abstract HydratingStatus(Bool) to Bool {
   var NotHydrating = false;
 }
 
+@:allow(pine)
 abstract class Element 
   implements Context 
   implements InitContext
   implements Disposable 
-  implements DisposableHost 
+  implements DisposableHost
 {
   final disposables:Array<Disposable> = [];
   var component:Component;
@@ -79,7 +80,7 @@ abstract class Element
   public function dispose() {
     Debug.assert(status != Building && status != Disposed);
 
-    visitChildren(child -> child.dispose());
+    performDispose();
 
     for (disposable in disposables) disposable.dispose();
 
@@ -119,6 +120,10 @@ abstract class Element
   abstract function performHydrate(cursor:HydrationCursor):Void;
 
   abstract function performBuild(previousComponent:Null<Component>):Void;
+
+  abstract function performDispose():Void;
+
+  abstract function performUpdateSlot(?slot:Slot):Void;
 
   abstract public function visitChildren(visitor:ElementVisitor):Void;
 
@@ -226,170 +231,8 @@ abstract class Element
     return object;
   }
 
-  function updateChild(?child:Element, ?component:Component, ?slot:Slot):Null<Element> {
-    if (component == null) {
-      if (child != null) removeChild(child);
-      return null;
-    }
-
-    return if (child != null) {
-      if (child.component == component) {
-        if (child.slot != slot) updateSlotForChild(child, slot);
-        child;
-      } else if (child.component.shouldBeUpdated(component)) {
-        if (child.slot != slot) updateSlotForChild(child, slot);
-        child.update(component);
-        child;
-      } else {
-        removeChild(child);
-        createElementForComponent(component, slot);
-      }
-    } else {
-      createElementForComponent(component, slot);
-    }
-  }
-
-  function updateSlot(slot:Null<Slot>) {
+  public function updateSlot(slot:Null<Slot>) {
     this.slot = slot;
-    visitChildren(child -> child.updateSlot(slot));
-  }
-
-  function diffChildren(oldChildren:Array<Element>, newComponents:Array<Component>):Array<Element> {
-    // Almost entirely taken from: https://github.com/flutter/flutter/blob/6af40a7004f886c8b8b87475a40107611bc5bb0a/packages/flutter/lib/src/components/framework.dart#L5761
-    var newHead = 0;
-    var oldHead = 0;
-    var newTail = newComponents.length - 1;
-    var oldTail = oldChildren.length - 1;
-    var previousChild:Null<Element> = null;
-    var newChildren:Array<Null<Element>> = [];
-
-    // Scan from the top of the list, syncing until we can't anymore.
-    while ((oldHead <= oldTail) && (newHead <= newTail)) {
-      var oldChild = oldChildren[oldHead];
-      var newComponent = newComponents[newHead];
-      if (oldChild == null || !oldChild.component.shouldBeUpdated(newComponent)) {
-        break;
-      }
-
-      var newChild = updateChild(oldChild, newComponent, createSlotForChild(newHead, previousChild));
-      newChildren[newHead] = newChild;
-      previousChild = newChild;
-      newHead += 1;
-      oldHead += 1;
-    }
-
-    // Scan from the bottom, without syncing.
-    while ((oldHead <= oldTail) && (newHead <= newTail)) {
-      var oldChild = oldChildren[oldTail];
-      var newComponent = newComponents[newTail];
-      if (oldChild == null || !oldChild.component.shouldBeUpdated(newComponent)) {
-        break;
-      }
-      oldTail -= 1;
-      newTail -= 1;
-    }
-
-    // Scan the middle.
-    var hasOldChildren = oldHead <= oldTail;
-    var oldKeyedChildren:Null<Key.KeyMap<Element>> = null;
-
-    // If we still have old children, go through the array and check
-    // if any have keys. If they don't, remove them.
-    if (hasOldChildren) {
-      oldKeyedChildren = Key.createMap();
-      while (oldHead <= oldTail) {
-        var oldChild = oldChildren[oldHead];
-        if (oldChild != null) {
-          if (oldChild.component.key != null) {
-            oldKeyedChildren.set(oldChild.component.key, oldChild);
-          } else {
-            removeChild(oldChild);
-          }
-        }
-        oldHead += 1;
-      }
-    }
-
-    // Sync/update any new elements. If we have more children than before
-    // this is where things will happen.
-    while (newHead <= newTail) {
-      var oldChild:Null<Element> = null;
-      var newComponent = newComponents[newHead];
-
-      // Check if we already have an element with a matching key.
-      if (hasOldChildren) {
-        var key = newComponent.key;
-        if (key != null) {
-          if (oldKeyedChildren == null) {
-            throw 'assert'; // This should never happen
-          }
-
-          oldChild = oldKeyedChildren.get(key);
-          if (oldChild != null) {
-            if (oldChild.component.shouldBeUpdated(newComponent)) {
-              // We do -- remove a keyed child from the list so we don't
-              // unsync it later.
-              oldKeyedChildren.remove(key);
-            } else {
-              // We don't -- ignore it for now.
-              oldChild = null;
-            }
-          }
-        }
-      }
-
-      var newChild = updateChild(oldChild, newComponent, createSlotForChild(newHead, previousChild));
-      newChildren[newHead] = newChild;
-      previousChild = newChild;
-      newHead += 1;
-    }
-
-    newTail = newComponents.length - 1;
-    oldTail = oldChildren.length - 1;
-
-    // Update the bottom of the list.
-    while ((oldHead <= oldTail) && (newHead <= newTail)) {
-      var oldChild = oldChildren[oldHead];
-      var newComponent = newComponents[newHead];
-      var newChild = updateChild(oldChild, newComponent, createSlotForChild(newHead, previousChild));
-      newChildren[newHead] = newChild;
-      previousChild = newChild;
-      newHead += 1;
-      oldHead += 1;
-    }
-
-    // Clean up any remaining children. At this point, we should only
-    // have to worry about keyed elements that are lingering around.
-    if (hasOldChildren && (oldKeyedChildren != null && oldKeyedChildren.isNotEmpty())) {
-      oldKeyedChildren.each((_, element) -> removeChild(element));
-    }
-
-    Debug.assert(!Lambda.exists(newChildren, el -> el == null));
-
-    return cast newChildren;
-  }
-
-  function updateSlotForChild(child:Element, slot:Null<Slot>) {
-    child.updateSlot(slot);
-  }
-
-  function removeChild(child:Element) {
-    child.dispose();
-  }
-
-  function createElementForComponent(component:Component, ?slot:Slot) {
-    var element = component.createElement();
-    element.mount(this, slot);
-    return element;
-  }
-
-  function hydrateElementForComponent(cursor:HydrationCursor, component:Component, ?slot:Slot) {
-    var element = component.createElement();
-    element.hydrate(cursor, this, slot);
-    return element;
-  }
-
-  function createSlotForChild(index:Int, previous:Null<Element>) {
-    return new Slot(index, previous);
+    performUpdateSlot(slot);
   }
 }

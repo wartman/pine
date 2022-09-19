@@ -1,5 +1,7 @@
 package pine;
 
+import pine.internal.*;
+
 @:allow(pine)
 class Portal extends Component {
   public static final type = new UniqueId();
@@ -33,18 +35,22 @@ class PortalElement extends Element {
   }
 
   var portalRoot:Null<Element> = null;
-  var child:Null<Element> = null;
+  final child:SingleChildManager;
 
   public function new(component:Portal) {
     super(component);
+    child = new SingleChildManager(
+      () -> Adapter.from(this).createPlaceholder(),
+      new ElementFactory(this)
+    );
   }
 
-  override function dispose() {
+  function performDispose() {
     if (portalRoot != null) {
       portalRoot.dispose();
       portalRoot = null;
     }
-    super.dispose();
+    child.dispose();
   }
 
   function performHydrate(cursor:HydrationCursor) {
@@ -56,7 +62,7 @@ class PortalElement extends Element {
     portalRoot = createRootElement();
     portalRoot.hydrate(portalCursor, this);
 
-    child = updateChild(null, Adapter.from(this).createPlaceholder(), slot);
+    child.update(null, slot);
   }
 
   function performBuild(previousComponent:Null<Component>) {
@@ -74,11 +80,15 @@ class PortalElement extends Element {
       portalRoot.update(createRootComponent());
     }
 
-    child = updateChild(child, Adapter.from(this).createPlaceholder(), slot);
+    child.update(previousComponent, slot);
+  }
+
+  function performUpdateSlot(?slot:Slot) {
+    child.updateSlot(slot); 
   }
 
   public function visitChildren(visitor:ElementVisitor) {
-    if (child != null) visitor.visit(child);
+    child.visit(visitor);
   }
 
   inline function createRootComponent() {

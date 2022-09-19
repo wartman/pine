@@ -11,17 +11,18 @@ class ObjectWithoutChildrenElement extends ObjectElement {
       }
     }
   }
+  
+  function performUpdateSlot(?slot:Slot) {}
 
-  function performHydrate(cursor:HydrationCursor) {
+  public function performHydrate(cursor:HydrationCursor) {
     object = cursor.current();
     Debug.alwaysAssert(object != null);
     applicator.update(object, component);
     cursor.next();
   }
 
-  override function dispose() {
+  public function performDispose() {
     if (object != null) applicator.remove(object, slot);
-    super.dispose();
     object = null;
   }
 

@@ -1,8 +1,11 @@
 package pine;
 
+import pine.internal.*;
+
 class RootElement extends ObjectElement implements Root {
   final adapter:Adapter;
-  var child:Null<Element> = null;
+  final child:SingleChildManager;
+
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
 
@@ -13,7 +16,12 @@ class RootElement extends ObjectElement implements Root {
 
   public function new(rootComponent:RootComponent, adapter) {
     super(rootComponent);
+    slot = new Slot(0, null);
     this.adapter = adapter;
+    this.child = new SingleChildManager(
+      () -> rootComponent.child,
+      new ElementFactory(this)
+    );
   }
 
   public function getAdapter() {
@@ -76,7 +84,7 @@ class RootElement extends ObjectElement implements Root {
     } else {
       if (previousComponent != component) applicator.update(getObject(), component, previousComponent);
     }
-    child = updateChild(child, rootComponent.child, createSlotForChild(0, null));
+    child.update(previousComponent, slot);
   }
 
   function performHydrate(cursor:HydrationCursor) {
@@ -84,13 +92,21 @@ class RootElement extends ObjectElement implements Root {
     var objects = cursor.currentChildren();
     var comp = rootComponent.child;
     if (comp != null) {
-      child = hydrateElementForComponent(objects, comp, createSlotForChild(0, null));
+      child.hydrate(objects, slot);
       cursor.next();
     }
     Debug.assert(objects.current() == null);
   }
 
+  function performUpdateSlot(?slot:Slot) {
+    child.updateSlot(slot); 
+  }
+
+  function performDispose() {
+    child.dispose();
+  }
+
   function visitChildren(visitor:ElementVisitor) {
-    if (child != null) visitor.visit(child);
+    child.visit(visitor);
   }
 }

@@ -1,30 +1,37 @@
 package pine;
 
-class ObserverElement extends ProxyElement {
+import pine.internal.*;
+
+class ObserverElement extends Element {
+  final child:SingleChildManager;
   var trackedObject:Null<Dynamic> = null;
   var computedRender:Null<Computation<Component>> = null;
+  
   var observerComponent(get, never):ObserverComponent;
-
   inline function get_observerComponent():ObserverComponent {
     return getComponent();
   }
 
   public function new(component:ObserverComponent) {
     super(component);
+    child = new SingleChildManager(
+      () -> {
+        if (computedRender == null) {
+          computedRender = createRenderComputation();
+        }
+        return computedRender.get();
+      },
+      new ElementFactory(this)
+    );
   }
 
-  override function performHydrate(cursor:HydrationCursor) {
+  function performHydrate(cursor:HydrationCursor) {
     trackedObject = observerComponent.createTrackedObject();
     observerComponent.init(this);
-
-    if (computedRender == null) {
-      computedRender = createRenderComputation();
-    }
-
-    child = hydrateElementForComponent(cursor, computedRender.get(), slot);
+    child.hydrate(cursor, slot);
   }
 
-  override function performBuild(previousComponent:Null<Component>) {
+  function performBuild(previousComponent:Null<Component>) {
     if (previousComponent == null || trackedObject == null) {
       trackedObject = observerComponent.createTrackedObject();
     } else if (previousComponent != component) {
@@ -35,29 +42,33 @@ class ObserverElement extends ProxyElement {
       observerComponent.init(this);
     }
 
-    if (computedRender == null) {
-      computedRender = createRenderComputation();
-    }
-
-    child = updateChild(child, computedRender.get(), slot);
+    child.update(previousComponent, slot);
+  }
+  
+  function performUpdateSlot(?slot:Slot) {
+    child.update(slot); 
   }
 
   function createRenderComputation() {
     Debug.assert(computedRender == null);
-    Debug.assert(status == Building, '`setupObserver` should ONLY be called from `performHydrate` or `performBuild`');
+    Debug.assert(status == Building, '`createRenderComputation` should ONLY be called from `performHydrate` or `performBuild`');
     
     return new Computation(() -> {
-      var result = render();
+      var result = observerComponent.render(this);
       if (status != Building) invalidate();
       return result;
     });
   }
 
-  override function dispose() {
-    super.dispose();
+  function performDispose() {
     if (computedRender != null) {
       computedRender.dispose();
       computedRender = null;
     }
+    child.dispose();
+  }
+
+  public function visitChildren(visitor:ElementVisitor) {
+    child.visit(visitor);
   }
 }

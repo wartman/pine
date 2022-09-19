@@ -48,8 +48,8 @@ class ProviderElement<T> extends ProxyElement {
     super.performBuild(previousComponent);
   }
 
-  override function dispose() {
+  override function performDispose() {
     (cast component : ProviderComponent<T>).dispose();
-    super.dispose();
+    super.performDispose();
   }
 }

@@ -1,5 +1,7 @@
 package pine;
 
+import pine.internal.*;
+
 class Fragment extends Component {
   static final type = new UniqueId();
 
@@ -45,90 +47,42 @@ class FragmentSlot extends Slot {
   }
 }
 
-class FragmentElement extends Element {
-  var children:Array<Element> = [];
-  var marker:Null<Element>;
-  var fragment(get, never):Fragment;
-  function get_fragment():Fragment return getComponent();
+private class FragmentChildrenManager extends MultiChildrenManager {
+  public var marker:Null<Element> = null;
+  final element:FragmentElement;
 
-  public function new(fragment:Fragment) {
-    super(fragment);
+  public function new(element, factory) {
+    this.element = element;
+    super(
+      () -> element.fragment.getChildren(),
+      factory
+    );
   }
 
-  override function getObject():Dynamic {
-    Debug.alwaysAssert(root != null);
+  override function initPrevious(?slot:Slot):Null<Element> {
+    return slot != null ? slot.previous : null;
+  }
 
-    var child:Null<Element> = null;
-
-    visitChildren(c -> child = c);
-
-    if (child == null) {
-      if (marker == null) {
-        marker = createElementForComponent(Adapter.from(this).createPlaceholder(), slot);
-      }
-      return marker.getObject();
+  public function createMarker():Element {
+    if (marker == null) {
+      marker = factory.createChild(Adapter.from(element).createPlaceholder(), element.slot);
     }
-
-    return child.getObject();
+    return marker;
   }
 
-  public function performBuild(previousComponent:Null<Component>) {
-    if (previousComponent == null) {
-      initializeChildren();
-    } else {
-      rebuildChildren();
-    }
-  }
-
-  public function visitChildren(visitor:ElementVisitor) {
-    if (children != null) {
-      for (child in children) {
-        if (child != null) visitor.visit(child);
-      }
-    }
-  }
-
-  function initializeChildren() {
-    var components = fragment.getChildren();
-    var previous:Null<Element> = slot != null ? slot.previous : null;
-    var children:Array<Element> = [];
-
-    for (i in 0...components.length) {
-      var element = createElementForComponent(components[i], createSlotForChild(i, previous));
-      children.push(element);
-      previous = element;
-    }
-
-    this.children = children;
-  }
-
-  function performHydrate(cursor:HydrationCursor) {
-    Debug.alwaysAssert(root != null);
-
-    var components = fragment.getChildren();
-    var previous:Null<Element> = slot != null ? slot.previous : null;
-    var children:Array<Element> = [];
+  override function hydrate(cursor:HydrationCursor, ?slot:Slot) {
+    var components = renderSafe();
 
     if (components.length == 0) {
-      marker = createElementForComponent(Adapter.from(this).createPlaceholder(), slot);
+      createMarker();
       return;
     }
 
-    for (i in 0...components.length) {
-      var element = hydrateElementForComponent(cursor, components[i], createSlotForChild(i, previous));
-      children.push(element);
-      previous = element;
-    }
-
-    this.children = children;
+    super.hydrate(cursor, slot);
   }
 
-  function rebuildChildren() {
-    Debug.alwaysAssert(root != null);
-
-    var components = fragment.getChildren();
-    children = diffChildren(children, components);
-
+  override function rebuildChildren(?slot:Slot) {
+    super.rebuildChildren(slot);
     // @todo: Test to make sure this is a good idea.
     if (children.length > 0 && marker != null) {
       marker.dispose();
@@ -136,21 +90,17 @@ class FragmentElement extends Element {
     }
   }
 
-  override function updateSlot(slot:Slot) {
-    Debug.alwaysAssert(root != null);
-
-    this.slot = slot;
-    if (marker != null)
+  override function updateSlot(?slot:Slot) {
+    if (marker != null) {
       marker.updateSlot(slot);
+    }
+
+    if (slot == null) slot = new Slot(0, null);
+
     for (i in 0...children.length) {
       var previous = i == 0 ? slot.previous : children[i - 1];
-      children[i].updateSlot(createSlotForChild(i, previous));
+      children[i].updateSlot(factory.createSlot(i, previous));
     }
-  }
-
-  override function createSlotForChild(localIndex:Int, previous:Null<Element>):Slot {
-    var index = slot != null ? slot.index : 0;
-    return new FragmentSlot(index, localIndex, previous);
   }
 
   override function dispose() {
@@ -159,5 +109,55 @@ class FragmentElement extends Element {
       marker = null;
     }
     super.dispose();
+  }
+}
+
+private class FragmentElement extends Element {
+  public var fragment(get, never):Fragment;
+  function get_fragment():Fragment return getComponent();
+
+  final children:FragmentChildrenManager;
+
+  public function new(fragment:Fragment) {
+    super(fragment);
+    children = new FragmentChildrenManager(
+      this, 
+      new ElementFactory(this, (localIndex, previous) -> {
+        var index = slot != null ? slot.index : 0;
+        return new FragmentSlot(index, localIndex, previous);
+      })  
+    );
+  }
+
+  override function getObject():Dynamic {
+    var child:Null<Element> = null;
+
+    children.visit(c -> child = c);
+
+    if (child == null) {
+      return children.createMarker().getObject();
+    }
+
+    return child.getObject();
+  }
+
+  function performHydrate(cursor:HydrationCursor) {
+    children.hydrate(cursor, slot);
+  }
+
+  function performBuild(previousComponent:Null<Component>) {
+    children.update(previousComponent, slot);
+  }
+
+  function performDispose() {
+    children.dispose();
+  }
+
+  function performUpdateSlot(?slot:Slot) {
+    children.updateSlot(slot);    
+  }
+
+  public function visitChildren(visitor:ElementVisitor) {
+    children.visit(visitor);
   }
 }

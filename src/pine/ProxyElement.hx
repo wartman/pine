@@ -1,7 +1,9 @@
 package pine;
 
+import pine.internal.*;
+
 class ProxyElement extends Element {
-  var child:Null<Element> = null;
+  final child:SingleChildManager; 
   var proxyComponent(get, never):ProxyComponent;
 
   inline function get_proxyComponent():ProxyComponent {
@@ -10,25 +12,31 @@ class ProxyElement extends Element {
 
   public function new(component:ProxyComponent) {
     super(component);
-  }
-
-  function render() {
-    return proxyComponent.render(this);
+    child = new SingleChildManager(
+      () -> proxyComponent.render(this),
+      new ElementFactory(this)
+    );
   }
 
   function performHydrate(cursor:HydrationCursor) {
-    child = hydrateElementForComponent(cursor, render(), slot);
+    child.hydrate(cursor, slot);
     proxyComponent.init(this);
   }
 
   function performBuild(previousComponent:Null<Component>) {
-    child = updateChild(child, render(), slot);
+    child.update(previousComponent, slot);
     if (previousComponent == null) proxyComponent.init(this);
+  }
+  
+  function performUpdateSlot(?slot:Slot) {
+    child.updateSlot(slot); 
+  }
+
+  function performDispose() {
+    child.dispose();
   }
 
   public function visitChildren(visitor:ElementVisitor) {
-    if (child != null) {
-      visitor.visit(child);
-    }
+    child.visit(visitor);
   }
 }
