@@ -15,9 +15,6 @@ enum abstract HydratingStatus(Bool) to Bool {
   var NotHydrating = false;
 }
 
-// @todo: Figure out how to wrap errors that occour during
-// rendering. This may work best with some sort of 
-// ErrorBoundary component.
 abstract class Element 
   implements Context 
   implements InitContext
