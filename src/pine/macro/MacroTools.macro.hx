@@ -42,8 +42,18 @@ class MacroTools {
     }
   }
 
-  public static function stringifyTypeForClassName(type:haxe.macro.Type) {
-    return haxe.crypto.Md5.encode(type.toString());
+  public static function stringifyTypeForClassName(type:haxe.macro.Type):String {
+    return switch type {
+      // Attempt to use human-readable names if possible
+      case TInst(t, []): 
+        type.toString().replace('.', '_');
+      case TInst(t, params):
+        t.toString().replace('.', '_') + '__' + params.map(stringifyTypeForClassName).join('_'); 
+      default: 
+        // Fallback to using an Md5 string to ensure we're not outputting
+        // weird characters.
+        haxe.crypto.Md5.encode(type.toString()); 
+    }
   }
 
   public static function typePathToString(path:TypePath) {
