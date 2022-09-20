@@ -5,6 +5,132 @@ A simple UI framework.
 
 > Note: Documentation is in progress and is a bit scrambled.
 
+Context and Providers 
+---------------------
+
+Sharing state across a component tree can be a pain. You could just pass attributes down to child components:
+
+```haxe
+class ComponentA extends ImmutableComponent {
+  @prop final foo:String;
+
+  function render(context:Context) {
+    return new ComponentB({ foo: foo });
+  }
+}
+
+class ComponentB extends ImmutableComponent {
+  @prop final foo:String;
+
+  function render(context:Context) {
+    return new ComponentC({ foo: foo });
+  }
+}
+
+class ComponentC extends ImmutableComponent {
+  @prop final foo:String;
+
+  function render(context:Context) {
+    return new Html<'text'>({ content: foo });
+  }
+}
+```
+
+...but that can get complicated quickly.
+
+To solve this problem, Pine stole an idea from Flutter. All render methods have a `context` argument which allows you to hook into the current Element tree. This can let you do things like search for ancestor or child elements, access the current render object, etc. Right now, what we care about is how it hooks into the Provider system.
+
+```haxe
+typedef FooProvider = Provider<String>;
+
+class ComponentA extends ImmutableComponent {
+  @prop final foo:String;
+
+  function render(context:Context) {
+    return new FooProvider({
+      create: () -> 'foo',
+      // We don't need to dispose anything for this example, but `dispose`
+      // is required for all providers.
+      dispose: value -> null, 
+      render: _ -> new ComponentB({})
+    });
+  }
+}
+
+class ComponentB extends ImmutableComponent {
+  function render(context:Context) {
+    return new ComponentC({});
+  }
+}
+
+class ComponentC extends ImmutableComponent {
+  function render(context:Context) {
+    return new Html<'text'>({ content: FooProvider.from(context) });
+  }
+}
+```
+
+In the above example, `FooProvider.from(context)` will search up the Element tree until it finds the `FooProvider` component, returning the value we created there.
+
+This works great, but you can run into issues if you use `FooProvider.from(context)` in a scenario where there is no parent `FooProvider`. There are a few ways to solve this: you could check if `FooProvider.from(context)` returns null, or you might use `maybeFrom`:
+
+```haxe
+class ComponentC extends ImmutableComponent {
+  function render(context:Context) {
+    return new Html<'text'>({ content: switch FooProvider.maybeFrom(context) {
+      case Some(foo): foo;
+      case None: 'default';
+    } });
+  }
+}
+```
+
+You might also consider using a `pine.Service`, which enforces defaults:
+
+```haxe
+@default(new FooService('foo'))
+class FooService implements Service {
+  public final foo:String;
+
+  public function new(foo) {
+    this.foo = foo;
+  }
+
+  public function dispose() {
+    trace('disposed');
+  }
+}
+```
+
+If no `FooService` is provided, `FooService.from(context)` will return the expression set in `@default`.
+
+```haxe
+class ComponentC extends ImmutableComponent {
+  function render(context:Context) {
+    return new Html<'text'>({ content: FooService.from(context).foo });
+  }
+}
+```
+
+In addition, `Services` have a handy `provide` shortcut you can use:
+
+```haxe
+class ComponentA extends ImmutableComponent {
+  @prop final foo:String;
+
+  function render(context:Context) {
+    return FooService.provider(
+      new FooService(foo),
+      service -> new ComponentB({})
+    );
+  }
+}
+```
+
+...although `new Provider<FooService>({ ... })` will also work, just with a little more boilerplate.
+
+Generally, best practice is to use `maybeFrom` with all providers unless you're using a `pine.Service`.
+
 Tracking Changes
 ----------------
 

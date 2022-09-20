@@ -2,7 +2,7 @@ package pine;
 
 import haxe.ds.Option;
 
-// @todo: Consider removing the Consumer class.
+@:deprecated('Use `pine.Service` instead')
 @:genericBuild(pine.ConsumerBuilder.buildGeneric())
 class Consumer<T> {}
 

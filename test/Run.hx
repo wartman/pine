@@ -17,6 +17,8 @@ function main() {
 
 function addUnitTests(tests:Runner) {
   tests.add(new TestFragment());
+
+  tests.add(new TestService());
   
   tests.add(new TestObserver());
   tests.add(new TestComputation());

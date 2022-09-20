@@ -48,7 +48,10 @@ class TodoStore implements Record {
   static inline final storageId = 'blok-todo-store';
 
   public inline static function from(context:Context) {
-    return TodoProvider.from(context);
+    return switch TodoProvider.maybeFrom(context) {
+      case Some(store): store;
+      case None: throw 'No store found';
+    }
   }
 
   public static function load() {
@@ -116,6 +119,9 @@ class TodoApp extends ImmutableComponent {
       render: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
         children: [
+          // note: Using a Portal to mess with the document head
+          //       is probably a bad idea for a real app. It's just
+          //       here for demonstration purposes. 
           new Portal({
             target: js.Browser.document.head,
             child: new Isolate({ 
@@ -130,6 +136,7 @@ class TodoApp extends ImmutableComponent {
               }
             })
           }),
+          
           new Html<'section'>({
             className: 'todoapp',
             children: [

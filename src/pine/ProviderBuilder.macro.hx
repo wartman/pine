@@ -54,12 +54,20 @@ function buildProvider(type:Type) {
         static final type = new pine.UniqueId();
 
         public static function from(context:pine.Context):Null<$ct> {
+          return switch maybeFrom(context) {
+            case Some(value): value;
+            case None: null;
+          }
+        }
+
+        public static function maybeFrom(context:pine.Context):haxe.ds.Option<$ct> {
           return switch context.queryAncestors(parent -> parent.getComponent().getComponentType() == type) {
             case Some(provider):
-              (cast provider.getComponent() : pine.Provider.ProviderComponent<$ct>).value;
+              var value = (cast provider.getComponent() : pine.Provider.ProviderComponent<$ct>).value;
+              if (value == null) return None;
+              Some(value);
             case None:
-              // @todo: how to handle defaults? Do we throw an exception?
-              null;
+              None;
           }
         }
 
