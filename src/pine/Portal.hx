@@ -1,6 +1,6 @@
 package pine;
 
-import pine.internal.*;
+import pine.children.*;
 
 @:allow(pine)
 class Portal extends Component {
@@ -35,11 +35,11 @@ class PortalElement extends Element {
   }
 
   var portalRoot:Null<Element> = null;
-  final child:SingleChildManager;
+  final child:SingleChild;
 
   public function new(component:Portal) {
     super(component);
-    child = new SingleChildManager(
+    child = new SingleChild(
       () -> Adapter.from(this).createPlaceholder(),
       new ElementFactory(this)
     );

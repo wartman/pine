@@ -2,6 +2,7 @@ package pine;
 
 import haxe.ds.Option;
 
+// @todo: Consider removing the Consumer class.
 @:genericBuild(pine.ConsumerBuilder.buildGeneric())
 class Consumer<T> {}
 

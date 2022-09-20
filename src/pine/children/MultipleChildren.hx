@@ -1,6 +1,6 @@
-package pine.internal;
+package pine.children;
 
-class MultiChildrenManager implements ChildrenManager {
+class MultipleChildren implements Children {
   final render:()->Array<Null<Component>>;
   final factory:ElementFactory;
   var children:Array<Element> = [];
@@ -41,8 +41,7 @@ class MultiChildrenManager implements ChildrenManager {
   }
 
   public function updateSlot(?slot:Slot) {
-    // Noop?
-    // for (child in children) child.updateSlot(slot);
+    // noop
   }
 
   function initializeChildren(?slot:Slot) {
@@ -77,7 +76,7 @@ class MultiChildrenManager implements ChildrenManager {
   inline function renderSafe():Array<Component> {
     return cast render().filter(c -> c != null);
   }
-  
+
   function diffChildren(oldChildren:Array<Element>, newComponents:Array<Component>):Array<Element> {
     // Almost entirely taken from: https://github.com/flutter/flutter/blob/6af40a7004f886c8b8b87475a40107611bc5bb0a/packages/flutter/lib/src/components/framework.dart#L5761
     var newHead = 0;

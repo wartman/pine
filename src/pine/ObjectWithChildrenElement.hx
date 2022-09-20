@@ -1,14 +1,14 @@
 package pine;
 
-import pine.internal.*;
+import pine.children.*;
 
 class ObjectWithChildrenElement extends ObjectElement {
-  var children:MultiChildrenManager;
+  var children:MultipleChildren;
 
   public function new(component) {
     super(component);
-    children = new MultiChildrenManager(
-      () -> cast objectComponent.getChildren().filter(c -> c != null),
+    children = new MultipleChildren(
+      () -> cast objectComponent.getChildren(),
       new ElementFactory(this)
     );
   }

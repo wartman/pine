@@ -1,6 +1,6 @@
 package pine;
 
-import pine.internal.*;
+import pine.children.*;
 
 class Fragment extends Component {
   static final type = new UniqueId();
@@ -47,7 +47,7 @@ class FragmentSlot extends Slot {
   }
 }
 
-private class FragmentChildrenManager extends MultiChildrenManager {
+private class FragmentChildren extends MultipleChildren {
   public var marker:Null<Element> = null;
   final element:FragmentElement;
 
@@ -116,11 +116,11 @@ private class FragmentElement extends Element {
   public var fragment(get, never):Fragment;
   function get_fragment():Fragment return getComponent();
 
-  final children:FragmentChildrenManager;
+  final children:FragmentChildren;
 
   public function new(fragment:Fragment) {
     super(fragment);
-    children = new FragmentChildrenManager(
+    children = new FragmentChildren(
       this, 
       new ElementFactory(this, (localIndex, previous) -> {
         var index = slot != null ? slot.index : 0;

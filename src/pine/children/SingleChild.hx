@@ -1,6 +1,6 @@
-package pine.internal;
+package pine.children;
 
-class SingleChildManager implements ChildrenManager {
+class SingleChild implements Children {
   final render:()->Null<Component>;
   final factory:ElementFactory;
   var child:Null<Element> = null;

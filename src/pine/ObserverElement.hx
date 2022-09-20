@@ -1,9 +1,11 @@
 package pine;
 
-import pine.internal.*;
+import pine.children.*;
 
 class ObserverElement extends Element {
-  final child:SingleChildManager;
+  final child:SingleChild;
+
+  var isInitialized:Bool = false;
   var trackedObject:Null<Dynamic> = null;
   var computedRender:Null<Computation<Component>> = null;
   
@@ -14,20 +16,12 @@ class ObserverElement extends Element {
 
   public function new(component:ObserverComponent) {
     super(component);
-    child = new SingleChildManager(
-      () -> {
-        if (computedRender == null) {
-          computedRender = createRenderComputation();
-        }
-        return computedRender.get();
-      },
-      new ElementFactory(this)
-    );
+    child = new SingleChild(render, new ElementFactory(this));
   }
 
   function performHydrate(cursor:HydrationCursor) {
     trackedObject = observerComponent.createTrackedObject();
-    observerComponent.init(this);
+    initialize();
     child.hydrate(cursor, slot);
   }
 
@@ -38,9 +32,7 @@ class ObserverElement extends Element {
       observerComponent.reuseTrackedObject(trackedObject);
     }
 
-    if (previousComponent == null) {
-      observerComponent.init(this);
-    }
+    if (!isInitialized) initialize();
 
     child.update(previousComponent, slot);
   }
@@ -58,6 +50,19 @@ class ObserverElement extends Element {
       if (status != Building) invalidate();
       return result;
     });
+  }
+
+  function render() {
+    if (computedRender == null) {
+      computedRender = createRenderComputation();
+    }
+    return computedRender.get();
+  }
+
+  function initialize() {
+    Debug.assert(!isInitialized);
+    isInitialized = true;
+    observerComponent.init(this);
   }
 
   function performDispose() {

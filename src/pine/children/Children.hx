@@ -1,6 +1,6 @@
-package pine.internal;
+package pine.children;
 
-interface ChildrenManager extends Disposable {
+interface Children extends Disposable {
   public function hydrate(cursor:HydrationCursor, ?slot:Slot):Void;
   public function update(?previousComponent:Component, ?slot:Slot):Void;
   public function updateSlot(?slot:Slot):Void;

@@ -1,11 +1,11 @@
 package pine;
 
-import pine.ProxyComponent;
+import pine.children.*;
 
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}
 
-abstract class ProviderComponent<T> extends ProxyComponent {
+abstract class ProviderComponent<T> extends Component {
   public final create:() -> T;
   public final doRender:(value:T) -> Component;
   public final doDispose:(value:T) -> Void;
@@ -35,21 +35,43 @@ abstract class ProviderComponent<T> extends ProxyComponent {
     if (value != null) doDispose(value);
   }
 
-  override function createElement():Element {
+  function createElement():Element {
     return new ProviderElement<T>(this);
   }
 }
 
-class ProviderElement<T> extends ProxyElement {
-  override function performBuild(previousComponent:Null<Component>) {
+class ProviderElement<T> extends Element {
+  final child:SingleChild;
+
+  var provider(get, never):ProviderComponent<T>;
+  function get_provider():ProviderComponent<T> return getComponent();
+  
+  public function new(component:ProviderComponent<T>) {
+    super(component);
+    child = new SingleChild(() -> provider.render(this), new ElementFactory(this));
+  }
+
+  function performHydrate(cursor:HydrationCursor) {
+    child.hydrate(cursor, slot);
+  }
+
+  function performBuild(previousComponent:Null<Component>) {
     if (previousComponent != null && previousComponent != component) {
       (cast previousComponent : ProviderComponent<T>).dispose();
     }
-    super.performBuild(previousComponent);
+    child.update(previousComponent, slot);
   }
 
-  override function performDispose() {
-    (cast component : ProviderComponent<T>).dispose();
-    super.performDispose();
+  function performUpdateSlot(?slot:Slot) {
+    child.updateSlot(slot);
+  }
+
+  public function visitChildren(visitor:ElementVisitor) {
+    child.visit(visitor);
+  }
+
+  function performDispose() {
+    provider.dispose();
+    child.dispose();
   }
 }

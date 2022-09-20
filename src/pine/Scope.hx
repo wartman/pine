@@ -40,12 +40,9 @@ class Scope extends ProxyComponent {
 }
 
 private class ScopeElement extends ProxyElement {
-  override function dispose() {
-    Debug.assert(status != Disposed);
-
+  override function performDispose() {
     var scope:Scope = getComponent();
     if (scope != null && scope.doDispose != null) scope.doDispose(this);
-    
-    super.dispose();
+    super.performDispose();
   }
 }

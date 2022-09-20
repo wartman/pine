@@ -1,6 +1,5 @@
-package pine.internal;
+package pine;
 
-@:access(pine)
 class ElementFactory {
   final parent:Element;
   final slotFactory:(index:Int, previous:Null<Element>)->Slot;

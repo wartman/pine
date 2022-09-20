@@ -1,10 +1,10 @@
 package pine;
 
-import pine.internal.*;
+import pine.children.*;
 
 class RootElement extends ObjectElement implements Root {
   final adapter:Adapter;
-  final child:SingleChildManager;
+  final child:SingleChild;
 
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
@@ -18,7 +18,7 @@ class RootElement extends ObjectElement implements Root {
     super(rootComponent);
     slot = new Slot(0, null);
     this.adapter = adapter;
-    this.child = new SingleChildManager(
+    this.child = new SingleChild(
       () -> rootComponent.child,
       new ElementFactory(this)
     );
