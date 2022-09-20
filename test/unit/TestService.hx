@@ -20,7 +20,7 @@ class TestService implements TestCase {
   @:test.async
   function testProvide(done) {
     FooService.provide(
-      new FooService('bar'),
+      () -> new FooService('bar'),
       _ -> new FooServiceTester({})
     ).renders('bar', done);
   }

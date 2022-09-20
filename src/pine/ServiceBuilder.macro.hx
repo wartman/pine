@@ -30,10 +30,10 @@ function build() {
       return builder.export();
   }
 
-  if (cls.superClass != null) {
-    Context.error('Services cannot currently extend other classes.', cls.pos);
-    return builder.export();
-  }
+  // if (cls.superClass != null) {
+  //   Context.error('Services cannot currently extend other classes.', cls.pos);
+  //   return builder.export();
+  // }
 
   cls.meta.remove('default');
 
@@ -45,9 +45,9 @@ function build() {
       }
     }
 
-    public static function provide(value, render) {
+    public static function provide(create, render) {
       return new $provider({
-        create: () -> value,
+        create: create,
         dispose: service -> service.dispose(),
         render: render
       });

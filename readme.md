@@ -120,7 +120,7 @@ class ComponentA extends ImmutableComponent {
 
   function render(context:Context) {
     return FooService.provider(
-      new FooService(foo),
+      () -> new FooService(foo),
       service -> new ComponentB({})
     );
   }
