@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 class ObserverElement extends Element {
   final child:SingleChild;
 

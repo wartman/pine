@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}
 

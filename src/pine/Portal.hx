@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 @:allow(pine)
 class Portal extends Component {
   public static final type = new UniqueId();

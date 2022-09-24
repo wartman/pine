@@ -1,4 +1,4 @@
-package pine.children;
+package pine;
 
 class SingleChild implements Children {
   final render:()->Null<Component>;

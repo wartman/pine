@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 class ObjectWithChildrenElement extends ObjectElement {
   var children:MultipleChildren;
 

@@ -1,4 +1,4 @@
-package pine.children;
+package pine;
 
 class MultipleChildren implements Children {
   final render:()->Array<Null<Component>>;

@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 class ProxyElement extends Element {
   final child:SingleChild;
   var isInitialized:Bool = false;

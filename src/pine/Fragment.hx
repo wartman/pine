@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 class Fragment extends Component {
   static final type = new UniqueId();
 

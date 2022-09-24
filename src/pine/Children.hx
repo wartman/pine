@@ -1,4 +1,4 @@
-package pine.children;
+package pine;
 
 interface Children extends Disposable {
   public function hydrate(cursor:HydrationCursor, ?slot:Slot):Void;

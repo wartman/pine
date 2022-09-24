@@ -1,7 +1,5 @@
 package pine;
 
-import pine.children.*;
-
 class RootElement extends ObjectElement implements Root {
   final adapter:Adapter;
   final child:SingleChild;
