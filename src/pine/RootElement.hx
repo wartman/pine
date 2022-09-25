@@ -18,7 +18,7 @@ class RootElement extends ObjectElement implements Root {
     this.adapter = adapter;
     this.child = new SingleChild(
       () -> rootComponent.child,
-      new ElementFactory(this)
+      new DefaultElementFactory(this)
     );
   }
 
@@ -97,7 +97,7 @@ class RootElement extends ObjectElement implements Root {
   }
 
   function performUpdateSlot(?slot:Slot) {
-    child.updateSlot(slot); 
+    child.visit(child -> child.updateSlot(slot)); 
   }
 
   function performDispose() {

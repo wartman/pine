@@ -2,6 +2,7 @@ package pine;
 
 class ProxyElement extends Element {
   final child:SingleChild;
+
   var isInitialized:Bool = false;
   var proxyComponent(get, never):ProxyComponent;
 
@@ -13,7 +14,7 @@ class ProxyElement extends Element {
     super(component);
     child = new SingleChild(
       () -> proxyComponent.render(this),
-      new ElementFactory(this)
+      new DefaultElementFactory(this)
     );
   }
 
@@ -28,7 +29,7 @@ class ProxyElement extends Element {
   }
   
   function performUpdateSlot(?slot:Slot) {
-    child.updateSlot(slot); 
+    child.visit(child -> child.updateSlot(slot));
   }
 
   function performDispose() {

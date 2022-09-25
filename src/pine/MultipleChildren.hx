@@ -2,12 +2,14 @@ package pine;
 
 class MultipleChildren implements Children {
   final render:()->Array<Null<Component>>;
-  final factory:ElementFactory;
+  final elements:ElementFactory;
+  final slots:SlotFactory;
   var children:Array<Element> = [];
 
-  public function new(render, factory) {
+  public function new(render, elements, slots) {
     this.render = render;
-    this.factory = factory;
+    this.elements = elements;
+    this.slots = slots;
   }
 
   function initPrevious(?slot:Slot):Null<Element> {
@@ -22,7 +24,7 @@ class MultipleChildren implements Children {
 
     for (i in 0...components.length) {
       var comp = components[i];
-      var element = factory.hydrateChild(objects, comp, factory.createSlot(i, previous));
+      var element = elements.hydrate(objects, comp, slots.create(i, previous));
       children.push(element);
       previous = element;
     }
@@ -40,10 +42,6 @@ class MultipleChildren implements Children {
     }
   }
 
-  public function updateSlot(?slot:Slot) {
-    // noop
-  }
-
   function initializeChildren(?slot:Slot) {
     var components = renderSafe();
     var previous:Null<Element> = initPrevious(slot);
@@ -51,7 +49,7 @@ class MultipleChildren implements Children {
 
     for (i in 0...components.length) {
       var comp = components[i];
-      var element = factory.createChild(comp, factory.createSlot(i, previous));
+      var element = elements.create(comp, slots.create(i, previous));
       children.push(element);
       previous = element;
     }
@@ -94,7 +92,7 @@ class MultipleChildren implements Children {
         break;
       }
 
-      var newChild = factory.updateChild(oldChild, newComponent, factory.createSlot(newHead, previousChild));
+      var newChild = elements.update(oldChild, newComponent, slots.create(newHead, previousChild));
       newChildren[newHead] = newChild;
       previousChild = newChild;
       newHead += 1;
@@ -126,7 +124,7 @@ class MultipleChildren implements Children {
           if (oldChild.component.key != null) {
             oldKeyedChildren.set(oldChild.component.key, oldChild);
           } else {
-            factory.destroyChild(oldChild);
+            elements.destroy(oldChild);
           }
         }
         oldHead += 1;
@@ -161,7 +159,7 @@ class MultipleChildren implements Children {
         }
       }
 
-      var newChild = factory.updateChild(oldChild, newComponent, factory.createSlot(newHead, previousChild));
+      var newChild = elements.update(oldChild, newComponent, slots.create(newHead, previousChild));
       newChildren[newHead] = newChild;
       previousChild = newChild;
       newHead += 1;
@@ -174,7 +172,7 @@ class MultipleChildren implements Children {
     while ((oldHead <= oldTail) && (newHead <= newTail)) {
       var oldChild = oldChildren[oldHead];
       var newComponent = newComponents[newHead];
-      var newChild = factory.updateChild(oldChild, newComponent, factory.createSlot(newHead, previousChild));
+      var newChild = elements.update(oldChild, newComponent, slots.create(newHead, previousChild));
       newChildren[newHead] = newChild;
       previousChild = newChild;
       newHead += 1;
@@ -184,7 +182,7 @@ class MultipleChildren implements Children {
     // Clean up any remaining children. At this point, we should only
     // have to worry about keyed elements that are lingering around.
     if (hasOldChildren && (oldKeyedChildren != null && oldKeyedChildren.isNotEmpty())) {
-      oldKeyedChildren.each((_, element) -> factory.destroyChild(element));
+      oldKeyedChildren.each((_, element) -> elements.destroy(element));
     }
 
     Debug.assert(!Lambda.exists(newChildren, el -> el == null));

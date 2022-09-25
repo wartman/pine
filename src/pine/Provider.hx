@@ -46,7 +46,7 @@ class ProviderElement<T> extends Element {
   
   public function new(component:ProviderComponent<T>) {
     super(component);
-    child = new SingleChild(() -> provider.render(this), new ElementFactory(this));
+    child = new SingleChild(() -> provider.render(this), new DefaultElementFactory(this));
   }
 
   function performHydrate(cursor:HydrationCursor) {
@@ -61,7 +61,7 @@ class ProviderElement<T> extends Element {
   }
 
   function performUpdateSlot(?slot:Slot) {
-    child.updateSlot(slot);
+    child.visit(child -> child.updateSlot(slot));
   }
 
   public function visitChildren(visitor:ElementVisitor) {

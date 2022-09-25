@@ -45,15 +45,29 @@ class FragmentSlot extends Slot {
   }
 }
 
+class FragmentSlotFactory implements SlotFactory {
+  final element:FragmentElement;
+
+  public function new(element) {
+    this.element = element;
+  }
+
+  public function create(localIndex:Int, previous:Null<Element>):Slot {
+    var index = element.slot == null ? 0 : element.slot.index;
+    return new FragmentSlot(index, localIndex, previous);
+  }
+}
+
 private class FragmentChildren extends MultipleChildren {
   public var marker:Null<Element> = null;
   final element:FragmentElement;
 
-  public function new(element, factory) {
+  public function new(element, elements, slots) {
     this.element = element;
     super(
       () -> element.fragment.getChildren(),
-      factory
+      elements,
+      slots
     );
   }
 
@@ -63,7 +77,7 @@ private class FragmentChildren extends MultipleChildren {
 
   public function createMarker():Element {
     if (marker == null) {
-      marker = factory.createChild(Adapter.from(element).createPlaceholder(), element.slot);
+      marker = elements.create(Adapter.from(element).createPlaceholder(), element.slot);
     }
     return marker;
   }
@@ -88,7 +102,7 @@ private class FragmentChildren extends MultipleChildren {
     }
   }
 
-  override function updateSlot(?slot:Slot) {
+  public function updateChildSlots(?slot:Slot) {
     if (marker != null) {
       marker.updateSlot(slot);
     }
@@ -97,7 +111,7 @@ private class FragmentChildren extends MultipleChildren {
 
     for (i in 0...children.length) {
       var previous = i == 0 ? slot.previous : children[i - 1];
-      children[i].updateSlot(factory.createSlot(i, previous));
+      children[i].updateSlot(slots.create(i, previous));
     }
   }
 
@@ -120,10 +134,8 @@ private class FragmentElement extends Element {
     super(fragment);
     children = new FragmentChildren(
       this, 
-      new ElementFactory(this, (localIndex, previous) -> {
-        var index = slot != null ? slot.index : 0;
-        return new FragmentSlot(index, localIndex, previous);
-      })  
+      new DefaultElementFactory(this),
+      new FragmentSlotFactory(this)  
     );
   }
 
@@ -152,7 +164,7 @@ private class FragmentElement extends Element {
   }
 
   function performUpdateSlot(?slot:Slot) {
-    children.updateSlot(slot);    
+    children.updateChildSlots(slot);    
   }
 
   public function visitChildren(visitor:ElementVisitor) {

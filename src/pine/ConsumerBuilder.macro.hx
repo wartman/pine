@@ -99,7 +99,9 @@ private function buildConsumer(type:Type) {
       name: consumerName,
       pos: (macro null).pos,
       kind: createClassKind(ct),
-      meta: [],
+      meta: [
+        { name: ':deprecated', params: [ macro 'Use pine.Service instead' ], pos: (macro null).pos }
+      ],
       fields: builder.export()
     });
   }

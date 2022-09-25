@@ -14,7 +14,7 @@ class ObserverElement extends Element {
 
   public function new(component:ObserverComponent) {
     super(component);
-    child = new SingleChild(render, new ElementFactory(this));
+    child = new SingleChild(render, new DefaultElementFactory(this));
   }
 
   function performHydrate(cursor:HydrationCursor) {

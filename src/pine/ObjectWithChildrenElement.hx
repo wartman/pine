@@ -7,13 +7,12 @@ class ObjectWithChildrenElement extends ObjectElement {
     super(component);
     children = new MultipleChildren(
       () -> cast objectComponent.getChildren(),
-      new ElementFactory(this)
+      new DefaultElementFactory(this),
+      DefaultSlotFactory.instance
     );
   }
 
-  function performUpdateSlot(?slot:Slot) {
-    children.updateSlot(slot);
-  }
+  function performUpdateSlot(?slot:Slot) {}
 
   function performBuild(previousComponent:Null<Component>) {
     if (previousComponent == null) {

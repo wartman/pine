@@ -39,7 +39,7 @@ class PortalElement extends Element {
     super(component);
     child = new SingleChild(
       () -> Adapter.from(this).createPlaceholder(),
-      new ElementFactory(this)
+      new DefaultElementFactory(this)
     );
   }
 
@@ -82,7 +82,7 @@ class PortalElement extends Element {
   }
 
   function performUpdateSlot(?slot:Slot) {
-    child.updateSlot(slot); 
+    child.visit(child -> child.updateSlot(slot));
   }
 
   public function visitChildren(visitor:ElementVisitor) {
