@@ -90,6 +90,8 @@ class RootElement extends ObjectElement implements Root {
     Debug.assert(objects.current() == null);
   }
 
+  function performDispose() {}
+
   function visitChildren(visitor:ElementVisitor) {
     if (child != null) visitor.visit(child);
   }

@@ -66,10 +66,8 @@ class ObjectWithChildrenElement extends ObjectElement {
     children = diffChildren(children, components);
   }
 
-  override function dispose() {
+  function performDispose() {
     if (object != null) applicator.remove(object, slot);
-    super.dispose();
-
     object = null;
     children = [];
   }

@@ -26,6 +26,8 @@ class ProxyElement extends Element {
     if (previousComponent == null) proxyComponent.init(this);
   }
 
+  function performDispose() {}
+
   public function visitChildren(visitor:ElementVisitor) {
     if (child != null) {
       visitor.visit(child);

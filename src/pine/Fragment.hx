@@ -153,11 +153,10 @@ class FragmentElement extends Element {
     return new FragmentSlot(index, localIndex, previous);
   }
 
-  override function dispose() {
+  function performDispose() {
     if (marker != null) {
       marker.dispose();
       marker = null;
     }
-    super.dispose();
   }
 }

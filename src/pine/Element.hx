@@ -82,6 +82,8 @@ abstract class Element
   public function dispose() {
     Debug.assert(status != Building && status != Disposed);
 
+    performDispose();
+
     visitChildren(child -> child.dispose());
 
     for (disposable in disposables) disposable.dispose();
@@ -122,6 +124,8 @@ abstract class Element
   abstract function performHydrate(cursor:HydrationCursor):Void;
 
   abstract function performBuild(previousComponent:Null<Component>):Void;
+
+  abstract function performDispose():Void;
 
   abstract public function visitChildren(visitor:ElementVisitor):Void;
 

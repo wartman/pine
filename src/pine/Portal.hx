@@ -39,14 +39,6 @@ class PortalElement extends Element {
     super(component);
   }
 
-  override function dispose() {
-    if (portalRoot != null) {
-      portalRoot.dispose();
-      portalRoot = null;
-    }
-    super.dispose();
-  }
-
   function performHydrate(cursor:HydrationCursor) {
     Debug.assert(portalRoot == null);
 
@@ -75,6 +67,13 @@ class PortalElement extends Element {
     }
 
     child = updateChild(child, Adapter.from(this).createPlaceholder(), slot);
+  }
+
+  function performDispose() {
+    if (portalRoot != null) {
+      portalRoot.dispose();
+      portalRoot = null;
+    }
   }
 
   public function visitChildren(visitor:ElementVisitor) {
