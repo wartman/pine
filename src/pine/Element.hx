@@ -1,5 +1,6 @@
 package pine;
 
+import pine.Fragment.FragmentElement;
 import haxe.ds.Option;
 
 enum ElementStatus {
@@ -215,18 +216,23 @@ abstract class Element
   public function getObject():Dynamic {
     var object:Null<Dynamic> = null;
 
-    function visit(element:Element) {
+    visitChildren(element -> {
       Debug.assert(object == null, 'Element has more than one objects');
-      if (element.status == Disposed) {
-        return;
-      }
-      if (element is ObjectElement) {
-        object = element.getObject();
-      } else {
-        element.visitChildren(visit);
-      }
-    }
-    visit(this);
+      object = element.getObject();
+    });
+
+    // function visit(element:Element) {
+    //   Debug.assert(object == null, 'Element has more than one objects');
+    //   if (element.status == Disposed) {
+    //     return;
+    //   }
+    //   if (element is ObjectElement || element is FragmentElement) {
+    //     object = element.getObject();
+    //   } else {
+    //     element.visitChildren(visit);
+    //   }
+    // }
+    // visit(this);
 
     Debug.alwaysAssert(object != null, 'Element does not have an object');
 
