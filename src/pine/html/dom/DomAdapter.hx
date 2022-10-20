@@ -1,9 +1,9 @@
 package pine.html.dom;
 
 class DomAdapter extends Adapter {
-  static final process = new DomProcess();
-  static final elementApplicator = new HtmlElementApplicator();
-  static final textApplicator = new HtmlTextApplicator();
+  final process = new DomProcess();
+  final elementApplicator = new HtmlElementApplicator();
+  final textApplicator = new HtmlTextApplicator();
 
   public function new() {}
 

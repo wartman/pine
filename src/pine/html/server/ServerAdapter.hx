@@ -1,9 +1,9 @@
 package pine.html.server;
 
 class ServerAdapter extends Adapter {
-  static final process = new ServerProcess();
-  static final elementApplicator = new HtmlElementApplicator();
-  static final textApplicator = new HtmlTextApplicator();
+  final process = new ServerProcess();
+  final elementApplicator = new HtmlElementApplicator();
+  final textApplicator = new HtmlTextApplicator();
 
   public function new() {}  
 

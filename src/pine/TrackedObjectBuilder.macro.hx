@@ -31,6 +31,8 @@ private function buildTrackedObject(type:Type):ComplexType {
     var updates:Array<Expr> = [];
     var dispose:Array<Expr> = [];
 
+    hack_fixCompilerTypingOrder();
+
     switch ct {
       case TAnonymous(props):
         for (prop in props) switch prop.kind {
@@ -130,4 +132,24 @@ private function resolveName(type:Type):String {
       '';
   }
   return haxe.crypto.Md5.encode(name);
+}
+
+// @todo: find a better solution for this hack
+private function hack_fixCompilerTypingOrder() {
+  // This is a hack: it forces the compiler to have `pine.State` typed 
+  // before it defines the tracked object. If we don't do this, we may 
+  // run into some odd cases where compiling fails (that is, if we don't
+  // import pine.State somewhere else first).
+  //
+  // I may just be doing something wrong here
+  function ensure(path:String) {
+    var cls = Context.getType(path);
+    switch cls {
+      case TInst(t, params):
+        @:keep t.get();
+      default: throw 'assert';
+    }
+  }
+  ensure('pine.Observer');
+  ensure('pine.State');
 }
