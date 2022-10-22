@@ -1,5 +1,10 @@
 package pine;
 
+/**
+  The primary use for a Scope is to get access to `Context` at
+  a specific point in a component tree, or to quickly hook into
+  the Element lifecycle (init, render and dispose).
+**/
 @:allow(pine.ScopeElement)
 class Scope extends Component {
   static final type = new UniqueId();

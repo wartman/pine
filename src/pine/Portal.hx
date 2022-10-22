@@ -1,7 +1,46 @@
 package pine;
 
+import haxe.ds.Option;
+
+using pine.Cast;
+
 @:allow(pine)
 class Portal extends Component {
+  public static function getObjectMaybeInPortal(target:Element) {
+    var object:Null<Dynamic> = null;
+
+    function visit(el:Element) {
+      Debug.assert(object == null, 'More then one object found');
+      if (el is PortalElement) {
+        switch el.as(PortalElement).getPortalRoot() {
+          case Some(portal): 
+            object = portal.getObject();
+          case None if (el is ObjectElement): 
+            object = el.getObject();
+          case None: 
+            el.visitChildren(visit);
+        }
+      } else if (el is ObjectElement) { 
+        object = el.getObject();
+      } else {
+        el.visitChildren(visit);
+      }
+    }
+
+    if (target is PortalElement) {
+      switch target.as(PortalElement).getPortalRoot() {
+        case Some(portal): return portal.getObject();
+        case None:
+      }
+    }
+
+    target.visitChildren(visit);
+
+    Debug.assert(object != null, 'No object found');
+    
+    return object;
+  }
+
   public static final type = new UniqueId();
 
   final target:Dynamic;
@@ -74,6 +113,10 @@ class PortalElement extends Element {
       portalRoot.dispose();
       portalRoot = null;
     }
+  }
+
+  public function getPortalRoot():Option<Element> {
+    return portalRoot == null ? None : Some(portalRoot);
   }
 
   public function visitChildren(visitor:ElementVisitor) {
