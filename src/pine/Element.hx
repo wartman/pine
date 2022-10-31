@@ -190,19 +190,21 @@ abstract class Element
   }
 
   public function queryFirstChild(query:(child:Element) -> Bool):Option<Element> {
-    var found:Null<Element> = null;
+    var found:Option<Element> = None;
+
     visitChildren(child -> {
-      if (found != null) return;
+      if (found != None) return;
       if (query(child))
-        found = child;
+        found = Some(child);
       else 
         switch child.queryFirstChild(query) {
-          case Some(child) if (found == null):
-            found = child;
+          case Some(child) if (found == None):
+            found = Some(child);
           default:
         }
     });
-    return if (found == null) None else Some(found);
+
+    return found;
   }
 
   public function findChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>> {

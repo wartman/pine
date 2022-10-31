@@ -64,11 +64,11 @@ private function buildTrackedObject(type:Type):ComplexType {
               var getter = 'get_$name';
               var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
 
-              inits.push(macro this.$state = new pine.State($init));
+              inits.push(macro this.$state = new pine.state.State($init));
               updates.push(macro this.$state.set(props.$name));
               dispose.push(macro this.$state.dispose());
               builder.add(macro class {
-                final $state:pine.State<$t>;
+                final $state:pine.state.State<$t>;
 
                 public var $name(get, set):$t;
 
@@ -136,10 +136,10 @@ private function resolveName(type:Type):String {
 
 // @todo: find a better solution for this hack
 private function hack_fixCompilerTypingOrder() {
-  // This is a hack: it forces the compiler to have `pine.State` typed 
+  // This is a hack: it forces the compiler to have `pine.state.State` typed 
   // before it defines the tracked object. If we don't do this, we may 
   // run into some odd cases where compiling fails (that is, if we don't
-  // import pine.State somewhere else first).
+  // import pine.state.State somewhere else first).
   //
   // I may just be doing something wrong here
   function ensure(path:String) {
@@ -150,6 +150,6 @@ private function hack_fixCompilerTypingOrder() {
       default: throw 'assert';
     }
   }
-  ensure('pine.Observer');
-  ensure('pine.State');
+  ensure('pine.state.Observer');
+  ensure('pine.state.State');
 }

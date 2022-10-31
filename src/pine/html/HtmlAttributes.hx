@@ -18,6 +18,7 @@ typedef AriaAttributes = {
   @:html('aria-valuemin') @:optional final ariaValuemin:Float;
   @:html('aria-valuemax') @:optional final ariaValuemax:Float;
   @:html('aria-valuetext') @:optional final ariaValuetext:String;
+  @:html('aria-modal') @:optional final ariaModal:String;
 }
 
 // From https://github.com/haxetink/tink_domspec/blob/master/src/tink/domspec/Attributes.hx
