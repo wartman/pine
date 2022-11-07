@@ -10,7 +10,14 @@ class ProxyElement extends Element {
   }
 
   function render() {
-    return proxyComponent.render(this);
+    var comp = proxyComponent.render(this);
+    // Note: We always need an object leaf at the end of our component
+    // tree, so we have to handle cases where the user returns `null`. 
+    // We don't use `Adapter.from(this).createPlaceholder()` as there
+    // is some extra logic needed to ensure it works with hydration,
+    // which the Fragment takes care of.
+    if (comp == null) comp = new Fragment({ children: [] });
+    return comp;
   }
 
   function performHydrate(cursor:HydrationCursor) {

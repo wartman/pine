@@ -34,6 +34,7 @@ function resolveProvider(el:Expr, kind:Expr) {
 function buildProvider(type:Type) {
   var pack = ['pine'];
   var name = 'Provider';
+  var typeName = type.toString();
   var ct = type.toComplexType();
   var providerName = name + '_' + type.stringifyTypeForClassName();
   var providerPath:TypePath = {pack: pack, name: providerName, params: []};
@@ -53,10 +54,12 @@ function buildProvider(type:Type) {
       fields: (macro class {
         static final type = new pine.UniqueId();
 
-        public static function from(context:pine.Context):Null<$ct> {
+        public static function from(context:pine.Context):$ct {
           return switch maybeFrom(context) {
             case Some(value): value;
-            case None: null;
+            case None: throw new pine.PineException(
+              'No provider exists for the type ' + $v{typeName}
+            );
           }
         }
 
