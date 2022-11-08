@@ -1,17 +1,9 @@
 package pine;
 
+@component(ObserverComponent)
 class ObserverElement extends ProxyElement {
   var trackedObject:Null<Dynamic> = null;
   var computedRender:Null<Computation<Component>> = null;
-  var observerComponent(get, never):ObserverComponent;
-
-  inline function get_observerComponent():ObserverComponent {
-    return getComponent();
-  }
-
-  public function new(component:ObserverComponent) {
-    super(component);
-  }
 
   override function performHydrate(cursor:HydrationCursor) {
     trackedObject = observerComponent.createTrackedObject();
@@ -43,22 +35,33 @@ class ObserverElement extends ProxyElement {
   }
 
   function createRenderComputation() {
-    Debug.assert(computedRender == null);
-    Debug.assert(status == Building, '`setupObserver` should ONLY be called from `performHydrate` or `performBuild`');
+    Debug.assert(
+      computedRender == null,
+      '`createRenderComputation` was called more than once.'
+    );
+    Debug.assert(
+      status == Building,
+      '`createRenderComputation` should ONLY be called from `performHydrate` or `performBuild`'
+    );
     
-    var ran = 0;
     return new Computation<Component>(() -> {
+      Debug.assert(
+        status != Disposing,
+        'A computation was not disposed correctly and has been triggered '
+        + 'during its element\'s disposal process. This will result in strange '
+        + 'behavior and/or errors.'
+      );
       var result = render();
       if (status != Building) invalidate();
       return result;
     });
   }
 
-  override function dispose() {
+  override function prepareForDisposal() {
     if (computedRender != null) {
       computedRender.dispose();
       computedRender = null;
     }
-    super.dispose();
+    super.prepareForDisposal();
   }
 }

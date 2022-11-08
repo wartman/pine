@@ -1,14 +1,12 @@
 package pine;
 
+@component(RootComponent)
 class RootElement extends ObjectElement implements Root {
   final adapter:Adapter;
 
   var child:Null<Element> = null;
   var isScheduled:Bool = false;
   var invalidElements:Null<Array<Element>> = null;
-
-  public var rootComponent(get, never):RootComponent;
-  inline function get_rootComponent():RootComponent return getComponent();
 
   public function new(rootComponent:RootComponent, adapter) {
     super(rootComponent);

@@ -7,6 +7,7 @@ enum ElementStatus {
   Valid;
   Invalid;
   Building;
+  Disposing;
   Disposed;
 }
 
@@ -15,6 +16,7 @@ enum abstract HydratingStatus(Bool) to Bool {
   var NotHydrating = false;
 }
 
+@:autoBuild(pine.ElementBuilder.build())
 abstract class Element 
   implements Context 
   implements InitContext
@@ -76,14 +78,21 @@ abstract class Element
     status = Valid;
   }
 
+  function prepareForDisposal() {
+    status = Disposing;  
+    visitChildren(child -> child.prepareForDisposal());
+  }
+
   public function dispose() {
     Debug.assert(status != Building && status != Disposed);
-    status = Disposed;
+    
+    prepareForDisposal();
+    performDispose();
 
     visitChildren(child -> child.dispose());
     for (disposable in disposables) disposable.dispose();
-    performDispose();
-
+    
+    status = Disposed;
     parent = null;
     root = null;
     slot = null;

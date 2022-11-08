@@ -65,18 +65,10 @@ class Portal extends Component {
   }
 }
 
+@component(Portal)
 class PortalElement extends Element {
-  var portal(get, never):Portal;
-  inline function get_portal():Portal {
-    return getComponent();
-  }
-
   var portalRoot:Null<Element> = null;
   var child:Null<Element> = null;
-
-  public function new(component:Portal) {
-    super(component);
-  }
 
   function performHydrate(cursor:HydrationCursor) {
     Debug.assert(portalRoot == null);

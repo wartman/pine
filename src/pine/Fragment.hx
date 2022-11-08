@@ -45,15 +45,10 @@ class FragmentSlot extends Slot {
   }
 }
 
+@component(Fragment)
 class FragmentElement extends Element {
   var children:Array<Element> = [];
   var marker:Null<Element>;
-  var fragment(get, never):Fragment;
-  function get_fragment():Fragment return getComponent();
-
-  public function new(fragment:Fragment) {
-    super(fragment);
-  }
 
   override function getObject():Dynamic {
     Debug.alwaysAssert(root != null);

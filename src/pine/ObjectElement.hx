@@ -1,21 +1,13 @@
 package pine;
 
+@component(ObjectComponent)
 abstract class ObjectElement extends Element {
   var object:Null<Dynamic> = null;
-  
-  var objectComponent(get, never):ObjectComponent;
-  inline function get_objectComponent():ObjectComponent {
-    return getComponent();
-  }
 
   @:isVar var applicator(get, null):Null<ObjectApplicator<Dynamic>>;
   function get_applicator():ObjectApplicator<Dynamic> {
     if (this.applicator == null) this.applicator = objectComponent.getApplicator(this);
     return this.applicator;
-  }
-
-  public function new(component:ObjectComponent) {
-    super(component);
   }
 
   override function getObject():Dynamic {

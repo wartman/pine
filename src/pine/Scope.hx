@@ -34,14 +34,9 @@ class Scope extends Component {
   }
 }
 
+@component(Scope)
 class ScopeElement extends Element {
   var child:Null<Element> = null;
-  var scope(get, never):Scope;
-  inline function get_scope():Scope return getComponent();
-
-  public function new(scope:Scope) {
-    super(scope);
-  }
 
   function performDispose() {
     if (scope.dispose != null) scope.dispose(this);

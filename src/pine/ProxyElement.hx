@@ -1,13 +1,8 @@
 package pine;
 
+@component(ProxyComponent)
 class ProxyElement extends Element {
   var child:Null<Element> = null;
-  var proxyComponent(get, never):ProxyComponent;
-  inline function get_proxyComponent():ProxyComponent return getComponent();
-
-  public function new(component:ProxyComponent) {
-    super(component);
-  }
 
   function render() {
     var comp = proxyComponent.render(this);
