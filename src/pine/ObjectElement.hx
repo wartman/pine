@@ -6,7 +6,9 @@ abstract class ObjectElement extends Element {
 
   @:isVar var applicator(get, null):Null<ObjectApplicator<Dynamic>>;
   function get_applicator():ObjectApplicator<Dynamic> {
-    if (this.applicator == null) this.applicator = objectComponent.getApplicator(this);
+    if (this.applicator == null) { 
+      this.applicator = objectComponent.getApplicator(this);
+    }
     return this.applicator;
   }
 

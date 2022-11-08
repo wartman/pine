@@ -2,6 +2,9 @@ package pine;
 
 import haxe.Exception;
 
+// @todo: This is just a placeholder at the moment, as I'm
+// still trying to figure out the best way to implement this.
+//
 // Usage will be something like:
 // ErrorBoundary.from(context).handle(exception);
 

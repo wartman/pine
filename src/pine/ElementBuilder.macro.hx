@@ -17,6 +17,8 @@ function build() {
         var getter = 'get_$name';
         var complexType = type.toString().toComplex();
         
+        // @todo: Check that complexType is valid
+
         builder.add(macro class {
           var $name(get, never):$complexType;
           inline function $getter():$complexType return getComponent();
@@ -30,11 +32,12 @@ function build() {
             }
           });
         }
-
-      case [ { params: _, pos: pos } ]:
-        Context.error('Invalid arguments', pos);
-      default:
-        Context.error('Invalid metadata', cls.pos);
+      case [ { params: [], pos: pos } ]:
+        Context.error('Argument expected', pos);
+      case [ { params: params, pos: pos } ]:
+        Context.error('Too many arguments', params[1].pos);
+      case metas:
+        Context.error('Only one @component metadata is allowed per Element', metas[1].pos);
     }
 
     cls.meta.remove('component');

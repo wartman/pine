@@ -78,6 +78,10 @@ abstract class Element
     status = Valid;
   }
 
+  // @todo: This is here entirely to make sure that the ObserverElement
+  // disposes in the correct order. There may be a better way -- looping
+  // through children twice per disposal is probably not super 
+  // efficient.
   function prepareForDisposal() {
     status = Disposing;  
     visitChildren(child -> child.prepareForDisposal());
