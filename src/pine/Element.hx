@@ -1,6 +1,5 @@
 package pine;
 
-import pine.Fragment.FragmentElement;
 import haxe.ds.Option;
 
 enum ElementStatus {
@@ -16,9 +15,6 @@ enum abstract HydratingStatus(Bool) to Bool {
   var NotHydrating = false;
 }
 
-// @todo: Figure out how to wrap errors that occour during
-// rendering. This may work best with some sort of 
-// ErrorBoundary component.
 abstract class Element 
   implements Context 
   implements InitContext
@@ -82,12 +78,12 @@ abstract class Element
 
   public function dispose() {
     Debug.assert(status != Building && status != Disposed);
+    status = Disposed;
 
     visitChildren(child -> child.dispose());
     for (disposable in disposables) disposable.dispose();
     performDispose();
 
-    status = Disposed;
     parent = null;
     root = null;
     slot = null;
@@ -173,8 +169,6 @@ abstract class Element
     }
   }
 
-  // @todo: This is a potentially costly method. Is there a way we can make it
-  // work better? Or should we simply discourage it?
   public function queryChildren(query:(child:Element) -> Bool):Option<Array<Element>> {
     var found:Array<Element> = [];
     visitChildren(child -> {
@@ -220,19 +214,6 @@ abstract class Element
       Debug.assert(object == null, 'Element has more than one objects');
       object = element.getObject();
     });
-
-    // function visit(element:Element) {
-    //   Debug.assert(object == null, 'Element has more than one objects');
-    //   if (element.status == Disposed) {
-    //     return;
-    //   }
-    //   if (element is ObjectElement || element is FragmentElement) {
-    //     object = element.getObject();
-    //   } else {
-    //     element.visitChildren(visit);
-    //   }
-    // }
-    // visit(this);
 
     Debug.alwaysAssert(object != null, 'Element does not have an object');
 
