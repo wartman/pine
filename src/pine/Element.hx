@@ -83,11 +83,9 @@ abstract class Element
   public function dispose() {
     Debug.assert(status != Building && status != Disposed);
 
-    performDispose();
-
     visitChildren(child -> child.dispose());
-
     for (disposable in disposables) disposable.dispose();
+    performDispose();
 
     status = Disposed;
     parent = null;

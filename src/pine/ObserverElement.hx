@@ -46,7 +46,8 @@ class ObserverElement extends ProxyElement {
     Debug.assert(computedRender == null);
     Debug.assert(status == Building, '`setupObserver` should ONLY be called from `performHydrate` or `performBuild`');
     
-    return new Computation(() -> {
+    var ran = 0;
+    return new Computation<Component>(() -> {
       var result = render();
       if (status != Building) invalidate();
       return result;
@@ -54,10 +55,10 @@ class ObserverElement extends ProxyElement {
   }
 
   override function dispose() {
-    super.dispose();
     if (computedRender != null) {
       computedRender.dispose();
       computedRender = null;
     }
+    super.dispose();
   }
 }

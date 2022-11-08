@@ -2,6 +2,8 @@ import medic.*;
 import unit.*;
 import integration.*;
 
+// @todo: Completely rethink tests.
+
 function main() {
   var tests = new Runner(new DefaultReporter({
     title: 'Pine Tests',
