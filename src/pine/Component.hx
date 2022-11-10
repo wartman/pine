@@ -12,6 +12,8 @@ abstract class Component {
   abstract public function createElement():Element;
 
   public function shouldBeUpdated(newComponent:Component):Bool {
-    return getComponentType() == newComponent.getComponentType() && key == newComponent.key;
+    return 
+      getComponentType() == newComponent.getComponentType() 
+      && key == newComponent.key;
   }
 }

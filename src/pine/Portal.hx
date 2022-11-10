@@ -100,12 +100,15 @@ class PortalElement extends Element {
     child = updateChild(child, Adapter.from(this).createPlaceholder(), slot);
   }
 
-  function performDispose() {
+  override function prepareForDisposal() {
     if (portalRoot != null) {
       portalRoot.dispose();
       portalRoot = null;
     }
+    super.prepareForDisposal();
   }
+
+  function performDispose() {}
 
   public function getPortalRoot():Option<Element> {
     return portalRoot == null ? None : Some(portalRoot);

@@ -1,6 +1,7 @@
 package pine;
 
 import haxe.macro.Context;
+import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
 
 using haxe.macro.Tools;
@@ -13,9 +14,9 @@ function build() {
   if (cls.meta.has('component')) {
     switch cls.meta.extract('component') {
       case [ { params: [ type ], pos: pos } ]:
-        var name = lcFirst(type.toString().split('.').pop());
+        var name = resolveNameFromExpr(type);
+        var complexType = resolveTypeFromExpr(type);
         var getter = 'get_$name';
-        var complexType = type.toString().toComplex();
         
         // @todo: Check that complexType is valid
 
@@ -44,6 +45,31 @@ function build() {
   }
 
   return builder.export();
+}
+
+function resolveTypeFromExpr(type:Expr):ComplexType {
+  return switch type.expr {
+    case ECall(e, params):
+      var pack = e.toString().split('.');
+      var name = pack.pop();
+      var params = params.map(resolveTypeFromExpr);
+      return TPath({
+        pack: pack,
+        name: name,
+        params: params.map(ct -> TPType(ct)) 
+      });
+    default:
+      type.toString().toComplex();
+  }
+}
+
+function resolveNameFromExpr(type:Expr) {
+  return switch type.expr {
+    case ECall(e, params):
+      resolveNameFromExpr(e);
+    default:
+      lcFirst(type.toString().split('.').pop());
+  }
 }
 
 function lcFirst(str:String) {
