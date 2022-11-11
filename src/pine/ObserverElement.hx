@@ -27,6 +27,13 @@ class ObserverElement extends ProxyElement {
       observerComponent.init(this);
     }
 
+    // Note: If we don't replace the render computation when we
+    // recieve a new Component, the Element will never re-render.
+    if (previousComponent != component && computedRender != null) {
+      computedRender.dispose();
+      computedRender = null;
+    }
+
     if (computedRender == null) {
       computedRender = createRenderComputation();
     }
