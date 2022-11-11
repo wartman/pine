@@ -1,5 +1,7 @@
 package pine.state;
 
+import pine.state.Engine;
+
 class Computation<T> extends State<T> {
   final observer:Observer;
 
@@ -11,6 +13,11 @@ class Computation<T> extends State<T> {
       if (!first) notify();
       first = false;
     });
+  }
+
+  public function revalidate() {
+    observer.invalidate();
+    validateObservers();
   }
 
   override function dispose() {
