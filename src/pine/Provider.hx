@@ -64,7 +64,6 @@ class ProviderElement<T> extends Element {
   }
 
   function performDispose() {
-    // for (child in dependencies) dependencies.remove(child);
     if (value != null) providerComponent.dispose(value);
     value = null;
   }

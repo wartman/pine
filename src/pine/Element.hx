@@ -83,7 +83,7 @@ abstract class Element
   // through children twice per disposal is probably not super 
   // efficient.
   function prepareForDisposal() {
-    status = Disposing;  
+    status = Disposing;
     visitChildren(child -> child.prepareForDisposal());
   }
 
@@ -175,6 +175,10 @@ abstract class Element
     }
   }
 
+  public function findAncestorOfComponentType<T:Component>(kind:Class<T>):Option<Element> {
+    return queryAncestors(parent -> Std.isOfType(parent.getComponent(), kind));
+  }
+
   function findAncestorObject():Dynamic {
     return switch findAncestorOfType(ObjectElement) {
       case None: Debug.error('Unable to find ObjectElement ancestor.');
@@ -184,14 +188,25 @@ abstract class Element
 
   public function queryChildren(query:(child:Element) -> Bool):Option<Array<Element>> {
     var found:Array<Element> = [];
+    
     visitChildren(child -> {
       if (query(child)) found.push(child);
       switch child.queryChildren(query) {
-        case Some(children): for (c in children) found.push(c);
+        case Some(children): 
+          found = found.concat(children);
         case None:
       }
     });
+
     return if (found.length == 0) None else Some(found);
+  }
+
+  public function queryChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>> {
+    return cast queryChildren(child -> Std.isOfType(child, kind));
+  }
+
+  public function queryChildrenOfComponentType<T:Component>(kind:Class<T>):Option<Array<Element>> {
+    return queryChildren(child -> Std.isOfType(child.getComponent(), kind));
   }
 
   public function queryFirstChild(query:(child:Element) -> Bool):Option<Element> {
@@ -212,10 +227,26 @@ abstract class Element
     return found;
   }
 
+  public function queryFirstChildOfType<T:Element>(kind:Class<T>):Option<T> {
+    return cast queryFirstChild(child -> Std.isOfType(child, kind));
+  }
+
+  public function queryFirstChildOfComponentType<T:Component>(kind:Class<T>):Option<Element> {
+    return queryFirstChild(child -> Std.isOfType(child.getComponent(), kind));
+  }
+
   public function findChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>> {
     var found:Array<T> = [];
     visitChildren(child -> if (Std.isOfType(child, kind)) {
       found.push(cast child);
+    });
+    return if (found.length == 0) None else Some(found);
+  }
+
+  public function findChildrenOfComponentType<T:Component>(kind:Class<T>):Option<Array<Element>> {
+    var found:Array<Element> = [];
+    visitChildren(child -> if (Std.isOfType(child.getComponent(), kind)) {
+      found.push(child);
     });
     return if (found.length == 0) None else Some(found);
   }

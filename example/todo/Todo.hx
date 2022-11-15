@@ -45,7 +45,7 @@ enum abstract TodoVisibility(String) from String to String {
 typedef TodoProvider = Provider<TodoStore>;
 
 class TodoStore implements Record {
-  static inline final storageId = 'blok-todo-store';
+  static inline final storageId = 'pine-todo-store';
 
   public inline static function from(context:Context) {
     return TodoProvider.from(context);
@@ -313,14 +313,14 @@ class TodoInput extends ObserverComponent {
   @track var value:String;
 
   #if (js && !nodejs)
-    override function init(context:InitContext) {
-      Effect.on(context).track(() -> {
-        if (isEditing) {
-          var el:js.html.InputElement = cast context.getObject();
-          el.focus();
-        }
-      });
-    }
+  override function init(context:InitContext) {
+    Effect.on(context).track(() -> {
+      if (isEditing) {
+        var el:js.html.InputElement = cast context.getObject();
+        el.focus();
+      }
+    });
+  }
   #end
 
   function render(context:Context):Component {
