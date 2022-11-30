@@ -1,0 +1,12 @@
+{
+  "name": "Pine",
+  "classPath": "src",
+  "version": "0.0.1",
+  "description": "Isomorphic UI for haxe",
+  "license": "MIT",
+  "releasenote": "Pre-alpha",
+  "contributors": [
+    "wartman"
+  ],
+  "dependencies": {}
+}
