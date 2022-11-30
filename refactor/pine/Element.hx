@@ -30,11 +30,15 @@ class Element
 
   public function new(component) {
     this.component = component;
-    this.object = component.createObjectManager(this);
-    this.children = component.createChildrenManager(this);
-    this.slots = component.createSlotManager(this);
-    this.ancestors = component.createAncestorManager(this);
+
     this.hooks.add(component.createLifecycleHooks());
+
+    // @todo: Uh. We may need to rethink some things. Null Safety is right,
+    // we're playing a dangerous game here.
+    this.ancestors = component.createAncestorManager(@:nullSafety(Off) this);
+    this.object = component.createObjectManager(@:nullSafety(Off) this);
+    this.children = component.createChildrenManager(@:nullSafety(Off) this);
+    this.slots = component.createSlotManager(@:nullSafety(Off) this);
   }
 
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
@@ -159,6 +163,7 @@ class Element
   }
 
   public function dispose() {
+    hooks.onDispose(this);
     object.dispose();
     slots.dispose();
     children.dispose();

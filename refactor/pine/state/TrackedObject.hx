@@ -1,6 +1,4 @@
 package pine.state;
 
-// @todo
-
-// @:genericBuild(pine.state.TrackedObjectBuilder.buildGeneric())
-// class TrackedObject<T> {}
+@:genericBuild(pine.internal.TrackedObjectBuilder.buildGeneric())
+class TrackedObject<T> {}

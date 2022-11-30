@@ -33,7 +33,7 @@ class Debug {
     }
 
     return macro @:pos(expr.pos) if (!$expr) {
-      pine.Debug.error($message);
+      pine.debug.Debug.error($message);
     }
   }
   #end

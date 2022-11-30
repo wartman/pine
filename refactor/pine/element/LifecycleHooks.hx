@@ -5,6 +5,7 @@ import pine.hydration.Cursor;
 typedef LifecycleHooks = {
   public final ?beforeInit:(element:Element)->Void;
   public final ?afterInit:(element:Element)->Void;
+  public final ?onDispose:(element:Element)->Void;
   public final ?shouldHydrate:(element:Element, cursor:Cursor)->Bool;
   public final ?beforeHydrate:(element:Element, cursor:Cursor)->Void;
   public final ?afterHydrate:(element:Element, cursor:Cursor)->Void;

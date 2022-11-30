@@ -1,1 +1,12 @@
 -cp refactor
+-cp example
+
+-D js-es=6
+-D debug
+-D analyzer-optimize
+
+--macro nullSafety("pine")
+
+-main todo.RefactoredTodo
+
+-js dist/assets/app.js

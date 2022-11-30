@@ -26,7 +26,7 @@ class CoreChildrenQuery implements ChildrenQuery {
   }
 
   public function find(match:(child:Element) -> Bool, recursive:Bool = false):Option<Element> {
-    var result:Element = null;
+    var result:Null<Element> = null;
 
     element.visitChildren(child -> {
       if (match(child)) {

@@ -6,11 +6,9 @@ import pine.element.*;
 import pine.element.core.*;
 import pine.element.proxy.*;
 import pine.hydration.Cursor;
-import pine.internal.UniqueId;
 
-class Fragment extends Component {
-  public static final componentType = new UniqueId();
-
+@:build(pine.internal.ComponentUniqueIdBuilder.build())
+final class Fragment extends Component {
   public final children:Array<Component>;
 
   public function new(props:{
@@ -19,10 +17,6 @@ class Fragment extends Component {
   }) {
     super(props.key);
     this.children = props.children;
-  }
-
-  public function getComponentType():UniqueId {
-    return componentType;
   }
 
   function createAncestorManager(element:Element):AncestorManager {
@@ -105,7 +99,7 @@ class FragmentObjectManager extends ProxyObjectManager {
     return child.getObject();
   }
 
-  function createMarker() {
+  function createMarker():Element {
     if (marker == null) {
       var component = Adapter.from(element).createPlaceholder();
       marker = component.createElement();
