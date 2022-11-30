@@ -2,9 +2,9 @@ package todo;
 
 import haxe.Json;
 #if (js && !nodejs)
-  import pine.html.dom.DomBootstrap;
+import pine.html.dom.DomBootstrap;
 #else
-  import pine.html.server.ServerBootstrap;
+import pine.html.server.ServerBootstrap;
 #end
 import pine.*;
 import pine.html.*;
@@ -314,12 +314,16 @@ class TodoInput extends ObserverComponent {
 
   #if (js && !nodejs)
   override function init(context:InitContext) {
-    Effect.on(context).track(() -> {
+    var obs = new Observer(() -> {
       if (isEditing) {
         var el:js.html.InputElement = cast context.getObject();
         el.focus();
       }
     });
+    // If you create an observer here, be sure you also
+    // enqueue it for disposal. This pattern probably won't
+    // come up a lot, but it's here just in case.
+    context.addDisposable(obs);
   }
   #end
 
