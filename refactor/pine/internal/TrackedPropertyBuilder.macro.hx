@@ -108,7 +108,10 @@ class TrackedPropertyBuilder extends ClassBuilder {
           var getter = 'get_$name';
           var setter = 'set_$name';
           var tracked = this.getTrackedObjectExpr();
+          var meta = field.meta.find(m -> m.name == 'track');
 
+          field.meta.remove(meta);
+          
           addInitProp(prop);
           addProp(prop);
 

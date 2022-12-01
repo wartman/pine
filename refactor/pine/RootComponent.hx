@@ -1,12 +1,13 @@
 package pine;
 
+import pine.adapter.Adapter;
 import pine.diffing.Key;
 import pine.element.*;
 import pine.element.proxy.*;
 import pine.element.root.*;
 
-abstract class RootComponent extends Component {
-  public final child:Null<Component>;
+abstract class RootComponent extends ObjectComponent {
+  public final child:Component;
 
   public function new(props:{
     child:Component,
@@ -16,11 +17,9 @@ abstract class RootComponent extends Component {
     super(props.key);
   }
 
-  abstract public function createRoot():Root;
-  
-  function createAncestorManager(element:Element):AncestorManager {
-    return new RootAncestorManager(element, createRoot());
-  }
+  abstract public function getRootObject():Dynamic;
+
+  abstract public function createAdapter():Adapter;
 
   function createChildrenManager(element:Element):ChildrenManager {
     return new ProxyChildrenManager(element, context -> {
@@ -28,12 +27,16 @@ abstract class RootComponent extends Component {
       root.child;
     });
   }
+  
+  override function createAdapterManager(_) {
+    return new RootAdapterManager(createAdapter());
+  }
 
-  function createSlotManager(element:Element):SlotManager {
+  override function createSlotManager(element:Element):SlotManager {
     return new ProxySlotManager(element);
   }
 
-  function createObjectManager(element:Element):ObjectManager {
+  override function createObjectManager(element:Element):ObjectManager {
     return new RootObjectManager(element);
   }
 

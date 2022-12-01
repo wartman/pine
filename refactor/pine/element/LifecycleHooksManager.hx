@@ -51,6 +51,10 @@ class LifecycleHooksManager {
     for (hook in hooks) if (hook.afterUpdate != null) hook.afterUpdate(element);
   }
 
+  public function onUpdateSlot(element:Element, oldSlot:Null<Slot>, newSlot:Null<Slot>) {
+    for (hook in hooks) if (hook.onUpdateSlot != null) hook.onUpdateSlot(element, oldSlot, newSlot);
+  }
+
   public function onDispose(element:Element) {
     for (hook in hooks) if (hook.onDispose != null) hook.onDispose(element);
   }

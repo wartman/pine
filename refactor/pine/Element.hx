@@ -1,5 +1,6 @@
 package pine;
 
+import pine.adapter.*;
 import pine.core.*;
 import pine.debug.Debug;
 import pine.element.*;
@@ -10,46 +11,44 @@ import pine.hydration.Cursor;
   Components, and most of their functionality is provided by various
   "Managers". Generally, you should not be creating subclasses of Element
   -- instead, use Components to configure the Managers the Element will
-  use. For more fine-grained control, you can use LifecycleHooks.
+  use. For more fine-grained control, you can also create LifecycleHooks
+  in a Component.
 **/
 @:allow(pine)
 class Element
   implements Context
   implements Disposable 
-  implements DisposableHost 
+  implements DisposableHost
+  implements HasLazyProps 
 {
   final hooks:LifecycleHooksManager = new LifecycleHooksManager();
   final disposables:DisposableManager = new DisposableManager();
-  final object:ObjectManager;
-  final slots:SlotManager;
-  final children:ChildrenManager;
-  final ancestors:AncestorManager;
+  
+  @lazy var object:ObjectManager = component.createObjectManager(this);
+  @lazy var adapter:AdapterManager = component.createAdapterManager(this);
+  @lazy var slots:SlotManager = component.createSlotManager(this);
+  @lazy var children:ChildrenManager = component.createChildrenManager(this);
+  @lazy var ancestors:AncestorManager = component.createAncestorManager(this);
 
   var component:Component;
   var status:ElementStatus = Pending;
 
   public function new(component) {
     this.component = component;
-
     this.hooks.add(component.createLifecycleHooks());
-
-    // @todo: Uh. We may need to rethink some things. Null Safety is right,
-    // we're playing a dangerous game here.
-    this.ancestors = component.createAncestorManager(@:nullSafety(Off) this);
-    this.object = component.createObjectManager(@:nullSafety(Off) this);
-    this.children = component.createChildrenManager(@:nullSafety(Off) this);
-    this.slots = component.createSlotManager(@:nullSafety(Off) this);
   }
 
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
+    hooks.beforeInit(this);
+
     status = Building;
-    if (hooks.beforeInit != null) hooks.beforeInit(this);
     object.init();
     children.init();
-    if (hooks.afterInit != null) hooks.afterInit(this);
     status = Valid;
+    
+    hooks.afterInit(this);
   }
 
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
@@ -66,11 +65,12 @@ class Element
     hooks.afterHydrate(this, cursor);
   }
 
-  function init(parent:Null<Element>, newSlot:Null<Slot>) {
+  function init(parent:Null<Element>, slot:Null<Slot>) {
     Debug.assert(status == Pending, 'Attempted to mount an already mounted Element');
     
+    adapter.update(parent);
     ancestors.update(parent);
-    slots.update(newSlot);
+    slots.init(slot);
 
     status = Valid;
   }
@@ -119,8 +119,8 @@ class Element
 
     status = Invalid;
 
-    switch ancestors.getRoot() {
-      case Some(root): root.requestRebuild(this);
+    switch adapter.get() {
+      case Some(adapter): adapter.requestRebuild(this);
       case None:
     }
   }
@@ -135,7 +135,9 @@ class Element
   }
 
   public function updateSlot(newSlot:Slot) {
+    var oldSlot = slots.get();
     slots.update(newSlot);
+    hooks.onUpdateSlot(this, oldSlot, newSlot);
   }
 
 	public function getObject():Dynamic {
@@ -146,8 +148,8 @@ class Element
     return cast component;
 	}
 
-  public function getRoot() {
-    return ancestors.getRoot();
+  public function getAdapter() {
+    return adapter.get();
   }
 
   public function queryAncestors():AncestorQuery {

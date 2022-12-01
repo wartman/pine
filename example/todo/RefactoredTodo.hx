@@ -1,11 +1,19 @@
 package todo;
 
+import js.Browser;
 import pine.*;
-import pine.state.*;
+import pine.html.*;
+import pine.html.client.ClientRoot;
+import pine.state.Observer;
 import haxe.Json;
 
+using Reflect;
+
 function main() {
-  
+  ClientRoot.mount(
+    Browser.document.getElementById('root'),
+    new TodoApp({})
+  );
 }
 
 class Todo implements Record {
@@ -40,9 +48,6 @@ class TodoStore implements Record {
   // }
 
   public static function load() {
-    #if nodejs
-    return new TodoStore({uid: 0, todos: [], visibility: All});
-    #else
     var data = js.Browser.window.localStorage.getItem(storageId);
     var store = if (data == null) {
       new TodoStore({uid: 0, todos: [], visibility: All});
@@ -55,7 +60,6 @@ class TodoStore implements Record {
     });
 
     return store;
-    #end
   }
 
   public static function fromJson(data:Dynamic) {
@@ -98,7 +102,9 @@ class TodoStore implements Record {
 
 class TodoApp extends AutoComponent {
   public function render(context:Context):Component {
-    return null;
+    return new Html<'div'>({
+      children: 'foo'
+    });
   }
 }
 

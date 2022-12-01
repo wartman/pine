@@ -1,5 +1,6 @@
 package pine;
 
+import pine.core.HasComponentType;
 import pine.adapter.Adapter;
 import pine.diffing.Key;
 import pine.element.*;
@@ -7,8 +8,7 @@ import pine.element.core.*;
 import pine.element.proxy.*;
 import pine.hydration.Cursor;
 
-@:build(pine.internal.ComponentUniqueIdBuilder.build())
-final class Fragment extends Component {
+final class Fragment extends Component implements HasComponentType {
   public final children:Array<Component>;
 
   public function new(props:{
@@ -17,6 +17,10 @@ final class Fragment extends Component {
   }) {
     super(props.key);
     this.children = props.children;
+  }
+
+  function createAdapterManager(element:Element):AdapterManager {
+    return new CoreAdapterManager();
   }
 
   function createAncestorManager(element:Element):AncestorManager {

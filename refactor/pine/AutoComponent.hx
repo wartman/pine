@@ -9,6 +9,10 @@ import pine.element.proxy.*;
 @:autoBuild(pine.internal.ComponentTrackedPropertyBuilder.build())
 abstract class AutoComponent extends Component {
   abstract public function render(context:Context):Component;
+  
+  function createAdapterManager(element:Element):AdapterManager {
+    return new CoreAdapterManager();
+  }
 
   final function createAncestorManager(element:Element):AncestorManager {
     return new CoreAncestorManager(element);

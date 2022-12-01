@@ -10,15 +10,44 @@ abstract class Adapter {
   }
 
   public static function maybeFrom(context:Context):Option<Adapter> {
-    return switch context.getRoot() {
-      case Some(root): Some(root.getAdapter());
-      case None: None;
-    }
+    return context.getAdapter();
   }
 
+  var isScheduled:Bool = false;
+  var invalidElements:Null<Array<Element>> = null;
+
   abstract public function getProcess():Process;
-  // abstract public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
-  // abstract public function getTextApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
+  abstract public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
+  abstract public function getTextApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
   abstract public function createPlaceholder():Component;
-  // abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
+  abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
+
+  public function requestRebuild(element:Element):Void {
+    if (invalidElements == null) {
+      invalidElements = [];
+      scheduleRebuildInvalidElements();
+    }
+
+    if (invalidElements.contains(element)) return;
+
+    invalidElements.push(element);
+  }
+  
+  function scheduleRebuildInvalidElements() {
+    if (isScheduled) return;
+    isScheduled = true;
+    getProcess().defer(rebuildInvalidElements);
+  }
+
+  function rebuildInvalidElements() {
+    isScheduled = false;
+
+    if (invalidElements == null) {
+      return;
+    }
+
+    var elements = invalidElements.copy();
+    invalidElements = null;
+    for (el in elements) el.rebuild();
+  }
 }

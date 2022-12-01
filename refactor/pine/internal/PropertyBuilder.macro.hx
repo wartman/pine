@@ -5,6 +5,7 @@ import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
 import pine.macro.MacroTools;
 
+using Lambda;
 using pine.macro.MacroTools;
 
 class PropertyBuilder extends ClassBuilder {
@@ -45,10 +46,13 @@ class PropertyBuilder extends ClassBuilder {
       switch field.kind {
         case FVar(t, e):
           var name = field.name;
+          var meta = field.meta.find(m -> m.name == 'prop');
 
           if (!field.access.contains(AFinal)) {
             Context.error('All @prop fields must be final', field.pos);
           }
+          
+          field.meta.remove(meta);
 
           addProp(name.makeField(t, e != null));
           addInitializer(e == null ? macro this.$name = props.$name : macro if (props.$name != null) this.$name = props.$name);

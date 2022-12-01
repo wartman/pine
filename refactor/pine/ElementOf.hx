@@ -1,7 +1,7 @@
 package pine;
 
 @:forward
-abstract ElementOf<T:Component>(Element) from Element {
+abstract ElementOf<T:Component>(Element) from Element to Element to Context {
   public inline function new(element) {
     this = element;
   }

@@ -24,6 +24,8 @@ abstract class Component {
       && key == newComponent.key;
   }
 
+  abstract function createAdapterManager(element:Element):AdapterManager;
+
   abstract function createAncestorManager(element:Element):AncestorManager;
 
   abstract function createChildrenManager(element:Element):ChildrenManager;

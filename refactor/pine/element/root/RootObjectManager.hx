@@ -6,7 +6,7 @@ import pine.hydration.Cursor;
 using pine.core.OptionTools;
 
 class RootObjectManager implements ObjectManager {
-  final element:Element;
+  final element:ElementOf<RootComponent>;
 
   var object:Option<Dynamic> = None;
 
@@ -19,10 +19,7 @@ class RootObjectManager implements ObjectManager {
       case Some(obj): 
         obj;
       case None:
-        var obj = element.ancestors
-          .getRoot()
-          .orThrow('Expected a root')
-          .getRootObject();
+        var obj = element.getComponent().getRootObject();
         object = Some(obj);
         obj;
     }

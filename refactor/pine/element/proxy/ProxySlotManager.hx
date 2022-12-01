@@ -17,6 +17,10 @@ class ProxySlotManager implements SlotManager {
     return slot;
   }
 
+  public function init(slot:Null<Slot>) {
+    this.slot = slot;
+  }
+
   public function update(slot:Slot) {
     this.slot = slot;
     element.visitChildren(child -> {

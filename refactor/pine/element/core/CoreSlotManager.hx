@@ -17,7 +17,11 @@ class CoreSlotManager implements SlotManager {
     return slot;
   }
 
-	public function update(slot:Slot) {
+  public function init(slot:Null<Slot>) {
+    this.slot = slot;
+  }
+
+	public function update(slot:Null<Slot>) {
     this.slot = slot;
   }
 

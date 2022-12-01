@@ -53,10 +53,6 @@ class CoreChildrenQuery implements ChildrenQuery {
     }
   }
 
-  // public function filterOfType<T:Element>(kind:Class<T>, recursive:Bool = false):Array<T> {
-  //   return cast filter(child -> Std.isOfType(child, kind), recursive);
-  // }
-
   public function filterOfType<T:Component>(kind:Class<T>, recursive:Bool = false):Array<ElementOf<T>> {
     return filter(child -> Std.isOfType(child.component, kind), recursive);
   }
