@@ -108,20 +108,20 @@ class TodoApp extends AutoComponent {
       render: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
         children: [
-          // new Portal({
-          //   target: js.Browser.document.head,
-          //   child: new Isolate({ 
-          //     wrap: context -> {
-          //       // note: We could use `store` from the wrapping scope,
-          //       // but this shows that `context` is passed down even through
-          //       // portals.
-          //       var store = TodoStore.from(context);
-          //       var total = store.todos.length;
-          //       var todosLeft = total - store.todos.filter(todo -> todo.isCompleted).length;
-          //       return new Html<'title'>({ children: 'TodoMVC | Pine | ${todosLeft} / ${total}' });
-          //     }
-          //   })
-          // }),
+          new Portal({
+            target: js.Browser.document.head,
+            child: new Scope({ 
+              render: context -> {
+                // note: We could use `store` from the wrapping scope,
+                // but this shows that `context` is passed down even through
+                // portals.
+                var store = TodoStore.from(context);
+                var total = store.todos.length;
+                var todosLeft = total - store.todos.filter(todo -> todo.isCompleted).length;
+                return new Html<'title'>({ children: 'TodoMVC | Pine | ${todosLeft} / ${total}' });
+              }
+            })
+          }),
           new Html<'section'>({
             className: 'todoapp',
             children: [
@@ -305,49 +305,69 @@ class TodoInput extends AutoComponent {
   @track var isEditing:Bool = false;
   @track var value:String;
 
-  // @todo: We need to actually wire this up.
-  @init 
-  function watchEditing(context:Context) {
-    var obs = new Observer(() -> {
-      if (isEditing) {
-        var el:js.html.InputElement = cast context.getObject();
-        el.focus();
-      }
-    });
-    context.addDisposable(obs);
-  }
-
   function render(context:Context):Component {
-    return new Html<'input'>({
-      className: className,
-      placeholder: 'What needs doing?',
-      autofocus: true,
-      value: value == null ? '' : value,
-      name: className,
-      oninput: e -> {
-        var target:js.html.InputElement = cast e.target;
-        value = target.value;
-      },
-      onblur: _ -> {
-        onCancel();
-        if (clearOnComplete) {
-          value = '';
-        }
-      },
-      onkeydown: e -> {
-        var ev:js.html.KeyboardEvent = cast e;
-        if (ev.key == 'Enter') {
-          onSubmit(value);
-          if (clearOnComplete) {
-            value = '';
+    return new Scope({
+      init: context -> {
+        var obs = new Observer(() -> {
+          if (isEditing) {
+            var el:js.html.InputElement = cast context.getObject();
+            el.focus();
           }
-        } else if (ev.key == 'Escape') {
+        });
+        // Important! If you're using a custom Observer like we are here, 
+        // be sure to add it to the context for disposal. This is pretty
+        // awkward, but lukily you shouldn't need to do this too often.
+        // If you do find yourself using this pattern a lot, make a custom
+        // component OR a simple function that takes care of disposing things
+        // for you.
+        //
+        // For example, the following would work:
+        //
+        // class Effect extends AutoComponent {
+        //   @prop final effect:()->Void;
+        //   @prop final build:(context:Context)->Component;
+
+        //   function render(context:Context) {
+        //     return new Scope({
+        //       init: context -> context.addDisposable(Observer.track(effect)),
+        //       render: build
+        //     });
+        //   }
+        // }
+        //
+        context.addDisposable(obs);
+      },
+      render: context -> new Html<'input'>({
+        className: className,
+        placeholder: 'What needs doing?',
+        autofocus: true,
+        value: value == null ? '' : value,
+        name: className,
+        oninput: e -> {
+          var target:js.html.InputElement = cast e.target;
+          value = target.value;
+        },
+        onblur: _ -> {
           onCancel();
           if (clearOnComplete) {
             value = '';
           }
+        },
+        onkeydown: e -> {
+          var ev:js.html.KeyboardEvent = cast e;
+          if (ev.key == 'Enter') {
+            onSubmit(value);
+            if (clearOnComplete) {
+              value = '';
+            }
+          } else if (ev.key == 'Escape') {
+            onCancel();
+            if (clearOnComplete) {
+              value = '';
+            }
+          }
         }
-      }
+      })
     });
   }
 }

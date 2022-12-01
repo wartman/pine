@@ -6,5 +6,5 @@ package pine.core;
   in the constructor. This can be useful to ensure null safety.
 **/
 @:remove
-@:autoBuild(pine.internal.LazyBuilder.build())
+@:autoBuild(pine.core.HasLazyPropsBuilder.build())
 interface HasLazyProps {}

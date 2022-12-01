@@ -1,10 +1,17 @@
-package pine.internal;
+package pine.core;
+
+import pine.macro.ClassBuilder;
+import pine.macro.MacroTools;
 
 function build() {
-  var builder = PropertyBuilder.fromContext();
+  return process(getBuildFieldsSafe()).export();
+}
+
+function process(fields) {
+  var builder = new ClassBuilder(fields);
 
   switch builder.findField('getComponentType') {
-    case Some(_): return builder.export();
+    case Some(_): return builder;
     case None:
   }
 
@@ -15,6 +22,6 @@ function build() {
       return componentType;
     }
   });
-
-  return builder.export();
+  
+  return builder;
 }

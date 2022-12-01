@@ -5,7 +5,7 @@ import pine.element.proxy.*;
 import pine.diffing.Key;
 import pine.element.*;
 
-@:genericBuild(pine.internal.ProviderBuilder.buildGeneric())
+@:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}
 
 abstract class ProviderComponent<T> extends Component {

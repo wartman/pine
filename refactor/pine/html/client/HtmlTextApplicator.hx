@@ -7,7 +7,7 @@ class HtmlTextApplicator extends BaseClientApplicator<HtmlTextComponent> {
 
   public function update(object:Dynamic, component:HtmlTextComponent, previousComponent:Null<HtmlTextComponent>) {
     var text:js.html.Text = object;
-    if (previousComponent != null && component.content != previousComponent.content) {
+    if (previousComponent == null || component.content != previousComponent.content) {
       text.textContent = component.content == null ? '' : component.content;
     }
   }

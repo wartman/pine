@@ -1,4 +1,4 @@
 package pine.core;
 
-@:autoBuild(pine.internal.ComponentUniqueIdBuilder.build())
+@:autoBuild(pine.core.HasComponentTypeBuilder.build())
 interface HasComponentType {}

@@ -5,8 +5,13 @@ import pine.element.core.*;
 import pine.element.state.*;
 import pine.element.proxy.*;
 
-@:autoBuild(pine.internal.ComponentUniqueIdBuilder.build())
-@:autoBuild(pine.internal.ComponentTrackedPropertyBuilder.build())
+/**
+  The AutoComponent is likely the only Component you'll really need
+  to use, and it takes care of most of the boilerplate for you.
+
+  @todo: More information, including about what `@prop` and `@track` do.
+**/
+@:autoBuild(pine.AutoComponentBuilder.build())
 abstract class AutoComponent extends Component {
   abstract public function render(context:Context):Component;
   
@@ -31,9 +36,5 @@ abstract class AutoComponent extends Component {
 
   final function createObjectManager(element:Element):ObjectManager {
     return new ProxyObjectManager(element);
-  }
-
-  function createLifecycleHooks():Null<LifecycleHooks> {
-    return null;
   }
 }

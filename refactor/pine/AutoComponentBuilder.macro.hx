@@ -1,14 +1,21 @@
-package pine.internal;
+package pine;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
+import pine.macro.MacroTools;
+import pine.internal.*;
 
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
 
 function build() {
-  var builder = ClassBuilder.fromContext();
+  return process(getBuildFieldsSafe()).export();
+}
+
+function process(fields) {
+  var builder = new ClassBuilder(fields);
+  var componentType = pine.core.HasComponentTypeBuilder.process(builder.getFields());
   var properties = new PropertyBuilder(builder.getFields());
   var tracked = new TrackedPropertyBuilder(builder.getFields(), {
     trackedName: 'trackedObject',
@@ -50,7 +57,7 @@ function build() {
         return this.trackedObject;
       }
 
-      override function createLifecycleHooks():Null<pine.element.LifecycleHooks> {
+      final function createLifecycleHooks():Null<pine.element.LifecycleHooks> {
         return {
           // @todo: Pull this out into a static object we can just return here?
           // Otherwise this will get repeated a LOT in our apps.
@@ -68,7 +75,9 @@ function build() {
             incomingComponent:pine.Component
           ) -> {
             if (currentComponent == incomingComponent) return;
-            (cast incomingComponent:$ct).reuseTrackedObject((cast currentComponent:$ct).getTrackedObject());
+            var cur:$ct = cast currentComponent;
+            var inc:$ct = cast incomingComponent;
+            inc.reuseTrackedObject(cur.trackedObject);
           },
 
           onDispose: (element:pine.Element) -> {
@@ -85,8 +94,15 @@ function build() {
         super(props.key);
         @:mergeBlock ${properties.getInitializers()}
       }
+      
+      final function createLifecycleHooks():Null<pine.element.LifecycleHooks> {
+        return null;
+      }
     });
   }
 
-  return builder.merge(properties).merge(tracked).export();
+  return builder
+    .merge(componentType)
+    .merge(properties)
+    .merge(tracked);
 }

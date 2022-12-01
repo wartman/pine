@@ -1,9 +1,10 @@
-package pine.internal;
+package pine;
 
 import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.Context;
 import pine.macro.ClassBuilder;
+import pine.macro.MacroTools;
 
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
@@ -33,51 +34,51 @@ function resolveProvider(el:Expr, kind:Expr) {
 }
 
 function buildProvider(type:Type) {
-  var pack = ['pine'];
+  var pack = [ 'pine' ];
   var name = 'Provider';
   var typeName = type.toString();
   var ct = type.toComplexType();
   var providerName = name + '_' + type.stringifyTypeForClassName();
-  var providerPath:TypePath = {pack: pack, name: providerName, params: []};
+  var providerPath:TypePath = { pack: pack, name: providerName, params: [] };
 
   if (!providerPath.typePathExists()) {
+    var builder = new ClassBuilder(getBuildFieldsSafe());
+    
+    builder.add(macro class {
+      public static function from(context:pine.Context):$ct {
+        return switch maybeFrom(context) {
+          case Some(value): value;
+          case None: throw new pine.core.PineException(
+            'No provider exists for the type ' + $v{typeName}
+          );
+        }
+      }
+
+      public static function maybeFrom(context:pine.Context):haxe.ds.Option<$ct> {
+        return switch context.queryAncestors().find(parent -> parent.getComponent().getComponentType() == componentType) {
+          case Some(element):
+            var value = (element.getComponent():pine.Provider.ProviderComponent<$ct>).getValue();
+            if (value == null) return None;
+            Some(value);
+          case None: None;
+        }
+      }
+    });
+
     Context.defineType({
       pack: pack,
       name: providerName,
       pos: (macro null).pos,
       kind: TDClass({
-        pack: pack,
+        pack: [ 'pine' ],
         name: 'Provider',
         sub: 'ProviderComponent',
         params: [TPType(ct)]
-      }, [], false, true, false),
+      }, [
+        { pack: [ 'pine', 'core' ], name: 'HasComponentType' }
+      ], false, true, false),
       meta: [],
-      fields: (macro class {
-        public static final componentType = new pine.internal.UniqueId();
-
-        public static function from(context:pine.Context):$ct {
-          return switch maybeFrom(context) {
-            case Some(value): value;
-            case None: throw new pine.core.PineException(
-              'No provider exists for the type ' + $v{typeName}
-            );
-          }
-        }
-
-        public static function maybeFrom(context:pine.Context):haxe.ds.Option<$ct> {
-          return switch context.queryAncestors().find(parent -> parent.getComponent().getComponentType() == componentType) {
-            case Some(element):
-              var value = (element.getComponent():pine.Provider.ProviderComponent<$ct>).getValue();
-              if (value == null) return None;
-              Some(value);
-            case None: None;
-          }
-        }
-
-        function getComponentType() {
-          return componentType;
-        }
-      }).fields
+      fields: builder.export()
     });
   }
 
