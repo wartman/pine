@@ -1,10 +1,11 @@
 package pine;
 
-import pine.adapter.*;
 import pine.core.*;
 import pine.debug.Debug;
 import pine.element.*;
 import pine.hydration.Cursor;
+
+using pine.core.OptionTools;
 
 /**
   Elements are the persistant part of Pine. They're configured by
@@ -92,10 +93,7 @@ class Element
 
   public function rebuild() {
     Debug.assert(status != Building);
-    
-    if (status != Invalid) {
-      return;
-    }
+    if (status != Invalid) return;
     
     hooks.beforeUpdate(this, component, component);
     if (!hooks.shouldUpdate(this, component, component, true)) return;
@@ -112,17 +110,14 @@ class Element
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
     Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
-
-    if (status == Invalid) {
-      return;
-    }
+    if (status == Invalid) return;
 
     status = Invalid;
 
-    switch adapter.get() {
-      case Some(adapter): adapter.requestRebuild(this);
-      case None:
-    }
+    adapter
+      .get()
+      .orThrow('No adapter found')
+      .requestRebuild(this);
   }
 
   /**
@@ -165,10 +160,20 @@ class Element
   }
 
   public function dispose() {
+    Debug.assert(
+      status != Building 
+      && status != Disposing
+      && status != Disposed
+    );
+
+    status = Disposing;
+
     hooks.onDispose(this);
     object.dispose();
-    slots.dispose();
     children.dispose();
+    slots.dispose();
     disposables.dispose();
+
+    status = Disposed;
   }
 }

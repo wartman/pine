@@ -3,7 +3,15 @@ package pine.diffing;
 import pine.debug.Debug;
 import pine.element.*;
 
-function updateChild(parent:Element, ?child:Element, ?component:Component, ?slot:Slot):Null<Element> {
+/**
+  Update or remove a component.
+**/
+function updateChild(
+  parent:Element,
+  child:Null<Element>,
+  component:Null<Component>,
+  slot:Null<Slot>
+):Null<Element> {
   if (component == null) {
     if (child != null) child.dispose();
     return null;
@@ -26,8 +34,16 @@ function updateChild(parent:Element, ?child:Element, ?component:Component, ?slot
   }
 }
 
-function diffChildren(parent:Element, oldChildren:Array<Element>, newComponents:Array<Component>):Array<Element> {
-  // Almost entirely taken from: https://github.com/flutter/flutter/blob/6af40a7004f886c8b8b87475a40107611bc5bb0a/packages/flutter/lib/src/components/framework.dart#L5761
+/**
+  Diff a tree of Components and Elements.
+  
+  Almost entirely taken from: https://github.com/flutter/flutter/blob/6af40a7004f886c8b8b87475a40107611bc5bb0a/packages/flutter/lib/src/components/framework.dart#L5761
+**/
+function diffChildren(
+  parent:Element,
+  oldChildren:Array<Element>,
+  newComponents:Array<Component>
+):Array<Element> {
   var newHead = 0;
   var oldHead = 0;
   var slots = parent.slots;
@@ -44,7 +60,7 @@ function diffChildren(parent:Element, oldChildren:Array<Element>, newComponents:
       break;
     }
 
-    var newChild = updateChild(oldChild, newComponent, slots.create(newHead, previousChild));
+    var newChild = updateChild(parent, oldChild, newComponent, slots.create(newHead, previousChild));
     newChildren[newHead] = newChild;
     previousChild = newChild;
     newHead += 1;
@@ -124,7 +140,7 @@ function diffChildren(parent:Element, oldChildren:Array<Element>, newComponents:
   while ((oldHead <= oldTail) && (newHead <= newTail)) {
     var oldChild = oldChildren[oldHead];
     var newComponent = newComponents[newHead];
-    var newChild = updateChild(oldChild, newComponent, slots.create(newHead, previousChild));
+    var newChild = updateChild(parent, oldChild, newComponent, slots.create(newHead, previousChild));
     newChildren[newHead] = newChild;
     previousChild = newChild;
     newHead += 1;

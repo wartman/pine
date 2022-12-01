@@ -12,27 +12,23 @@ class TrackedChildrenManager extends ProxyChildrenManager {
 
   public function new(element, render) {
     super(element, context -> {
-      if (computation == null) computation = createComputation(render);
+      if (computation == null) computation = new Computation(() -> {
+        var component = render(context);
+        switch element.status {
+          case Pending | Building:
+          default: element.invalidate();
+        }
+        return component;
+      });
       computation.peek();
     });
   }
 
-  function createComputation(render:(context:Context)->Component) {
-    return new Computation(() -> {
-      var component = render(element);
-      switch element.status {
-        case Pending | Building:
-        default: element.invalidate();
-      }
-      return component;
-    });
-  }
-
   override function dispose() {
-    super.dispose();
     if (computation != null) {
       computation.dispose();
       computation = null;
     }
+    super.dispose();
   }
 }

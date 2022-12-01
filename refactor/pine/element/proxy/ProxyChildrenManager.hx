@@ -21,17 +21,17 @@ class ProxyChildrenManager implements ChildrenManager {
   }
 
   public function init() {
-    child = render(element).createElement();
+    child = renderSafe(element).createElement();
     child.mount(element, element.slots.get());
   }
 
   public function hydrate(cursor:Cursor) {
-    child = render(element).createElement();
+    child = renderSafe(element).createElement();
     child.hydrate(cursor, element, element.slots.get());
   }
 
   public function update() {
-    child = updateChild(element, child, render(element), element.slots.get());
+    child = updateChild(element, child, renderSafe(element), element.slots.get());
   }
 
   public function getQuery():ChildrenQuery {
@@ -40,7 +40,16 @@ class ProxyChildrenManager implements ChildrenManager {
   }
 
   public function dispose() {
-    if (child != null) child.dispose();
+    visit(child -> {
+      child.dispose();
+      true;
+    });
     query = null;
+  }
+
+  function renderSafe(context:Context):Component {
+    var component = render(context);
+    if (component == null) return new Fragment({ children: [] });
+    return component;
   }
 }

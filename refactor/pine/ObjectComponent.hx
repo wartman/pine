@@ -34,6 +34,7 @@ class RealObjectManager implements ObjectManager {
   final element:ElementOf<ObjectComponent>;
 
   var object:Null<Dynamic> = null;
+  var previousComponent:Null<ObjectComponent> = null;
 
   public function new(element) {
     this.element = element;
@@ -68,25 +69,32 @@ class RealObjectManager implements ObjectManager {
     var component:ObjectComponent = element.getComponent();
     var applicator = Adapter.from(element).getApplicator(component);
 
-    applicator.update(object, component);
+    applicator.update(object, component, null);
   }
 
   public function update() {
     Debug.assert(object != null);
 
-    var component:ObjectComponent = element.getComponent();
-    var applicator = Adapter.from(element).getApplicator(component);
+    var adapter = element.getAdapter().orThrow('No adapter found');
+    var component = element.getComponent();
+    var applicator = component.getApplicatorFrom(adapter);
 
-    applicator.update(object, component);
+    applicator.update(object, component, previousComponent);
+    
+    previousComponent = component;
   }
 
   public function dispose() {
     if (object != null) {
-      var component:ObjectComponent = element.getComponent();
-      var applicator = Adapter.from(element).getApplicator(component);
+      var adapter = element.getAdapter().orThrow('No adapter found');
+      var component = element.getComponent();
+      var applicator = component.getApplicatorFrom(adapter);
+
       applicator.remove(object, element.slots.get());
-      object = null;
     }
+    
+    object = null;
+    previousComponent = null;
   }
 }
 

@@ -21,9 +21,7 @@ abstract class AutoComponent extends Component {
   final function createChildrenManager(element:Element):ChildrenManager {
     return new TrackedChildrenManager(element, context -> {
       var auto:AutoComponent = context.getComponent();
-      var component = auto.render(context);
-      if (component == null) return new Fragment({ children: [] });
-      return component;
+      return auto.render(context);
     });
   }
 

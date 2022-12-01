@@ -7,7 +7,7 @@ import pine.element.*;
 abstract class BaseClientApplicator<T:ObjectComponent> implements ObjectApplicator<T> {
   abstract public function create(component:T):Dynamic;
 
-  abstract public function update(object:Dynamic, component:T, ?previousComponent:T):Void;
+  abstract public function update(object:Dynamic, component:T, previousComponent:Null<T>):Void;
 
   public function new() {}
 

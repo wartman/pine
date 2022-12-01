@@ -28,7 +28,9 @@ abstract class Adapter {
       scheduleRebuildInvalidElements();
     }
 
-    if (invalidElements.contains(element)) return;
+    if (invalidElements.contains(element)) {
+      return;
+    }
 
     invalidElements.push(element);
   }
@@ -48,6 +50,7 @@ abstract class Adapter {
 
     var elements = invalidElements.copy();
     invalidElements = null;
+
     for (el in elements) el.rebuild();
   }
 }
