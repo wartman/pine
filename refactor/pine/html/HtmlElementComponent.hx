@@ -33,7 +33,7 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     });
   }
 
-  function createLifecycleHooks():Null<LifecycleHooks> {
+  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
     return null;
   }
 }

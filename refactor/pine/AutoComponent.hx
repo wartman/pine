@@ -1,5 +1,7 @@
 package pine;
 
+import pine.element.auto.Trackable;
+import haxe.ds.Option;
 import pine.element.*;
 import pine.element.core.*;
 import pine.element.state.*;
@@ -11,9 +13,12 @@ import pine.element.proxy.*;
 
   @todo: More information, including about what `@prop` and `@track` do.
 **/
+@:allow(pine)
 @:autoBuild(pine.AutoComponentBuilder.build())
 abstract class AutoComponent extends Component {
   abstract public function render(context:Context):Component;
+
+  abstract function asTrackable():Option<Trackable<Dynamic>>;
   
   function createAdapterManager(element:Element):AdapterManager {
     return new CoreAdapterManager();

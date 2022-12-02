@@ -136,13 +136,13 @@ class Element
     hooks.onUpdateSlot(this, oldSlot, newSlot);
   }
 
-	public function getObject():Dynamic {
+  public function getObject():Dynamic {
     return object.get();
   }
 
-	public function getComponent<T:Component>():T {
+  public function getComponent<T:Component>():T {
     return cast component;
-	}
+  }
 
   public function getAdapter() {
     return adapter.get();

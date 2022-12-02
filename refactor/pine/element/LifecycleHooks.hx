@@ -2,15 +2,15 @@ package pine.element;
 
 import pine.hydration.Cursor;
 
-typedef LifecycleHooks = {
-  public final ?beforeInit:(element:Element)->Void;
-  public final ?afterInit:(element:Element)->Void;
-  public final ?onDispose:(element:Element)->Void;
-  public final ?onUpdateSlot:(element:Element, oldSlot:Null<Slot>, newSlot:Null<Slot>)->Void;
-  public final ?shouldHydrate:(element:Element, cursor:Cursor)->Bool;
-  public final ?beforeHydrate:(element:Element, cursor:Cursor)->Void;
-  public final ?afterHydrate:(element:Element, cursor:Cursor)->Void;
-  public final ?shouldUpdate:(element:Element, currentComponent:Component, incomingComponent:Component, isRebuild:Bool)->Bool;
-  public final ?beforeUpdate:(element:Element, currentComponent:Component, incomingComponent:Component)->Void;
-  public final ?afterUpdate:(element:Element)->Void;
+typedef LifecycleHooks<T:Component> = {
+  public final ?beforeInit:(element:ElementOf<T>)->Void;
+  public final ?afterInit:(element:ElementOf<T>)->Void;
+  public final ?onDispose:(element:ElementOf<T>)->Void;
+  public final ?onUpdateSlot:(element:ElementOf<T>, oldSlot:Null<Slot>, newSlot:Null<Slot>)->Void;
+  public final ?shouldHydrate:(element:ElementOf<T>, cursor:Cursor)->Bool;
+  public final ?beforeHydrate:(element:ElementOf<T>, cursor:Cursor)->Void;
+  public final ?afterHydrate:(element:ElementOf<T>, cursor:Cursor)->Void;
+  public final ?shouldUpdate:(element:ElementOf<T>, currentComponent:T, incomingComponent:T, isRebuild:Bool)->Bool;
+  public final ?beforeUpdate:(element:ElementOf<T>, currentComponent:T, incomingComponent:T)->Void;
+  public final ?afterUpdate:(element:ElementOf<T>)->Void;
 }

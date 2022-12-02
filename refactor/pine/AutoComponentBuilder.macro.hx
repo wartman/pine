@@ -1,5 +1,6 @@
 package pine;
 
+import pine.state.Engine.unbind;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
@@ -42,49 +43,27 @@ function process(fields) {
         trackedObjectProps = ${tracked.getTrackedObjectConstructorArg()};
       }
 
-      function getTrackedObject() {
+      final public function asTrackable():haxe.ds.Option<pine.element.auto.Trackable<Dynamic>> {
+        return Some(this);
+      }
+
+      public function getTrackedObject():$trackedType {
         return trackedObject;
       }
   
-      function createTrackedObject() {
+      public function initTrackedObject():$trackedType {
         trackedObject = ${tracked.instantiateTrackedObject('trackedObjectProps')};
         return trackedObject;
       }
 
-      function reuseTrackedObject(trackedObject:Dynamic) {
+      public function reuseTrackedObject(trackedObject:$trackedType):$trackedType {
         this.trackedObject = trackedObject;
         this.trackedObject.replace(this.trackedObjectProps);
         return this.trackedObject;
       }
 
-      final function createLifecycleHooks():Null<pine.element.LifecycleHooks> {
-        return {
-          // @todo: Pull this out into a static object we can just return here?
-          // Otherwise this will get repeated a LOT in our apps.
-          //
-          // Alternatively: is there a better way to handle the TrackedObject?
-          // Do we just REALLY discourage using @track?
-          beforeInit:(element:pine.Element) -> {
-            var comp:$ct = element.getComponent();
-            comp.createTrackedObject();
-          },
-
-          beforeUpdate: (
-            element:pine.Element,
-            currentComponent:pine.Component,
-            incomingComponent:pine.Component
-          ) -> {
-            if (currentComponent == incomingComponent) return;
-            var cur:$ct = cast currentComponent;
-            var inc:$ct = cast incomingComponent;
-            inc.reuseTrackedObject(cur.trackedObject);
-          },
-
-          onDispose: (element:pine.Element) -> {
-            var obj = (element.getComponent():$ct).getTrackedObject();
-            if (obj != null) obj.dispose();
-          }
-        };
+      final function createLifecycleHooks():Null<pine.element.LifecycleHooks<Dynamic>> {
+        return cast pine.element.auto.AutoLifecycle.lifecycle;
       } 
     });
   } else {
@@ -95,7 +74,11 @@ function process(fields) {
         @:mergeBlock ${properties.getInitializers()}
       }
       
-      final function createLifecycleHooks():Null<pine.element.LifecycleHooks> {
+      final public function asTrackable():haxe.ds.Option<pine.element.auto.Trackable<Dynamic>> {
+        return None;
+      }
+
+      final function createLifecycleHooks():Null<pine.element.LifecycleHooks<Dynamic>> {
         return null;
       }
     });

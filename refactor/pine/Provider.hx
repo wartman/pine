@@ -30,64 +30,60 @@ abstract class ProviderComponent<T> extends Component {
     return value;
   }
 
-	function createAdapterManager(element:Element):AdapterManager {
-		return new CoreAdapterManager();
-	}
+  function createAdapterManager(element:Element):AdapterManager {
+    return new CoreAdapterManager();
+  }
 
-	function createAncestorManager(element:Element):AncestorManager {
+  function createAncestorManager(element:Element):AncestorManager {
     return new CoreAncestorManager(element);
   }
 
-	function createChildrenManager(element:Element):ChildrenManager {
-		return new ProxyChildrenManager(element, context -> {
+  function createChildrenManager(element:Element):ChildrenManager {
+    return new ProxyChildrenManager(element, context -> {
       var component:ProviderComponent<T> = context.getComponent();
       // Our lifecycle hooks *should* ensure our value is ready
       // by now, so...
       var value:T = cast component.getValue();
       return component.render(value);
     });
-	}
+  }
 
-	function createSlotManager(element:Element):SlotManager {
+  function createSlotManager(element:Element):SlotManager {
     return new ProxySlotManager(element);
-	}
+  }
 
-	function createObjectManager(element:Element):ObjectManager {
+  function createObjectManager(element:Element):ObjectManager {
     return new ProxyObjectManager(element);
-	}
+  }
 
-	function createLifecycleHooks():Null<LifecycleHooks> {
-    return {
-      beforeInit: (element:Element) -> {
-        var component:ProviderComponent<T> = element.getComponent();
+  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
+    return cast ({
+      beforeInit: (element:ElementOf<ProviderComponent<T>>) -> {
+        var component = element.getComponent();
         component.value = component.create();
       },
 
       beforeUpdate: (
-        element:Element,
-        currentComponent:Component,
-        incomingComponent:Component
+        element:ElementOf<ProviderComponent<T>>,
+        currentComponent:ProviderComponent<T>,
+        incomingComponent:ProviderComponent<T>
       ) -> {
-        var cur:ProviderComponent<T> = cast currentComponent;
-        var inc:ProviderComponent<T> = cast incomingComponent;
-        var curValue = cur.getValue();
-
+        var curValue = currentComponent.getValue();
         if (curValue != null) {
-          cur.dispose(curValue);
-          cur.value = null;
+          currentComponent.dispose(curValue);
+          currentComponent.value = null;
         }
-
-        inc.value = inc.create();
+        incomingComponent.value = incomingComponent.create();
       },
 
-      onDispose: (element:Element) -> {
-        var component:ProviderComponent<T> = element.getComponent();
+      onDispose: (element:ElementOf<ProviderComponent<T>>) -> {
+        var component = element.getComponent();
         var value = component.getValue();
         if (value != null) {
           component.dispose(value);
           component.value = null;
         }
       }
-    };
-	}
+    }:LifecycleHooks<ProviderComponent<T>>);
+  }
 }

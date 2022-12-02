@@ -53,7 +53,7 @@ final class Scope extends Component implements HasComponentType {
     return new ProxyObjectManager(element);
   }
 
-  function createLifecycleHooks():Null<LifecycleHooks> {
+  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
     return {
       beforeInit: element -> {
         var scope:Scope = element.getComponent();

@@ -25,11 +25,11 @@ class ProxyObjectManager implements ObjectManager {
     return object;
   }
 
-	public function init() {}
+  public function init() {}
 
   public function update() {}
 
   public function dispose() {}
 
-	public function hydrate(cursor:Cursor) {}
+  public function hydrate(cursor:Cursor) {}
 }

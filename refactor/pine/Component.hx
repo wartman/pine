@@ -34,5 +34,5 @@ abstract class Component {
 
   abstract function createObjectManager(element:Element):ObjectManager;
 
-  abstract function createLifecycleHooks():Null<LifecycleHooks>;
+  abstract function createLifecycleHooks():Null<LifecycleHooks<Dynamic>>;
 }

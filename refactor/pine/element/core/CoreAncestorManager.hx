@@ -24,9 +24,9 @@ class CoreAncestorManager
     return if (parent == null) None else Some(parent);
   }
 
-	public function getQuery():AncestorQuery {
+  public function getQuery():AncestorQuery {
     return query;
-	}
+  }
   
   public function dispose() {
     parent = null;

@@ -42,7 +42,7 @@ final class Fragment extends Component implements HasComponentType {
     return new FragmentObjectManager(element);
   }
 
-  function createLifecycleHooks():Null<LifecycleHooks> {
+  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
     return null;
   }
 }

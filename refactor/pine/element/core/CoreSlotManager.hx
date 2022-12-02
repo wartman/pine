@@ -9,11 +9,11 @@ class CoreSlotManager implements SlotManager {
     this.element = element;
   }
 
-	public function create(index:Int, previous:Null<Element>):Slot {
-		return new Slot(index, previous);
-	}
+  public function create(index:Int, previous:Null<Element>):Slot {
+    return new Slot(index, previous);
+  }
 
-	public function get():Null<Slot> {
+  public function get():Null<Slot> {
     return slot;
   }
 
@@ -21,15 +21,15 @@ class CoreSlotManager implements SlotManager {
     this.slot = slot;
   }
 
-	public function update(slot:Null<Slot>) {
+  public function update(slot:Null<Slot>) {
     this.slot = slot;
   }
 
-	public function equals(otherSlot:Slot):Bool {
+  public function equals(otherSlot:Slot):Bool {
     return slot == slot;
-	}
+  }
 
-	public function dispose() {
+  public function dispose() {
     slot = null;
   }
 }

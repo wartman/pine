@@ -3,11 +3,11 @@ package pine.element;
 import pine.hydration.Cursor;
 
 class LifecycleHooksManager {
-  final hooks:Array<LifecycleHooks> = [];
+  final hooks:Array<LifecycleHooks<Dynamic>> = [];
 
   public function new() {}
 
-  public function add(hook:Null<LifecycleHooks>) {
+  public function add(hook:Null<LifecycleHooks<Dynamic>>) {
     if (hook != null) hooks.push(hook);
   }
 

@@ -10,7 +10,7 @@ class CoreAdapterManager implements AdapterManager {
   
   public function get():Option<Adapter> {
     return adapter;
-	}
+  }
 
   public function update(parent:Null<Element>) {
     if (parent == null) {
@@ -18,13 +18,10 @@ class CoreAdapterManager implements AdapterManager {
       return;
     } 
       
-    this.adapter = switch parent.getAdapter() {
-      case Some(adapter): 
-        Some(adapter);
-      case None:
-        None;
-    }
+    this.adapter = parent.getAdapter();
   }
 
-  public function dispose() {}
+  public function dispose() {
+    this.adapter = None;
+  }
 }
