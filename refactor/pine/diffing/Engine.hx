@@ -4,7 +4,8 @@ import pine.debug.Debug;
 import pine.element.*;
 
 /**
-  Update or remove a component.
+  Determine if an Element should be created, removed, replaced or
+  updated against the given Component.
 **/
 function updateChild(
   parent:Element,
@@ -35,7 +36,7 @@ function updateChild(
 }
 
 /**
-  Diff a tree of Components and Elements.
+  Diff a tree of Elements against the given list of Components.
   
   Almost entirely taken from: https://github.com/flutter/flutter/blob/6af40a7004f886c8b8b87475a40107611bc5bb0a/packages/flutter/lib/src/components/framework.dart#L5761
 **/

@@ -10,8 +10,8 @@ import pine.element.state.*;
 /**
   The Scope component allows you to hook into Pine's element
   lifecycle (via the `init` and `dispose` props). In additon,
-  you can use it to isolate reactive parts of your component
-  instead of forcing the entire component to re-render.
+  you can use it to isolate reactive parts of a component
+  instead of forcing an entire component to re-render.
 **/
 final class Scope extends Component implements HasComponentType {
   final render:(context:Context)->Component;

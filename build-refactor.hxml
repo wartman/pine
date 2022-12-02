@@ -5,6 +5,8 @@
 -D debug
 -D analyzer-optimize
 
+--dce full
+
 --macro nullSafety("pine")
 
 -main todo.RefactoredTodo

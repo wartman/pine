@@ -1,7 +1,5 @@
 package pine;
 
-import haxe.ds.Option;
-import pine.adapter.*;
 import pine.core.*;
 import pine.debug.Debug;
 import pine.diffing.Key;
@@ -92,6 +90,7 @@ class PortalChildrenManager implements ChildrenManager {
 
   public function update() {
     placeholder.update();
+
     if (portalRoot == null) {
       portalRoot = createRootComponent().createElement();
       portalRoot.mount(element, null);

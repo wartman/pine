@@ -12,8 +12,7 @@ using pine.core.OptionTools;
   Components, and most of their functionality is provided by various
   "Managers". Generally, you should not be creating subclasses of Element
   -- instead, use Components to configure the Managers the Element will
-  use. For more fine-grained control, you can also create LifecycleHooks
-  in a Component.
+  use.
 **/
 @:allow(pine)
 class Element
@@ -96,6 +95,7 @@ class Element
     if (status != Invalid) return;
     
     hooks.beforeUpdate(this, component, component);
+
     if (!hooks.shouldUpdate(this, component, component, true)) return;
 
     status = Building;
@@ -110,6 +110,7 @@ class Element
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
     Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
+    
     if (status == Invalid) return;
 
     status = Invalid;

@@ -17,22 +17,7 @@ class MultipleChildrenManager implements ChildrenManager {
   }
 
   public function init() {
-    update(); // Will this work fine? I think it will.
-
-    // var components = render(element);
-    // var children:Array<Element> = [];
-    // var previous:Null<Element> = null;
-
-    // for (i in 0...components.length) {
-    //   var component = components[i];
-    //   if (component == null) continue;
-    //   var child = component.createElement();
-    //   child.mount(element, element.slots.create(i, previous));
-    //   children.push(child);
-    //   previous = element;
-    // }
-
-    // this.children = children;
+    update();
   }
 
   public function hydrate(cursor:Cursor) {

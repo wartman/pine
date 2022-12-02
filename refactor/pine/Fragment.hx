@@ -1,7 +1,7 @@
 package pine;
 
-import pine.core.HasComponentType;
 import pine.adapter.Adapter;
+import pine.core.HasComponentType;
 import pine.diffing.Key;
 import pine.element.*;
 import pine.element.core.*;
