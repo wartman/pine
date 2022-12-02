@@ -35,7 +35,7 @@ class Element
 
   public function new(component) {
     this.component = component;
-    this.hooks.add(component.createLifecycleHooks());
+    this.hooks.merge(component.createLifecycleHooks());
   }
 
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {

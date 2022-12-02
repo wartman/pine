@@ -40,7 +40,7 @@ abstract class RootComponent extends ObjectComponent {
     return new RootObjectManager(element);
   }
 
-  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
-    return null;
+  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
+    return [];
   }
 }

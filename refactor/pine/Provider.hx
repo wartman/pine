@@ -56,8 +56,8 @@ abstract class ProviderComponent<T> extends Component {
     return new ProxyObjectManager(element);
   }
 
-  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
-    return cast ({
+  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
+    return [ cast ({
       beforeInit: (element:ElementOf<ProviderComponent<T>>) -> {
         var component = element.getComponent();
         component.value = component.create();
@@ -84,6 +84,6 @@ abstract class ProviderComponent<T> extends Component {
           component.value = null;
         }
       }
-    }:LifecycleHooks<ProviderComponent<T>>);
+    }:LifecycleHooks<ProviderComponent<T>>) ];
   }
 }

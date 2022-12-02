@@ -25,13 +25,13 @@ function process(fields) {
   var trackedInitProps = tracked.getInitializerProps();
   
   properties.addProp('key'.makeField(macro:pine.diffing.Key, true));
-
+  
   if (trackedInitProps.length > 0) {
     var ct = Context.getLocalType().toComplexType();
     var trackedObjectProps:ComplexType = tracked.getTrackedObjectPropsType();
     var trackedType = tracked.getTrackedObjectType();
     var initProps:ComplexType = TAnonymous(properties.getProps().concat(trackedInitProps));
-    
+
     builder.add(macro class {
       var trackedObject:Null<$trackedType> = null;
       final trackedObjectProps:$trackedObjectProps;
@@ -61,13 +61,34 @@ function process(fields) {
         this.trackedObject.replace(this.trackedObjectProps);
         return this.trackedObject;
       }
-
-      final function createLifecycleHooks():Null<pine.element.LifecycleHooks<Dynamic>> {
-        return cast pine.element.auto.AutoLifecycle.lifecycle;
-      } 
     });
+    
+    switch builder.findField('createLifecycleHooks') {
+      case Some(field): switch field.kind {
+        case FFun(f):
+          var expr = f.expr;
+          var wrapper = macro function __getExistingHooks():Array<pine.element.LifecycleHooks<Dynamic>> {
+            @:pos(expr.pos) ${expr}
+          };
+          f.expr = macro {
+            ${wrapper};
+            return __getExistingHooks().concat([
+              cast pine.element.auto.AutoLifecycle.lifecycle
+            ]);
+          };
+        default: 
+          throw 'assert';
+      }
+      case None:
+        builder.add(macro class {
+          final function createLifecycleHooks():Array<pine.element.LifecycleHooks<Dynamic>> {
+            return [ cast pine.element.auto.AutoLifecycle.lifecycle ];
+          }
+        });
+    }
   } else {
     var propsType = properties.getPropsType();
+
     builder.add(macro class {
       public function new(props:$propsType) {
         super(props.key);
@@ -77,11 +98,17 @@ function process(fields) {
       final public function asTrackable():haxe.ds.Option<pine.element.auto.Trackable<Dynamic>> {
         return None;
       }
-
-      final function createLifecycleHooks():Null<pine.element.LifecycleHooks<Dynamic>> {
-        return null;
-      }
     });
+
+    switch builder.findField('createLifecycleHooks') {
+      case Some(_):
+      case None:
+        builder.add(macro class {
+          final function createLifecycleHooks():Array<pine.element.LifecycleHooks<Dynamic>> {
+            return [];
+          }
+        });
+    }
   }
 
   return builder

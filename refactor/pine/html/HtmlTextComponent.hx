@@ -25,7 +25,7 @@ final class HtmlTextComponent extends ObjectComponent implements HasComponentTyp
     return new NoChildrenManager(element);
   }
 
-  function createLifecycleHooks():Null<LifecycleHooks<Dynamic>> {
-    return null;
+  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
+    return [];
   }
 }
