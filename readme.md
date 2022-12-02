@@ -23,8 +23,8 @@ function main() {
 }
 
 class HelloWorld extends AutoComponent {
-  @prop final greeting:String;
-  @prop final location:String;
+  @:prop final greeting:String;
+  @:prop final location:String;
 
   function render(context:Context) {
     return new Html<'div'>({

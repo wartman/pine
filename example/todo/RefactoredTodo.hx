@@ -17,10 +17,10 @@ function main() {
 }
 
 class Todo implements Record {
-  @prop public final id:Int;
-  @track public var description:String;
-  @track public var isCompleted:Bool;
-  @track public var isEditing:Bool;
+  @:prop public final id:Int;
+  @:track public var description:String;
+  @:track public var isCompleted:Bool;
+  @:track public var isEditing:Bool;
 
   public function toJson() {
     return {
@@ -70,9 +70,9 @@ class TodoStore implements Record {
     });
   }
 
-  @track var uid:Int;
-  @track public var visibility:TodoVisibility;
-  @track public var todos:Array<Todo>;
+  @:track var uid:Int;
+  @:track public var visibility:TodoVisibility;
+  @:track public var todos:Array<Todo>;
 
   public function addTodo(description:String) {
     todos.unshift(new Todo({
@@ -154,7 +154,7 @@ class TodoApp extends AutoComponent {
 }
 
 class TodoFooter extends AutoComponent {
-  @prop final store:TodoStore;
+  @:prop final store:TodoStore;
 
   public function render(context:Context):Component {
     var total = store.todos.length;
@@ -210,7 +210,7 @@ class TodoFooter extends AutoComponent {
 
 
 class TodoContainer extends AutoComponent {
-  @prop final store:TodoStore;
+  @:prop final store:TodoStore;
 
   function render(context:Context) {
     var len = store.todos.length;
@@ -239,7 +239,7 @@ class TodoContainer extends AutoComponent {
 }
 
 class TodoItem extends AutoComponent {
-  @prop final todo:Todo;
+  @:prop final todo:Todo;
 
   inline function getClassName() {
     return [
@@ -297,13 +297,14 @@ class TodoItem extends AutoComponent {
   }
 }
 
+@:controller(new TodoInputFocus())
 class TodoInput extends AutoComponent {
-  @prop final className:String;
-  @prop final clearOnComplete:Bool;
-  @prop final onSubmit:(data:String) -> Void;
-  @prop final onCancel:() -> Void;
-  @track var isEditing:Bool = false;
-  @track var value:String;
+  @:prop final className:String;
+  @:prop final clearOnComplete:Bool;
+  @:prop final onSubmit:(data:String) -> Void;
+  @:prop final onCancel:() -> Void;
+  @:track public var isEditing:Bool = false;
+  @:track var value:String;
 
   function render(context:Context):Component {
     return new Html<'input'>({
@@ -338,23 +339,29 @@ class TodoInput extends AutoComponent {
       }
     });
   }
+}
 
-  // The use of `createLifecycleHooks` should probably be discouraged,
-  // but it's here if you want it.
-  function createLifecycleHooks() {
-    return [ 
-      {
-        beforeInit: element -> {
-          var component:TodoInput = element.getComponent();
-          var obs = new Observer(() -> {
-            if (component.isEditing) {
-              var el:js.html.InputElement = cast element.getObject();
-              el.focus();
-            }
-          });
-          element.addDisposable(obs);
+class TodoInputFocus implements Controller<TodoInput> {
+  var observer:Null<Observer> = null;
+
+  public function new() {}
+
+  public function register(element:ElementOf<TodoInput>) {
+    element.onReady(_ -> {
+      if (observer != null) return;
+      observer = new Observer(() -> {
+        if (element.getComponent().isEditing) {
+          var el:js.html.InputElement = cast element.getObject();
+          el.focus();
         }
-      }
-    ];
+      });
+    });
+  }
+  
+  public function dispose() {
+    if (observer != null) {
+      observer.dispose();
+      observer = null;
+    }
   }
 }

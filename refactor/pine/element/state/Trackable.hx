@@ -1,4 +1,4 @@
-package pine.element.auto;
+package pine.element.state;
 
 typedef Trackable<T> = {
   public function initTrackedObject():T;

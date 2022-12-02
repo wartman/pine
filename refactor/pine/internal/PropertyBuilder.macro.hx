@@ -42,17 +42,15 @@ class PropertyBuilder extends ClassBuilder {
   }
 
   function process() {
-    for (field in findFieldsByMeta('prop')) {
+    for (field in findFieldsByMeta(':prop')) {
       switch field.kind {
         case FVar(t, e):
           var name = field.name;
-          var meta = field.meta.find(m -> m.name == 'prop');
+          var meta = field.meta.find(m -> m.name == ':prop');
 
           if (!field.access.contains(AFinal)) {
-            Context.error('All @prop fields must be final', field.pos);
+            Context.error('All @:prop fields must be final', field.pos);
           }
-          
-          field.meta.remove(meta);
 
           addProp(name.makeField(t, e != null));
           addInitializer(e == null ? macro this.$name = props.$name : macro if (props.$name != null) this.$name = props.$name);

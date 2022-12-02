@@ -27,6 +27,7 @@ class Element
   @lazy var object:ObjectManager = component.createObjectManager(this);
   @lazy var adapter:AdapterManager = component.createAdapterManager(this);
   @lazy var slots:SlotManager = component.createSlotManager(this);
+  @lazy var controllers:ControllerManager = component.createControllerManager(this);
   @lazy var children:ChildrenManager = component.createChildrenManager(this);
   @lazy var ancestors:AncestorManager = component.createAncestorManager(this);
 
@@ -54,8 +55,13 @@ class Element
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
+    hooks.beforeInit(this);
     hooks.beforeHydrate(this, cursor);
-    if (!hooks.shouldHydrate(this, cursor)) return;
+    if (!hooks.shouldHydrate(this, cursor)) {
+      hooks.afterHydrate(this, cursor);
+      hooks.afterInit(this);
+      return;
+    }
 
     status = Building;
     object.hydrate(cursor);
@@ -63,6 +69,7 @@ class Element
     status = Valid;
     
     hooks.afterHydrate(this, cursor);
+    hooks.afterInit(this);
   }
 
   function init(parent:Null<Element>, slot:Null<Slot>) {
@@ -71,6 +78,7 @@ class Element
     adapter.update(parent);
     ancestors.update(parent);
     slots.init(slot);
+    controllers.init(this);
 
     status = Valid;
   }
@@ -79,7 +87,10 @@ class Element
     Debug.assert(status != Building);
     
     hooks.beforeUpdate(this, component, incomingComponent);
-    if (!hooks.shouldUpdate(this, component, incomingComponent, false)) return;
+    if (!hooks.shouldUpdate(this, component, incomingComponent, false)) {
+      hooks.afterUpdate(this);
+      return;
+    }
 
     status = Building;
     this.component = incomingComponent;

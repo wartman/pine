@@ -18,6 +18,7 @@ function process(fields) {
   var builder = new ClassBuilder(fields);
   var componentType = pine.core.HasComponentTypeBuilder.process(builder.getFields());
   var properties = new PropertyBuilder(builder.getFields());
+  var controllers = new ControllerPropertyBuilder(builder.getFields());
   var tracked = new TrackedPropertyBuilder(builder.getFields(), {
     trackedName: 'trackedObject',
     trackerIsNullable: true
@@ -43,7 +44,7 @@ function process(fields) {
         trackedObjectProps = ${tracked.getTrackedObjectConstructorArg()};
       }
 
-      final public function asTrackable():haxe.ds.Option<pine.element.auto.Trackable<Dynamic>> {
+      final public function asTrackable():haxe.ds.Option<pine.element.state.Trackable<Dynamic>> {
         return Some(this);
       }
 
@@ -61,31 +62,15 @@ function process(fields) {
         this.trackedObject.replace(this.trackedObjectProps);
         return this.trackedObject;
       }
+
+      override function createControllerManager(element:pine.Element):pine.element.ControllerManager {
+        return new pine.element.ControllerManager(([
+          $a{[ 
+            macro cast new pine.element.state.TrackableController() 
+          ].concat(controllers.getControllers())}
+        ]:Array<pine.Controller<Dynamic>>));
+      } 
     });
-    
-    switch builder.findField('createLifecycleHooks') {
-      case Some(field): switch field.kind {
-        case FFun(f):
-          var expr = f.expr;
-          var wrapper = macro function __getExistingHooks():Array<pine.element.LifecycleHooks<Dynamic>> {
-            @:pos(expr.pos) ${expr}
-          };
-          f.expr = macro {
-            ${wrapper};
-            return [
-              cast pine.element.auto.AutoLifecycle.lifecycle
-            ].concat(__getExistingHooks());
-          };
-        default: 
-          throw 'assert';
-      }
-      case None:
-        builder.add(macro class {
-          final function createLifecycleHooks():Array<pine.element.LifecycleHooks<Dynamic>> {
-            return [ cast pine.element.auto.AutoLifecycle.lifecycle ];
-          }
-        });
-    }
   } else {
     var propsType = properties.getPropsType();
 
@@ -95,19 +80,17 @@ function process(fields) {
         @:mergeBlock ${properties.getInitializers()}
       }
       
-      final public function asTrackable():haxe.ds.Option<pine.element.auto.Trackable<Dynamic>> {
+      final public function asTrackable():haxe.ds.Option<pine.element.state.Trackable<Dynamic>> {
         return None;
       }
     });
 
-    switch builder.findField('createLifecycleHooks') {
-      case Some(_):
-      case None:
-        builder.add(macro class {
-          final function createLifecycleHooks():Array<pine.element.LifecycleHooks<Dynamic>> {
-            return [];
-          }
-        });
+    if (controllers.hasControllers()) {
+      builder.add(macro class {
+        override function createControllerManager(element:pine.Element):pine.element.ControllerManager {
+          return ${controllers.getManagerInitializer()};
+        }
+      });
     }
   }
 

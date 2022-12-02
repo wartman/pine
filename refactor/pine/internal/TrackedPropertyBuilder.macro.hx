@@ -100,7 +100,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
   }
 
   function process() {
-    for (field in findFieldsByMeta('track')) {
+    for (field in findFieldsByMeta(':track')) {
       switch field.kind {
         case FVar(t, e):
           var prop = field.name.makeField(t, e != null);
@@ -108,9 +108,7 @@ class TrackedPropertyBuilder extends ClassBuilder {
           var getter = 'get_$name';
           var setter = 'set_$name';
           var tracked = this.getTrackedObjectExpr();
-          var meta = field.meta.find(m -> m.name == 'track');
-
-          field.meta.remove(meta);
+          var meta = field.meta.find(m -> m.name == ':track');
           
           addInitProp(prop);
           addProp(prop);
