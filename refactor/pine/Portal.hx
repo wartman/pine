@@ -56,6 +56,7 @@ class PortalChildrenManager implements ChildrenManager {
   
   var previousComponent:Null<Portal> = null;
   var portalRoot:Null<Element> = null;
+  var query:Null<ChildrenQuery> = null;
   
   public function new(element) {
     this.element = element;
@@ -107,7 +108,8 @@ class PortalChildrenManager implements ChildrenManager {
   }
 
   public function getQuery():ChildrenQuery {
-    throw new haxe.exceptions.NotImplementedException();
+    if (query == null) query = new CoreChildrenQuery(element);
+    return query;
   }
 
   public function dispose() {

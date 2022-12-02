@@ -106,8 +106,10 @@ class Element
     if (status != Invalid) return;
     
     hooks.beforeUpdate(this, component, component);
-
-    if (!hooks.shouldUpdate(this, component, component, true)) return;
+    if (!hooks.shouldUpdate(this, component, component, true)) {
+      hooks.afterUpdate(this);
+      return;
+    }
 
     status = Building;
     object.update();

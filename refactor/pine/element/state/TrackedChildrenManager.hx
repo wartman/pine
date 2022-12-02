@@ -24,6 +24,13 @@ class TrackedChildrenManager extends ProxyChildrenManager {
     });
   }
 
+  override function update() {
+    if (computation != null) {
+      computation.revalidate();
+    }
+    super.update();
+  }
+
   override function dispose() {
     if (computation != null) {
       computation.dispose();

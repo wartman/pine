@@ -21,7 +21,7 @@ class MultipleChildrenManager implements ChildrenManager {
   }
 
   public function hydrate(cursor:Cursor) {
-    var components = render(element);
+    var components = renderSafe();
     var children:Array<Element> = [];
     var previous:Null<Element> = null;
     var objects = cursor.currentChildren();
@@ -42,7 +42,7 @@ class MultipleChildrenManager implements ChildrenManager {
   }
 
   public function update() {
-    children = diffChildren(element, children, render(element));
+    children = diffChildren(element, children, renderSafe());
   }
 
   public function visit(visitor:(child:Element) -> Bool) {
@@ -60,5 +60,9 @@ class MultipleChildrenManager implements ChildrenManager {
     for (child in children) child.dispose();
     children = [];
     query = null;
+  }
+
+  function renderSafe() {
+    return render(element).filter(e -> e != null);
   }
 }
