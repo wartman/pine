@@ -297,7 +297,12 @@ class TodoItem extends AutoComponent {
   }
 }
 
-@:controller(new TodoInputFocus())
+@:controller(new Effect<TodoInput>(element -> {
+  if (element.getComponent().isEditing) {
+    var el:js.html.InputElement = cast element.getObject();
+    el.focus();
+  }
+}))
 class TodoInput extends AutoComponent {
   @:prop final className:String;
   @:prop final clearOnComplete:Bool;
@@ -338,30 +343,5 @@ class TodoInput extends AutoComponent {
         }
       }
     });
-  }
-}
-
-class TodoInputFocus implements Controller<TodoInput> {
-  var observer:Null<Observer> = null;
-
-  public function new() {}
-
-  public function register(element:ElementOf<TodoInput>) {
-    element.onReady(_ -> {
-      if (observer != null) return;
-      observer = new Observer(() -> {
-        if (element.getComponent().isEditing) {
-          var el:js.html.InputElement = cast element.getObject();
-          el.focus();
-        }
-      });
-    });
-  }
-  
-  public function dispose() {
-    if (observer != null) {
-      observer.dispose();
-      observer = null;
-    }
   }
 }
