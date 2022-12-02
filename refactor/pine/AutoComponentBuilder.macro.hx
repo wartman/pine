@@ -72,9 +72,9 @@ function process(fields) {
           };
           f.expr = macro {
             ${wrapper};
-            return __getExistingHooks().concat([
+            return [
               cast pine.element.auto.AutoLifecycle.lifecycle
-            ]);
+            ].concat(__getExistingHooks());
           };
         default: 
           throw 'assert';
