@@ -43,10 +43,6 @@ final class Portal extends Component implements HasComponentType {
   function createObjectManager(element:Element):ObjectManager {
     return new PortalObjectManager(element);
   }
-
-  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
-    return [];
-  }
 }
 
 @:allow(pine)

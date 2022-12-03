@@ -25,9 +25,7 @@ class TrackedChildrenManager extends ProxyChildrenManager {
   }
 
   override function update() {
-    if (computation != null) {
-      computation.revalidate();
-    }
+    if (computation != null) computation.revalidate();
     super.update();
   }
 

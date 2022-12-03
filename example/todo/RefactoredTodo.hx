@@ -2,6 +2,7 @@ package todo;
 
 import js.Browser;
 import pine.*;
+import pine.CoreHooks;
 import pine.html.*;
 import pine.html.client.ClientRoot;
 import pine.state.*;
@@ -297,7 +298,7 @@ class TodoItem extends AutoComponent {
   }
 }
 
-@:controller(new Effect<TodoInput>(element -> {
+@:hook(createEffect((element:ElementOf<TodoInput>) -> {
   if (element.getComponent().isEditing) {
     var el:js.html.InputElement = cast element.getObject();
     el.focus();

@@ -21,13 +21,13 @@ class Element
   implements DisposableHost
   implements HasLazyProps 
 {
-  final hooks:LifecycleHooksManager = new LifecycleHooksManager();
+  final lifecycle:LifecycleManager = new LifecycleManager();
   final disposables:DisposableManager = new DisposableManager();
   
   @lazy var object:ObjectManager = component.createObjectManager(this);
   @lazy var adapter:AdapterManager = component.createAdapterManager(this);
+  @lazy var hooks:HookCollection<Dynamic> = component.createHooks();
   @lazy var slots:SlotManager = component.createSlotManager(this);
-  @lazy var controllers:ControllerManager = component.createControllerManager(this);
   @lazy var children:ChildrenManager = component.createChildrenManager(this);
   @lazy var ancestors:AncestorManager = component.createAncestorManager(this);
 
@@ -36,30 +36,29 @@ class Element
 
   public function new(component) {
     this.component = component;
-    this.hooks.merge(component.createLifecycleHooks());
   }
 
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    hooks.beforeInit(this);
+    lifecycle.beforeInit(this);
 
     status = Building;
     object.init();
     children.init();
     status = Valid;
     
-    hooks.afterInit(this);
+    lifecycle.afterInit(this);
   }
 
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    hooks.beforeInit(this);
-    hooks.beforeHydrate(this, cursor);
-    if (!hooks.shouldHydrate(this, cursor)) {
-      hooks.afterHydrate(this, cursor);
-      hooks.afterInit(this);
+    lifecycle.beforeInit(this);
+    lifecycle.beforeHydrate(this, cursor);
+    if (!lifecycle.shouldHydrate(this, cursor)) {
+      lifecycle.afterHydrate(this, cursor);
+      lifecycle.afterInit(this);
       return;
     }
 
@@ -68,8 +67,8 @@ class Element
     children.hydrate(cursor);
     status = Valid;
     
-    hooks.afterHydrate(this, cursor);
-    hooks.afterInit(this);
+    lifecycle.afterHydrate(this, cursor);
+    lifecycle.afterInit(this);
   }
 
   function init(parent:Null<Element>, slot:Null<Slot>) {
@@ -78,17 +77,22 @@ class Element
     adapter.update(parent);
     ancestors.update(parent);
     slots.init(slot);
-    controllers.init(this);
+    hooks.init(this);
 
     status = Valid;
   }
 
+  /**
+    Updates this Element's configuration with a new Component.
+
+    Note that this *will not* update the Element's managers.
+  **/
   public function update(incomingComponent:Component) {
     Debug.assert(status != Building);
     
-    hooks.beforeUpdate(this, component, incomingComponent);
-    if (!hooks.shouldUpdate(this, component, incomingComponent, false)) {
-      hooks.afterUpdate(this);
+    lifecycle.beforeUpdate(this, component, incomingComponent);
+    if (!lifecycle.shouldUpdate(this, component, incomingComponent, false)) {
+      lifecycle.afterUpdate(this);
       return;
     }
 
@@ -98,27 +102,12 @@ class Element
     children.update();
     status = Valid;
 
-    hooks.afterUpdate(this);
+    lifecycle.afterUpdate(this);
   }
 
-  public function rebuild() {
-    Debug.assert(status != Building);
-    if (status != Invalid) return;
-    
-    hooks.beforeUpdate(this, component, component);
-    if (!hooks.shouldUpdate(this, component, component, true)) {
-      hooks.afterUpdate(this);
-      return;
-    }
-
-    status = Building;
-    object.update();
-    children.update();
-    status = Valid;
-    
-    hooks.afterUpdate(this);
-  }
-
+  /**
+    Mark this Element as invalid and enqeue it for rebuilding.
+  **/
   public function invalidate() {
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
@@ -135,6 +124,30 @@ class Element
   }
 
   /**
+    Update this element without changing its component.
+    
+    Note that you will probably never call this directly -- use `invalidate`
+    instead.
+  **/
+  public function rebuild() {
+    Debug.assert(status != Building);
+    if (status != Invalid) return;
+    
+    lifecycle.beforeUpdate(this, component, component);
+    if (!lifecycle.shouldUpdate(this, component, component, true)) {
+      lifecycle.afterUpdate(this);
+      return;
+    }
+
+    status = Building;
+    object.update();
+    children.update();
+    status = Valid;
+    
+    lifecycle.afterUpdate(this);
+  }
+
+  /**
     Visit this element's children. The element will continue 
     to iterate through its children as long as `visitor` returns
     `true`.
@@ -143,36 +156,78 @@ class Element
     children.visit(visitor);
   }
 
+  /**
+    Update the Element's -- the way it tracks its position
+    in the Element tree.
+    
+    Note: This is mostly an internal detail. You should never
+    have to use this unless you're creating an Adapter.
+  **/
   public function updateSlot(newSlot:Slot) {
     var oldSlot = slots.get();
     slots.update(newSlot);
-    hooks.onUpdateSlot(this, oldSlot, newSlot);
+    lifecycle.onUpdateSlot(this, oldSlot, newSlot);
   }
 
+  /**
+    Get this element's current Component.
+  **/
+  public function getComponent<T:Component>():T {
+    return cast component;
+  }
+  
+  /**
+    Get the closest object for this element.
+
+    An `object` is the lower-level implementation of the UI
+    -- for example, if you're using the `pine.html.client`,
+    `getObject` will return a `js.html.Node`, while the same
+    element using the adapter from `pine.html.server` will
+    return a `pine.object.Object`.
+  **/
   public function getObject():Dynamic {
     return object.get();
   }
 
-  public function getComponent<T:Component>():T {
-    return cast component;
-  }
-
+  /**
+    Get the current `Adapter` this element is using. Adapters
+    provide the bridge between Pine's Element tree and whatever
+    platform the app is running on. For example, the 
+    `pine.html.client.ClientAdapter` is responsible for actually
+    adding, removing and updating the DOM based on the current state 
+    of the app.
+  **/
   public function getAdapter() {
     return adapter.get();
   }
 
+  /**
+    Query this component's ancestors.
+  **/
   public function queryAncestors():AncestorQuery {
     return ancestors.getQuery();
   }
 
+  /**
+    Query this component's children.
+  **/
   public function queryChildren():ChildrenQuery {
     return children.getQuery();
   }
 
+  /**
+    Add a Disposible to be disposed when this Element is.
+  **/
   public function addDisposable(disposable:DisposableItem) {
     disposables.addDisposable(disposable);
   }
 
+  /**
+    Dispose this element, removing it from the Element tree
+    and further disposing all of its managers.
+
+    Note: you should almost *never* call this directly.
+  **/
   public function dispose() {
     Debug.assert(
       status != Building 
@@ -182,7 +237,7 @@ class Element
 
     status = Disposing;
 
-    hooks.onDispose(this);
+    lifecycle.onDispose(this);
     object.dispose();
     children.dispose();
     slots.dispose();

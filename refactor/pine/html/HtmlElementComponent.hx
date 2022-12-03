@@ -32,8 +32,4 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
       return children;
     });
   }
-
-  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
-    return [];
-  }
 }

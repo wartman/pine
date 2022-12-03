@@ -39,8 +39,4 @@ abstract class RootComponent extends ObjectComponent {
   override function createObjectManager(element:Element):ObjectManager {
     return new RootObjectManager(element);
   }
-
-  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
-    return [];
-  }
 }

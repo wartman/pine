@@ -41,8 +41,4 @@ abstract class AutoComponent extends Component {
   final function createObjectManager(element:Element):ObjectManager {
     return new ProxyObjectManager(element);
   }
-
-  function createLifecycleHooks() {
-    return [];
-  }
 }

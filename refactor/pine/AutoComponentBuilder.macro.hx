@@ -18,7 +18,7 @@ function process(fields) {
   var builder = new ClassBuilder(fields);
   var componentType = pine.core.HasComponentTypeBuilder.process(builder.getFields());
   var properties = new PropertyBuilder(builder.getFields());
-  var controllers = new ControllerPropertyBuilder(builder.getFields());
+  var hooks = new HookBuilder(builder.getFields());
   var tracked = new TrackedPropertyBuilder(builder.getFields(), {
     trackedName: 'trackedObject',
     trackerIsNullable: true
@@ -63,13 +63,11 @@ function process(fields) {
         return this.trackedObject;
       }
 
-      override function createControllerManager(element:pine.Element):pine.element.ControllerManager {
-        return new pine.element.ControllerManager(([
-          $a{[ 
-            macro cast new pine.element.state.TrackableController() 
-          ].concat(controllers.getControllers())}
-        ]:Array<pine.Controller<Dynamic>>));
-      } 
+      override function createHooks():pine.HookCollection<$ct> {
+        return [$a{[
+          macro cast pine.element.state.Trackable.useSyncTrackedObject()
+        ].concat(hooks.getHooks())}];
+      }
     });
   } else {
     var propsType = properties.getPropsType();
@@ -85,10 +83,10 @@ function process(fields) {
       }
     });
 
-    if (controllers.hasControllers()) {
+    if (hooks.hasHooks()) {
       builder.add(macro class {
-        override function createControllerManager(element:pine.Element):pine.element.ControllerManager {
-          return ${controllers.getManagerInitializer()};
+        override function createHooks():pine.HookCollection<Dynamic> {
+          return ${hooks.getHookCollection()};
         }
       });
     }

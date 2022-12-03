@@ -41,10 +41,6 @@ final class Fragment extends Component implements HasComponentType {
   function createObjectManager(element:Element):ObjectManager {
     return new FragmentObjectManager(element);
   }
-
-  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
-    return [];
-  }
 }
 
 class FragmentSlot extends Slot {
@@ -71,7 +67,7 @@ class FragmentObjectManager extends ProxyObjectManager {
   
   public function new(element:Element) {
     super(element);
-    element.hooks.add({
+    element.lifecycle.add({
       beforeHydrate: (element:Element, cursor:Cursor) -> {
         var fragment:Fragment = element.getComponent();
         if (fragment.children.length == 0) {

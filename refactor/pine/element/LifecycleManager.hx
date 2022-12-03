@@ -2,18 +2,18 @@ package pine.element;
 
 import pine.hydration.Cursor;
 
-class LifecycleHooksManager {
-  final hooks:Array<LifecycleHooks<Dynamic>>;
+class LifecycleManager {
+  final hooks:Array<Lifecycle<Dynamic>>;
 
-  public function new(?hooks:Array<LifecycleHooks<Dynamic>>) {
+  public function new(?hooks:Array<Lifecycle<Dynamic>>) {
     this.hooks = if (hooks == null) [] else hooks;
   }
 
-  public function merge(hooks:Array<LifecycleHooks<Dynamic>>) {
+  public function merge(hooks:Array<Lifecycle<Dynamic>>) {
     for (hook in hooks) add(hook);
   }
 
-  public function add(hook:Null<LifecycleHooks<Dynamic>>) {
+  public function add(hook:Null<Lifecycle<Dynamic>>) {
     if (hook != null) hooks.push(hook);
   }
 

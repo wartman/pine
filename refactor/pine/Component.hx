@@ -34,11 +34,7 @@ abstract class Component {
 
   abstract function createObjectManager(element:Element):ObjectManager;
   
-  // @todo: Now that we have the Controller stuff, should we deprecate
-  // createLifecycleHooks?
-  abstract function createLifecycleHooks():Array<LifecycleHooks<Dynamic>>;
-  
-  function createControllerManager(element:Element):ControllerManager {
-    return new ControllerManager([]);
+  function createHooks():HookCollection<Dynamic> {
+    return [];
   }
 }

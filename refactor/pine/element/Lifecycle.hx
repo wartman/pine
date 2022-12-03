@@ -2,7 +2,7 @@ package pine.element;
 
 import pine.hydration.Cursor;
 
-typedef LifecycleHooks<T:Component> = {
+typedef Lifecycle<T:Component> = {
   public final ?beforeInit:(element:ElementOf<T>)->Void;
   public final ?afterInit:(element:ElementOf<T>)->Void;
   public final ?onDispose:(element:ElementOf<T>)->Void;

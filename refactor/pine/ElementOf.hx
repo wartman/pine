@@ -1,6 +1,6 @@
 package pine;
 
-import pine.element.LifecycleHooks;
+import pine.element.Lifecycle;
 
 @:forward
 abstract ElementOf<T:Component>(Element) from Element to Element to Context {
@@ -12,12 +12,12 @@ abstract ElementOf<T:Component>(Element) from Element to Element to Context {
     return this.getComponent();
   }
 
-  public inline function addHook(hook:LifecycleHooks<T>) {
-    this.hooks.add(cast hook);
+  public inline function addLifecycle(hook:Lifecycle<T>) {
+    this.lifecycle.add(cast hook);
   }
 
   public inline function onReady(hook:(element:ElementOf<T>)->Void) {
-    addHook({
+    addLifecycle({
       afterInit: hook
     });
   }

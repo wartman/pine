@@ -56,34 +56,38 @@ abstract class ProviderComponent<T> extends Component {
     return new ProxyObjectManager(element);
   }
 
-  function createLifecycleHooks():Array<LifecycleHooks<Dynamic>> {
-    return [ cast ({
-      beforeInit: (element:ElementOf<ProviderComponent<T>>) -> {
-        var component = element.getComponent();
-        component.value = component.create();
-      },
-
-      beforeUpdate: (
-        element:ElementOf<ProviderComponent<T>>,
-        currentComponent:ProviderComponent<T>,
-        incomingComponent:ProviderComponent<T>
-      ) -> {
-        var curValue = currentComponent.getValue();
-        if (curValue != null) {
-          currentComponent.dispose(curValue);
-          currentComponent.value = null;
-        }
-        incomingComponent.value = incomingComponent.create();
-      },
-
-      onDispose: (element:ElementOf<ProviderComponent<T>>) -> {
-        var component = element.getComponent();
-        var value = component.getValue();
-        if (value != null) {
-          component.dispose(value);
-          component.value = null;
-        }
+  override function createHooks():HookCollection<Dynamic> {
+    return new HookCollection([
+      (element:ElementOf<ProviderComponent<T>>) -> {
+        element.addLifecycle({
+          beforeInit: element -> {
+            var component = element.getComponent();
+            component.value = component.create();
+          },
+    
+          beforeUpdate: (
+            element:ElementOf<ProviderComponent<T>>,
+            currentComponent:ProviderComponent<T>,
+            incomingComponent:ProviderComponent<T>
+          ) -> {
+            var curValue = currentComponent.getValue();
+            if (curValue != null) {
+              currentComponent.dispose(curValue);
+              currentComponent.value = null;
+            }
+            incomingComponent.value = incomingComponent.create();
+          },
+    
+          onDispose: element -> {
+            var component = element.getComponent();
+            var value = component.getValue();
+            if (value != null) {
+              component.dispose(value);
+              component.value = null;
+            }
+          }
+        });
       }
-    }:LifecycleHooks<ProviderComponent<T>>) ];
+    ]);
   }
 }
