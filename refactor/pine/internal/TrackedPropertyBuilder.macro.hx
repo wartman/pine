@@ -12,6 +12,14 @@ typedef TrackedPropertyBuilderOptions = {
   public final trackerIsNullable:Bool;
 } 
 
+/**
+  Finds all non-final fields of a class and converts them into
+  getter/setters that in turn use an internal TrackedObject. This
+  means that all non-final fields in a class will become 
+  reactive States.
+
+  Note that fields marked with `@:skip` will be ignored.
+**/
 class TrackedPropertyBuilder extends ClassBuilder {
   public static function fromContext(?options) {
     return new TrackedPropertyBuilder(getBuildFieldsSafe(), options);
@@ -100,58 +108,52 @@ class TrackedPropertyBuilder extends ClassBuilder {
   }
 
   function process() {
-    for (field in findFieldsByMeta(':track')) {
-      switch field.kind {
-        case FVar(t, e):
-          var prop = field.name.makeField(t, e != null);
-          var name = field.name;
-          var getter = 'get_$name';
-          var setter = 'set_$name';
-          var tracked = this.getTrackedObjectExpr();
-          var meta = field.meta.find(m -> m.name == ':track');
-          
-          addInitProp(prop);
-          addProp(prop);
+    for (field in fields) switch field.kind {
+      case FVar(t, e) if (
+        !field.access.contains(AFinal)
+        && !field.access.contains(AStatic)
+        && !field.meta.exists(m -> m.name == ':skip')
+      ):
+        var prop = field.name.makeField(t, e != null);
+        var name = field.name;
+        var getter = 'get_$name';
+        var setter = 'set_$name';
+        var tracked = this.getTrackedObjectExpr();
+        
+        addInitProp(prop);
+        addProp(prop);
 
-          if (e != null) {
-            addInitializer(macro if (props.$name == null) {
-              props.$name = $e;
+        if (e != null) {
+          addInitializer(macro if (props.$name == null) {
+            props.$name = $e;
+          });
+        }
+
+        switch t {
+          case macro:Array<$r>:
+            var type = macro:pine.state.TrackedArray<$r>;
+            field.kind = FProp('get', 'never', type);
+            add(macro class {
+              inline function $getter():$type return $tracked.$name;
             });
-          }
-
-          if (field.access.contains(AFinal)) {
-            field.kind = FProp('get', 'never', t);
+          case macro:Map<$k, $v>:
+            var type = macro:pine.state.TrackedMap<$k, $v>;
+            field.kind = FProp('get', 'never', type);
+            add(macro class {
+              inline function $getter():$type return $tracked.$name;
+            });
+          default:
+            field.kind = FProp('get', 'set', t);
             add(macro class {
               inline function $getter():$t return $tracked.$name;
+
+              inline function $setter(value:$t) {
+                $tracked.$name = value;
+                return value;
+              }
             });
-          } else {
-            switch t {
-              case macro:Array<$r>:
-                var type = macro:pine.state.TrackedArray<$r>;
-                field.kind = FProp('get', 'never', type);
-                add(macro class {
-                  inline function $getter():$type return $tracked.$name;
-                });
-              case macro:Map<$k, $v>:
-                var type = macro:pine.state.TrackedMap<$k, $v>;
-                field.kind = FProp('get', 'never', type);
-                add(macro class {
-                  inline function $getter():$type return $tracked.$name;
-                });
-              default:
-                field.kind = FProp('get', 'set', t);
-                add(macro class {
-                  inline function $getter():$t return $tracked.$name;
-    
-                  inline function $setter(value:$t) {
-                    $tracked.$name = value;
-                    return value;
-                  }
-                });
-            }
-          }
-        default:
-      }
+        }
+      default:
     }
   }
 }

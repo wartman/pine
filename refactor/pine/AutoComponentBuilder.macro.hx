@@ -1,6 +1,5 @@
 package pine;
 
-import pine.state.Engine.unbind;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
@@ -44,19 +43,23 @@ function process(fields) {
         trackedObjectProps = ${tracked.getTrackedObjectConstructorArg()};
       }
 
+      @:noCompletion
       final public function asTrackable():haxe.ds.Option<pine.element.state.Trackable<Dynamic>> {
         return Some(this);
       }
 
+      @:noCompletion
       public function getTrackedObject():$trackedType {
         return trackedObject;
       }
   
+      @:noCompletion
       public function initTrackedObject():$trackedType {
         trackedObject = ${tracked.instantiateTrackedObject('trackedObjectProps')};
         return trackedObject;
       }
 
+      @:noCompletion
       public function reuseTrackedObject(trackedObject:$trackedType):$trackedType {
         this.trackedObject = trackedObject;
         this.trackedObject.replace(this.trackedObjectProps);

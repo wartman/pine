@@ -18,10 +18,10 @@ function main() {
 }
 
 class Todo implements Record {
-  @:prop public final id:Int;
-  @:track public var description:String;
-  @:track public var isCompleted:Bool;
-  @:track public var isEditing:Bool;
+  public final id:Int;
+  public var description:String;
+  public var isCompleted:Bool;
+  public var isEditing:Bool;
 
   public function toJson() {
     return {
@@ -71,9 +71,9 @@ class TodoStore implements Record {
     });
   }
 
-  @:track var uid:Int;
-  @:track public var visibility:TodoVisibility;
-  @:track public var todos:Array<Todo>;
+  var uid:Int;
+  public var visibility:TodoVisibility;
+  public var todos:Array<Todo>;
 
   public function addTodo(description:String) {
     todos.unshift(new Todo({
@@ -155,7 +155,7 @@ class TodoApp extends AutoComponent {
 }
 
 class TodoFooter extends AutoComponent {
-  @:prop final store:TodoStore;
+  final store:TodoStore;
 
   public function render(context:Context):Component {
     var total = store.todos.length;
@@ -211,7 +211,7 @@ class TodoFooter extends AutoComponent {
 
 
 class TodoContainer extends AutoComponent {
-  @:prop final store:TodoStore;
+  final store:TodoStore;
 
   function render(context:Context) {
     var len = store.todos.length;
@@ -240,7 +240,7 @@ class TodoContainer extends AutoComponent {
 }
 
 class TodoItem extends AutoComponent {
-  @:prop final todo:Todo;
+  final todo:Todo;
 
   inline function getClassName() {
     return [
@@ -305,12 +305,12 @@ class TodoItem extends AutoComponent {
   }
 }))
 class TodoInput extends AutoComponent {
-  @:prop final className:String;
-  @:prop final clearOnComplete:Bool;
-  @:prop final onSubmit:(data:String) -> Void;
-  @:prop final onCancel:() -> Void;
-  @:track public var isEditing:Bool = false;
-  @:track var value:String;
+  final className:String;
+  final clearOnComplete:Bool;
+  final onSubmit:(data:String) -> Void;
+  final onCancel:() -> Void;
+  public var isEditing:Bool = false;
+  var value:String;
 
   function render(context:Context):Component {
     return new Html<'input'>({

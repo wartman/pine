@@ -1,0 +1,28 @@
+-cp refactor
+-cp example
+
+-D js-es=6
+-D debug
+-D analyzer-optimize
+
+--dce full
+
+--macro nullSafety("pine")
+
+--each
+
+-main todo.RefactoredTodo
+
+-js dist/assets/todo.js
+
+--next
+
+-main counter.Counter
+
+-js dist/assets/counter.js
+
+--next
+
+-main counter.GlobalCounter
+
+-js dist/assets/global-counter.js

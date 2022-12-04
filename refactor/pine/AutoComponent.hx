@@ -7,16 +7,15 @@ import pine.element.state.*;
 import pine.element.proxy.*;
 
 /**
-  The AutoComponent is likely the only Component you'll really need
+  The AutoComponent is likely the only Component you'll need
   to use, and it takes care of most of the boilerplate for you.
-
-  @todo: More information, including about what `@:prop` and `@:track` do.
 **/
 @:allow(pine)
 @:autoBuild(pine.AutoComponentBuilder.build())
 abstract class AutoComponent extends Component {
   abstract public function render(context:Context):Component;
 
+  @:noCompletion
   abstract function asTrackable():Option<Trackable<Dynamic>>;
   
   function createAdapterManager(element:Element):AdapterManager {

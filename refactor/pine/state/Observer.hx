@@ -21,7 +21,7 @@ class Observer implements Disposable {
   }
 
   final handler:()->Void;
-  final dependencies:List<State<Dynamic>> = new List();
+  final dependencies:List<Atom<Dynamic>> = new List();
   var status:ObserverStatus = Inactive;
 
   public function new(handler) {

@@ -13,18 +13,6 @@ import pine.element.state.*;
   you can use it to isolate reactive parts of a component
   instead of forcing an entire component to re-render.
 **/
-@:hook((element:ElementOf<Scope>) -> {
-  element.addLifecycle({
-    beforeInit: element -> {
-      var scope:Scope = element.getComponent();
-      if (scope.init != null) scope.init(element);
-    },
-    onDispose: element -> {
-      var scope:Scope = element.getComponent();
-      if (scope.dispose != null) scope.dispose(element);
-    }
-  });
-})
 final class Scope extends Component implements HasComponentType {
   final render:(context:Context)->Component;
   final init:Null<(context:Context)->Void>;
@@ -63,5 +51,22 @@ final class Scope extends Component implements HasComponentType {
 
   function createObjectManager(element:Element):ObjectManager {
     return new ProxyObjectManager(element);
+  }
+
+  override function createHooks():HookCollection<Dynamic> {
+    return new HookCollection<Scope>([
+      element -> {
+        element.watchLifecycle({
+          beforeInit: element -> {
+            var scope:Scope = element.getComponent();
+            if (scope.init != null) scope.init(element);
+          },
+          onDispose: element -> {
+            var scope:Scope = element.getComponent();
+            if (scope.dispose != null) scope.dispose(element);
+          }
+        });
+      }
+    ]);
   }
 }

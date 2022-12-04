@@ -12,12 +12,12 @@ abstract ElementOf<T:Component>(Element) from Element to Element to Context {
     return this.getComponent();
   }
 
-  public inline function addLifecycle(hook:Lifecycle<T>) {
+  public inline function watchLifecycle(hook:Lifecycle<T>) {
     this.lifecycle.add(cast hook);
   }
 
   public inline function onReady(hook:(element:ElementOf<T>)->Void) {
-    addLifecycle({
+    watchLifecycle({
       afterInit: hook
     });
   }

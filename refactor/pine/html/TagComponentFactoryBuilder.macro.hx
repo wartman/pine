@@ -47,72 +47,72 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
   var name = '${baseName}_${tag.name}';
   var path:TypePath = { pack: pack, name: name };
 
-  if (!path.typePathExists()) {
-    var builder = new ClassBuilder([]);
-    var pos = Context.currentPos();
-    var props = tag.type.toComplexType();
+  if (path.typePathExists()) return TPath(path);
 
-    builder.add(macro class {
-      static final type:pine.internal.UniqueId = pine.html.TagTypes.getTypeForTag($v{tag.name});
-      
-      public function getComponentType() {
-        return type;
-      }
-    });
+  var builder = new ClassBuilder([]);
+  var pos = Context.currentPos();
+  var props = tag.type.toComplexType();
 
-    var attrs = switch tag.kind {
-      case TagNormal:
-        var attrs = macro:$props & pine.html.HtmlEvents & {
-          ?children:pine.html.HtmlChildren, 
-          ?key:pine.diffing.Key
-        };
-        builder.add(macro class {
-          public function new(props:$attrs) {
-            var children = props.children == null ? [] : props.children;
-            var key = props.key;
-
-            Reflect.deleteField(props, 'children');
-            Reflect.deleteField(props, 'key');
-            
-            super({
-              tag: $v{tag.name},
-              attrs: props,
-              key: key,
-              children: children,
-              isSvg: $v{isSvg}
-            });
-          }
-        });
-        attrs;
-      default:
-        var attrs = macro:$props & pine.html.HtmlEvents & {
-          ?key:pine.diffing.Key
-        };
-        builder.add(macro class {
-          public function new(props:$attrs) {
-            super({
-              tag: $v{tag.name},
-              attrs: props,
-              key: props.key,
-              isSvg: $v{isSvg}
-            });
-          }
-        });
-        attrs;
+  builder.add(macro class {
+    static final type:pine.internal.UniqueId = pine.html.TagTypes.getTypeForTag($v{tag.name});
+    
+    public function getComponentType() {
+      return type;
     }
+  });
 
-    Context.defineType({
-      pack: pack,
-      name: name,
-      pos: pos,
-      kind: TDClass({
-        pack: pack,
-        name: 'HtmlElementComponent',
-        params: [ TPType(attrs) ]
-      }),
-      fields: builder.export()
-    });
+  var attrs = switch tag.kind {
+    case TagNormal:
+      var attrs = macro:$props & pine.html.HtmlEvents & {
+        ?children:pine.html.HtmlChildren, 
+        ?key:pine.diffing.Key
+      };
+      builder.add(macro class {
+        public function new(props:$attrs) {
+          var children = props.children == null ? [] : props.children;
+          var key = props.key;
+
+          Reflect.deleteField(props, 'children');
+          Reflect.deleteField(props, 'key');
+          
+          super({
+            tag: $v{tag.name},
+            attrs: props,
+            key: key,
+            children: children,
+            isSvg: $v{isSvg}
+          });
+        }
+      });
+      attrs;
+    default:
+      var attrs = macro:$props & pine.html.HtmlEvents & {
+        ?key:pine.diffing.Key
+      };
+      builder.add(macro class {
+        public function new(props:$attrs) {
+          super({
+            tag: $v{tag.name},
+            attrs: props,
+            key: props.key,
+            isSvg: $v{isSvg}
+          });
+        }
+      });
+      attrs;
   }
+
+  Context.defineType({
+    pack: pack,
+    name: name,
+    pos: pos,
+    kind: TDClass({
+      pack: pack,
+      name: 'HtmlElementComponent',
+      params: [ TPType(attrs) ]
+    }),
+    fields: builder.export()
+  });
 
   return TPath(path);
 }

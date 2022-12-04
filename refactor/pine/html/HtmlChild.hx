@@ -6,4 +6,9 @@ abstract HtmlChild(Component) from Component to Component {
   public inline static function ofString(content:String):HtmlChild {
     return new HtmlTextComponent({content: content});
   }
+
+  @:from
+  public inline static function ofInt(content:Int):HtmlChild {
+    return new HtmlTextComponent({content: content + ''});
+  }
 }

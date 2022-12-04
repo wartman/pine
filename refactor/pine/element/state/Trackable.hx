@@ -10,7 +10,7 @@ typedef Trackable<T> = {
 
 function useSyncTrackedObject():Hook<AutoComponent> {
   return (element:ElementOf<AutoComponent>) -> {
-    element.addLifecycle({
+    element.watchLifecycle({
       beforeInit: element -> {
         element
           .getComponent()

@@ -59,22 +59,22 @@ private function buildTrackedObject(type:Type):ComplexType {
               });
             default:
               var name = prop.name;
-              var state = 'state_$name';
+              var atom = '__trackedAtom_$name';
               var setter = 'set_$name';
               var getter = 'get_$name';
               var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
 
-              inits.push(macro this.$state = new pine.state.State($init));
-              updates.push(macro this.$state.set(props.$name));
-              dispose.push(macro this.$state.dispose());
+              inits.push(macro this.$atom = new pine.state.Atom($init));
+              updates.push(macro this.$atom.set(props.$name));
+              dispose.push(macro this.$atom.dispose());
               builder.add(macro class {
-                final $state:pine.state.State<$t>;
+                final $atom:pine.state.Atom<$t>;
 
                 public var $name(get, set):$t;
 
-                inline function $getter():$t return this.$state.get();
+                inline function $getter():$t return this.$atom.get();
 
-                inline function $setter(value):$t return this.$state.set(value);
+                inline function $setter(value):$t return this.$atom.set(value);
               });
           }
         default:
@@ -136,10 +136,10 @@ private function resolveName(type:Type):String {
 
 // @todo: find a better solution for this hack
 private function hack_fixCompilerTypingOrder() {
-  // This is a hack: it forces the compiler to have `pine.state.State` typed 
+  // This is a hack: it forces the compiler to have `pine.state.Atom` typed 
   // before it defines the tracked object. If we don't do this, we may 
   // run into some odd cases where compiling fails (that is, if we don't
-  // import pine.state.State somewhere else first).
+  // import pine.state.Atom somewhere else first).
   //
   // I may just be doing something wrong here
   function ensure(path:String) {
@@ -151,5 +151,5 @@ private function hack_fixCompilerTypingOrder() {
     }
   }
   ensure('pine.state.Observer');
-  ensure('pine.state.State');
+  ensure('pine.state.Atom');
 }

@@ -59,7 +59,7 @@ abstract class ProviderComponent<T> extends Component {
   override function createHooks():HookCollection<Dynamic> {
     return new HookCollection([
       (element:ElementOf<ProviderComponent<T>>) -> {
-        element.addLifecycle({
+        element.watchLifecycle({
           beforeInit: element -> {
             var component = element.getComponent();
             component.value = component.create();
