@@ -299,7 +299,7 @@ class TodoItem extends AutoComponent {
 }
 
 @:hook(createEffect((element:ElementOf<TodoInput>) -> {
-  if (element.getComponent().isEditing) {
+  if (element.component.isEditing) {
     var el:js.html.InputElement = cast element.getObject();
     el.focus();
   }

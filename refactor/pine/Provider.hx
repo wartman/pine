@@ -61,7 +61,7 @@ abstract class ProviderComponent<T> extends Component {
       (element:ElementOf<ProviderComponent<T>>) -> {
         element.watchLifecycle({
           beforeInit: element -> {
-            var component = element.getComponent();
+            var component = element.component;
             component.value = component.create();
           },
     
@@ -79,7 +79,7 @@ abstract class ProviderComponent<T> extends Component {
           },
     
           onDispose: element -> {
-            var component = element.getComponent();
+            var component = element.component;
             var value = component.getValue();
             if (value != null) {
               component.dispose(value);

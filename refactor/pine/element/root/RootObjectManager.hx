@@ -19,7 +19,7 @@ class RootObjectManager implements ObjectManager {
       case Some(obj): 
         obj;
       case None:
-        var obj = element.getComponent().getRootObject();
+        var obj = element.component.getRootObject();
         object = Some(obj);
         obj;
     }

@@ -12,7 +12,9 @@ class ServerRoot
   public static function mount(root:Object, child:Component):ElementOf<ServerRoot> {
     var component = new ServerRoot({ el: root, child: child });
     var element = component.createElement();
+
     element.mount(null, null);
+    
     return element;
   }
 
@@ -20,7 +22,9 @@ class ServerRoot
     var component = new ServerRoot({ el: root, child: child });
     var element = component.createElement();
     var cursor = new ObjectCursor(root);
+
     element.hydrate(cursor, null, null);
+    
     return element;
   }
 

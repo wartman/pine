@@ -15,14 +15,14 @@
 
 -js dist/assets/todo.js
 
---next
+# --next
 
--main counter.Counter
+# -main counter.Counter
 
--js dist/assets/counter.js
+# -js dist/assets/counter.js
 
---next
+# --next
 
--main counter.GlobalCounter
+# -main counter.GlobalCounter
 
--js dist/assets/global-counter.js
+# -js dist/assets/global-counter.js

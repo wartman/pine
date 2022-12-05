@@ -3,8 +3,8 @@ package pine;
 import pine.adapter.Adapter;
 import pine.diffing.Key;
 import pine.element.*;
-import pine.element.proxy.*;
 import pine.element.root.*;
+import pine.element.object.DirectChildrenManager;
 
 abstract class RootComponent extends ObjectComponent {
   public final child:Component;
@@ -22,18 +22,14 @@ abstract class RootComponent extends ObjectComponent {
   abstract public function createAdapter():Adapter;
 
   function createChildrenManager(element:Element):ChildrenManager {
-    return new ProxyChildrenManager(element, context -> {
+    return new DirectChildrenManager(element, context -> {
       var root:RootComponent = context.getComponent();
-      root.child;
+      [ root.child ];
     });
   }
   
   override function createAdapterManager(_) {
     return new RootAdapterManager(createAdapter());
-  }
-
-  override function createSlotManager(element:Element):SlotManager {
-    return new ProxySlotManager(element);
   }
 
   override function createObjectManager(element:Element):ObjectManager {

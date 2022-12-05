@@ -13,7 +13,7 @@ function useSyncTrackedObject():Hook<AutoComponent> {
     element.watchLifecycle({
       beforeInit: element -> {
         element
-          .getComponent()
+          .component
           .asTrackable()
           .sure()
           .initTrackedObject();
@@ -27,7 +27,7 @@ function useSyncTrackedObject():Hook<AutoComponent> {
     
       onDispose: element -> {
         var object = element
-          .getComponent()
+          .component
           .asTrackable()
           .sure()
           .getTrackedObject();

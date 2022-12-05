@@ -1,0 +1,10 @@
+-cp refactor
+-cp refactor-test
+
+-lib medic
+
+-main Run
+
+-js dist/test.js
+
+-cmd node dist/test

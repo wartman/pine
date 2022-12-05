@@ -79,7 +79,7 @@ class PortalChildrenManager implements ChildrenManager {
     placeholder.update(); // Using update is intentional!
 
     var portalCursor = cursor.clone();
-    portalCursor.move(element.getComponent().target);
+    portalCursor.move(element.component.target);
     
     portalRoot = createRootComponent().createElement();
     portalRoot.hydrate(portalCursor, element, null);
@@ -93,7 +93,7 @@ class PortalChildrenManager implements ChildrenManager {
       portalRoot.mount(element, null);
     } else if (
       previousComponent != null
-      && previousComponent.target != element.getComponent().target
+      && previousComponent.target != element.component.target
     ) {
       portalRoot.dispose();
       portalRoot = createRootComponent().createElement();
@@ -119,7 +119,7 @@ class PortalChildrenManager implements ChildrenManager {
 
   function createRootComponent() {
     var adapter = element.getAdapter().orThrow('Expected an adapter');
-    var component = element.getComponent();
+    var component = element.component;
 
     previousComponent = component;
     

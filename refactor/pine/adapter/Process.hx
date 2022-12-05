@@ -5,7 +5,7 @@ import haxe.ds.Option;
 using pine.core.OptionTools;
 
 abstract class Process {
-  public static function frim(context:Context):Process {
+  public static function from(context:Context):Process {
     return maybeFrom(context).orThrow('No Process found');
   }
 
