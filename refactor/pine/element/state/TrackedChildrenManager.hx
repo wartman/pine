@@ -15,7 +15,7 @@ class TrackedChildrenManager extends ProxyChildrenManager {
       if (computation == null) computation = new Computation(() -> {
         var component = render(context);
         switch element.status {
-          case Pending | Building:
+          case Pending | Building | Disposed:
           default: element.invalidate();
         }
         return component;

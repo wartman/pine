@@ -65,7 +65,8 @@ class InlineChildrenManager implements ChildrenManager {
   }
 
   public function update() {
-    marker.updateSlot(element.slots.get());
+    var currentSlot = element.slots.get();
+    if (currentSlot != null) marker.updateSlot(currentSlot);
     children = diffChildren(element, children, renderSafe());
   }
   

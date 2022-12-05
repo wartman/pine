@@ -157,7 +157,7 @@ class Element
   }
 
   /**
-    Update the Element's -- the way it tracks its position
+    Update the Element's Slot -- the way it tracks its position
     in the Element tree.
     
     Note: This is mostly an internal detail. You should never
