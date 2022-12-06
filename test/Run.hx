@@ -1,31 +1,13 @@
-import medic.*;
-import unit.*;
-import integration.*;
-
-// @todo: Completely rethink tests.
+import medic.Runner;
 
 function main() {
-  var tests = new Runner(new DefaultReporter({
-    title: 'Pine Tests',
-    verbose: true,
-    trackProgress: true
-  }));
-
-  addUnitTests(tests);
-  addIntegrationTests(tests);
-
-  tests.run();
-}
-
-function addUnitTests(tests:Runner) {
-  tests.add(new TestFragment());
+  var runner = new Runner();
   
-  tests.add(new TestObserver());
-  tests.add(new TestComputation());
+  runner.add(new unit.TestFragment());
 
-  tests.add(new TestTrackedObject());
-}
+  runner.add(new unit.state.TestObserver());
+  runner.add(new unit.state.TestComputation());
+  runner.add(new unit.state.TestTrackedObject());
 
-function addIntegrationTests(tests:Runner) {
-  // tests.add(new TestKeySorting());
+  runner.run();
 }

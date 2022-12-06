@@ -1,9 +1,30 @@
 package pine;
 
+import pine.adapter.*;
+import pine.element.*;
+import pine.element.core.*;
+import pine.element.object.*;
+
+using pine.core.OptionTools;
+
 abstract class ObjectComponent extends Component {
-  abstract public function getChildren():Array<Null<Component>>;
+  public function getApplicatorFrom(adapter:Adapter):ObjectApplicator<Dynamic> {
+    return adapter.getApplicator(this);
+  }
+
+  function createAncestorManager(element:Element):AncestorManager {
+    return new CoreAncestorManager(element);
+  }
   
-  public function getApplicator(context:Context):ObjectApplicator<Dynamic> {
-    return Adapter.from(context).getApplicator(this);
+  function createAdapterManager(element:Element):AdapterManager {
+    return new CoreAdapterManager();
+  }
+
+  function createSlotManager(element):SlotManager {
+    return new ObjectSlotManager(element);
+  }
+
+  function createObjectManager(element:Element):ObjectManager {
+    return new DirectObjectManager(element);
   }
 }

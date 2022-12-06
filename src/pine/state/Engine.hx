@@ -30,14 +30,14 @@ function batch(compute:()->Void) {
   validateObservers();
 }
 
-function bind(observer:Observer, state:State<Dynamic>) {
+function bind(observer:Observer, state:Atom<Dynamic>) {
   if (!state.observers.has(observer)) {
     observer.dependencies.add(state);
     state.observers.add(observer);
   }
 }
 
-function unbind(observer:Observer, state:State<Dynamic>) {
+function unbind(observer:Observer, state:Atom<Dynamic>) {
   observer.dependencies.remove(state);
   state.observers.remove(observer);
 }

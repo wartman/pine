@@ -1,5 +1,7 @@
 package pine.html.server;
 
+import pine.adapter.*;
+
 class ServerAdapter extends Adapter {
   final process = new ServerProcess();
   final elementApplicator = new HtmlElementApplicator();

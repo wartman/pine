@@ -1,8 +1,12 @@
 package pine.html;
 
-class HtmlTextComponent extends ObjectComponent {
-  static final type = new UniqueId();
+import pine.adapter.*;
+import pine.core.HasComponentType;
+import pine.diffing.Key;
+import pine.element.*;
+import pine.element.core.NoChildrenManager;
 
+final class HtmlTextComponent extends ObjectComponent implements HasComponentType {
   public final content:String;
 
   public function new(props:{
@@ -13,19 +17,11 @@ class HtmlTextComponent extends ObjectComponent {
     content = props.content;
   }
 
-  public function getChildren():Array<Component> {
-    return [];
+  override function getApplicatorFrom(adapter:Adapter):ObjectApplicator<Dynamic> {
+    return adapter.getTextApplicator(this);
   }
 
-  public function getComponentType():UniqueId {
-    return type;
-  }
-
-  override function getApplicator(context:Context):ObjectApplicator<Dynamic> {
-    return Adapter.from(context).getTextApplicator(this);
-  }
-
-  public function createElement():Element {
-    return new ObjectWithoutChildrenElement(this);
+  function createChildrenManager(element:Element):ChildrenManager {
+    return new NoChildrenManager(element);
   }
 }

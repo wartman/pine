@@ -1,433 +1,248 @@
 package pine;
 
-import haxe.ds.Option;
+import pine.core.*;
+import pine.debug.Debug;
+import pine.element.*;
+import pine.hydration.Cursor;
 
-enum ElementStatus {
-  Pending;
-  Valid;
-  Invalid;
-  Building;
-  Disposing;
-  Disposed;
-}
+using pine.core.OptionTools;
 
-enum abstract HydratingStatus(Bool) to Bool {
-  var IsHydrating = true;
-  var NotHydrating = false;
-}
-
-@:autoBuild(pine.ElementBuilder.build())
-abstract class Element 
-  implements Context 
-  implements InitContext
+/**
+  Elements are the persistant part of Pine. They're configured by
+  Components, and most of their functionality is provided by various
+  "Managers". Generally, you should not be creating subclasses of Element
+  -- instead, use Components to configure the Managers the Element will
+  use.
+**/
+@:allow(pine)
+class Element
+  implements Context
   implements Disposable 
-  implements DisposableHost 
+  implements DisposableHost
+  implements HasLazyProps 
 {
-  final disposables:Array<Disposable> = [];
+  final lifecycle:LifecycleManager = new LifecycleManager();
+  final disposables:DisposableManager = new DisposableManager();
+  
+  @lazy var object:ObjectManager = component.createObjectManager(this);
+  @lazy var adapter:AdapterManager = component.createAdapterManager(this);
+  @lazy var hooks:HookCollection<Dynamic> = component.createHooks();
+  @lazy var slots:SlotManager = component.createSlotManager(this);
+  @lazy var children:ChildrenManager = component.createChildrenManager(this);
+  @lazy var ancestors:AncestorManager = component.createAncestorManager(this);
+
   var component:Component;
-  var slot:Null<Slot> = null;
   var status:ElementStatus = Pending;
-  var hydratingStatus:HydratingStatus = NotHydrating;
-  var parent:Null<Element> = null;
-  var root:Null<Root> = null;
 
   public function new(component) {
     this.component = component;
   }
 
-  public function getRoot():Root {
-    Debug.alwaysAssert(root != null);
-    return root;
-  }
+  public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
+    init(parent, newSlot);
 
-  public function mount(parent:Null<Element>, ?slot:Slot) {
-    performSetup(parent, slot);
-    status = Building;
-    performBuild(null);
-    status = Valid;
-  }
-
-  public function hydrate(cursor:HydrationCursor, parent:Null<Element>, ?slot:Slot) {
-    hydratingStatus = IsHydrating;
-    performSetup(parent, slot);
-    status = Building;
-    performHydrate(cursor);
-    status = Valid;
-    hydratingStatus = NotHydrating;
-  }
-
-  public function update(component:Component) {
-    Debug.assert(status != Building);
+    lifecycle.beforeInit(this);
 
     status = Building;
-    var previousComponent = this.component;
-    this.component = component;
-    performBuild(previousComponent);
+    object.init();
+    children.init();
     status = Valid;
+    
+    lifecycle.afterInit(this);
   }
 
-  public function rebuild() {
-    Debug.assert(status != Building);
+  public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
+    init(parent, newSlot);
 
-    if (status != Invalid) {
+    lifecycle.beforeInit(this);
+    lifecycle.beforeHydrate(this, cursor);
+    if (!lifecycle.shouldHydrate(this, cursor)) {
+      lifecycle.afterHydrate(this, cursor);
+      lifecycle.afterInit(this);
       return;
     }
 
     status = Building;
-    performBuild(component);
+    object.hydrate(cursor);
+    children.hydrate(cursor);
     status = Valid;
-  }
-
-  // @todo: This is here entirely to make sure that the ObserverElement
-  // disposes in the correct order. There may be a better way -- looping
-  // through children twice per disposal is probably not super 
-  // efficient.
-  function prepareForDisposal() {
-    status = Disposing;
-    visitChildren(child -> child.prepareForDisposal());
-  }
-
-  public function dispose() {
-    Debug.assert(status != Building && status != Disposed);
     
-    prepareForDisposal();
-    performDispose();
-
-    visitChildren(child -> child.dispose());
-    for (disposable in disposables) disposable.dispose();
-    
-    status = Disposed;
-    parent = null;
-    root = null;
-    slot = null;
+    lifecycle.afterHydrate(this, cursor);
+    lifecycle.afterInit(this);
   }
 
-  function performSetup(parent:Null<Element>, ?slot:Slot) {
+  function init(parent:Null<Element>, slot:Null<Slot>) {
     Debug.assert(status == Pending, 'Attempted to mount an already mounted Element');
-
-    this.parent = parent;
-    this.slot = slot;
     
-    if (parent != null) this.root = parent.getRoot();
+    adapter.update(parent);
+    ancestors.update(parent);
+    slots.init(slot);
+    hooks.init(this);
 
     status = Valid;
   }
 
+  /**
+    Updates this Element's configuration with a new Component.
+
+    Note that this *will not* update the Element's managers.
+  **/
+  public function update(incomingComponent:Component) {
+    Debug.assert(status != Building);
+    
+    lifecycle.beforeUpdate(this, component, incomingComponent);
+    if (!lifecycle.shouldUpdate(this, component, incomingComponent, false)) {
+      lifecycle.afterUpdate(this);
+      return;
+    }
+
+    status = Building;
+    this.component = incomingComponent;
+    object.update();
+    children.update();
+    status = Valid;
+
+    lifecycle.afterUpdate(this);
+  }
+
+  /**
+    Mark this Element as invalid and enqeue it for rebuilding.
+  **/
   public function invalidate() {
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
     Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
-
-    if (status == Invalid) {
-      return;
-    }
+    
+    if (status == Invalid) return;
 
     status = Invalid;
 
-    if (root != null) {
-      root.requestRebuild(this);
+    adapter
+      .get()
+      .orThrow('No adapter found')
+      .requestRebuild(this);
+  }
+
+  /**
+    Update this element without changing its component.
+    
+    Note that you will probably never call this directly -- use `invalidate`
+    instead.
+  **/
+  public function rebuild() {
+    Debug.assert(status != Building);
+    if (status != Invalid) return;
+    
+    lifecycle.beforeUpdate(this, component, component);
+    if (!lifecycle.shouldUpdate(this, component, component, true)) {
+      lifecycle.afterUpdate(this);
+      return;
     }
+
+    status = Building;
+    object.update();
+    children.update();
+    status = Valid;
+    
+    lifecycle.afterUpdate(this);
   }
 
-  abstract function performHydrate(cursor:HydrationCursor):Void;
-
-  abstract function performBuild(previousComponent:Null<Component>):Void;
-
-  abstract function performDispose():Void;
-
-  abstract public function visitChildren(visitor:ElementVisitor):Void;
-
-  public function addDisposable(disposable:Disposable) {
-    disposables.push(disposable);
+  /**
+    Visit this element's children. The element will continue 
+    to iterate through its children as long as `visitor` returns
+    `true`.
+  **/
+  public function visitChildren(visitor) {
+    children.visit(visitor);
   }
 
-  public final inline function getComponent<T:Component>():Null<T> {
+  /**
+    Update the Element's Slot -- the way it tracks its position
+    in the Element tree.
+    
+    Note: This is mostly an internal detail. You should never
+    have to use this unless you're creating an Adapter.
+  **/
+  public function updateSlot(newSlot:Slot) {
+    var oldSlot = slots.get();
+    slots.update(newSlot);
+    lifecycle.onUpdateSlot(this, oldSlot, newSlot);
+  }
+
+  /**
+    Get this element's current Component.
+  **/
+  public function getComponent<T:Component>():T {
     return cast component;
   }
+  
+  /**
+    Get the closest object for this element.
 
-  public function isHydrating():Bool {
-    return hydratingStatus;
-  }
-
-  public function getParent():Null<Element> {
-    return parent;
-  }
-
-  public function queryAncestors(query:(parent:Element) -> Bool):Option<Element> {
-    if (parent == null) {
-      return None;
-    }
-    if (query(parent)) {
-      return Some(parent);
-    }
-    return parent.queryAncestors(query);
-  }
-
-  public function findAncestorOfType<T:Element>(kind:Class<T>):Option<T> {
-    if (parent == null) {
-      if (Std.isOfType(this, kind)) return Some(cast this);
-      return None;
-    }
-
-    return switch (Std.downcast(parent, kind) : Null<T>) {
-      case null: parent.findAncestorOfType(kind);
-      case found: Some(cast found);
-    }
-  }
-
-  public function findAncestorOfComponentType<T:Component>(kind:Class<T>):Option<Element> {
-    return queryAncestors(parent -> Std.isOfType(parent.getComponent(), kind));
-  }
-
-  function findAncestorObject():Dynamic {
-    return switch findAncestorOfType(ObjectElement) {
-      case None: Debug.error('Unable to find ObjectElement ancestor.');
-      case Some(root): root.getObject();
-    }
-  }
-
-  public function queryChildren(query:(child:Element) -> Bool):Option<Array<Element>> {
-    var found:Array<Element> = [];
-    
-    visitChildren(child -> {
-      if (query(child)) found.push(child);
-      switch child.queryChildren(query) {
-        case Some(children): 
-          found = found.concat(children);
-        case None:
-      }
-    });
-
-    return if (found.length == 0) None else Some(found);
-  }
-
-  public function queryChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>> {
-    return cast queryChildren(child -> Std.isOfType(child, kind));
-  }
-
-  public function queryChildrenOfComponentType<T:Component>(kind:Class<T>):Option<Array<Element>> {
-    return queryChildren(child -> Std.isOfType(child.getComponent(), kind));
-  }
-
-  public function queryFirstChild(query:(child:Element) -> Bool):Option<Element> {
-    var found:Option<Element> = None;
-
-    visitChildren(child -> {
-      if (found != None) return;
-      if (query(child))
-        found = Some(child);
-      else 
-        switch child.queryFirstChild(query) {
-          case Some(child) if (found == None):
-            found = Some(child);
-          default:
-        }
-    });
-
-    return found;
-  }
-
-  public function queryFirstChildOfType<T:Element>(kind:Class<T>):Option<T> {
-    return cast queryFirstChild(child -> Std.isOfType(child, kind));
-  }
-
-  public function queryFirstChildOfComponentType<T:Component>(kind:Class<T>):Option<Element> {
-    return queryFirstChild(child -> Std.isOfType(child.getComponent(), kind));
-  }
-
-  public function findChildrenOfType<T:Element>(kind:Class<T>):Option<Array<T>> {
-    var found:Array<T> = [];
-    visitChildren(child -> if (Std.isOfType(child, kind)) {
-      found.push(cast child);
-    });
-    return if (found.length == 0) None else Some(found);
-  }
-
-  public function findChildrenOfComponentType<T:Component>(kind:Class<T>):Option<Array<Element>> {
-    var found:Array<Element> = [];
-    visitChildren(child -> if (Std.isOfType(child.getComponent(), kind)) {
-      found.push(child);
-    });
-    return if (found.length == 0) None else Some(found);
-  }
-
+    An `object` is the lower-level implementation of the UI
+    -- for example, if you're using the `pine.html.client`,
+    `getObject` will return a `js.html.Node`, while the same
+    element using the adapter from `pine.html.server` will
+    return a `pine.object.Object`.
+  **/
   public function getObject():Dynamic {
-    var object:Null<Dynamic> = null;
-
-    visitChildren(element -> {
-      Debug.assert(object == null, 'Element has more than one objects');
-      object = element.getObject();
-    });
-
-    Debug.alwaysAssert(object != null, 'Element does not have an object');
-
-    return object;
+    return object.get();
   }
 
-  function updateChild(?child:Element, ?component:Component, ?slot:Slot):Null<Element> {
-    if (component == null) {
-      if (child != null) removeChild(child);
-      return null;
-    }
-
-    return if (child != null) {
-      if (child.component == component) {
-        if (child.slot != slot) updateSlotForChild(child, slot);
-        child;
-      } else if (child.component.shouldBeUpdated(component)) {
-        if (child.slot != slot) updateSlotForChild(child, slot);
-        child.update(component);
-        child;
-      } else {
-        removeChild(child);
-        createElementForComponent(component, slot);
-      }
-    } else {
-      createElementForComponent(component, slot);
-    }
+  /**
+    Get the current `Adapter` this element is using. Adapters
+    provide the bridge between Pine's Element tree and whatever
+    platform the app is running on. For example, the 
+    `pine.html.client.ClientAdapter` is responsible for actually
+    adding, removing and updating the DOM based on the current state 
+    of the app.
+  **/
+  public function getAdapter() {
+    return adapter.get();
   }
 
-  function updateSlot(slot:Null<Slot>) {
-    this.slot = slot;
-    visitChildren(child -> child.updateSlot(slot));
+  /**
+    Query this component's ancestors.
+  **/
+  public function queryAncestors():AncestorQuery {
+    return ancestors.getQuery();
   }
 
-  function diffChildren(oldChildren:Array<Element>, newComponents:Array<Component>):Array<Element> {
-    // Almost entirely taken from: https://github.com/flutter/flutter/blob/6af40a7004f886c8b8b87475a40107611bc5bb0a/packages/flutter/lib/src/components/framework.dart#L5761
-    var newHead = 0;
-    var oldHead = 0;
-    var newTail = newComponents.length - 1;
-    var oldTail = oldChildren.length - 1;
-    var previousChild:Null<Element> = null;
-    var newChildren:Array<Null<Element>> = [];
-
-    // Scan from the top of the list, syncing until we can't anymore.
-    while ((oldHead <= oldTail) && (newHead <= newTail)) {
-      var oldChild = oldChildren[oldHead];
-      var newComponent = newComponents[newHead];
-      if (oldChild == null || !oldChild.component.shouldBeUpdated(newComponent)) {
-        break;
-      }
-
-      var newChild = updateChild(oldChild, newComponent, createSlotForChild(newHead, previousChild));
-      newChildren[newHead] = newChild;
-      previousChild = newChild;
-      newHead += 1;
-      oldHead += 1;
-    }
-
-    // Scan from the bottom, without syncing.
-    while ((oldHead <= oldTail) && (newHead <= newTail)) {
-      var oldChild = oldChildren[oldTail];
-      var newComponent = newComponents[newTail];
-      if (oldChild == null || !oldChild.component.shouldBeUpdated(newComponent)) {
-        break;
-      }
-      oldTail -= 1;
-      newTail -= 1;
-    }
-
-    // Scan the middle.
-    var hasOldChildren = oldHead <= oldTail;
-    var oldKeyedChildren:Null<Key.KeyMap<Element>> = null;
-
-    // If we still have old children, go through the array and check
-    // if any have keys. If they don't, remove them.
-    if (hasOldChildren) {
-      oldKeyedChildren = Key.createMap();
-      while (oldHead <= oldTail) {
-        var oldChild = oldChildren[oldHead];
-        if (oldChild != null) {
-          if (oldChild.component.key != null) {
-            oldKeyedChildren.set(oldChild.component.key, oldChild);
-          } else {
-            removeChild(oldChild);
-          }
-        }
-        oldHead += 1;
-      }
-    }
-
-    // Sync/update any new elements. If we have more children than before
-    // this is where things will happen.
-    while (newHead <= newTail) {
-      var oldChild:Null<Element> = null;
-      var newComponent = newComponents[newHead];
-
-      // Check if we already have an element with a matching key.
-      if (hasOldChildren) {
-        var key = newComponent.key;
-        if (key != null) {
-          if (oldKeyedChildren == null) {
-            throw 'assert'; // This should never happen
-          }
-
-          oldChild = oldKeyedChildren.get(key);
-          if (oldChild != null) {
-            if (oldChild.component.shouldBeUpdated(newComponent)) {
-              // We do -- remove a keyed child from the list so we don't
-              // unsync it later.
-              oldKeyedChildren.remove(key);
-            } else {
-              // We don't -- ignore it for now.
-              oldChild = null;
-            }
-          }
-        }
-      }
-
-      var newChild = updateChild(oldChild, newComponent, createSlotForChild(newHead, previousChild));
-      newChildren[newHead] = newChild;
-      previousChild = newChild;
-      newHead += 1;
-    }
-
-    newTail = newComponents.length - 1;
-    oldTail = oldChildren.length - 1;
-
-    // Update the bottom of the list.
-    while ((oldHead <= oldTail) && (newHead <= newTail)) {
-      var oldChild = oldChildren[oldHead];
-      var newComponent = newComponents[newHead];
-      var newChild = updateChild(oldChild, newComponent, createSlotForChild(newHead, previousChild));
-      newChildren[newHead] = newChild;
-      previousChild = newChild;
-      newHead += 1;
-      oldHead += 1;
-    }
-
-    // Clean up any remaining children. At this point, we should only
-    // have to worry about keyed elements that are lingering around.
-    if (hasOldChildren && (oldKeyedChildren != null && oldKeyedChildren.isNotEmpty())) {
-      oldKeyedChildren.each((_, element) -> removeChild(element));
-    }
-
-    Debug.assert(!Lambda.exists(newChildren, el -> el == null));
-
-    return cast newChildren;
+  /**
+    Query this component's children.
+  **/
+  public function queryChildren():ChildrenQuery {
+    return children.getQuery();
   }
 
-  function updateSlotForChild(child:Element, slot:Null<Slot>) {
-    child.updateSlot(slot);
+  /**
+    Add a Disposible to be disposed when this Element is.
+  **/
+  public function addDisposable(disposable:DisposableItem) {
+    disposables.addDisposable(disposable);
   }
 
-  function removeChild(child:Element) {
-    child.dispose();
-  }
+  /**
+    Dispose this element, removing it from the Element tree
+    and further disposing all of its managers.
 
-  function createElementForComponent(component:Component, ?slot:Slot) {
-    var element = component.createElement();
-    element.mount(this, slot);
-    return element;
-  }
+    Note: you should almost *never* call this directly.
+  **/
+  public function dispose() {
+    Debug.assert(
+      status != Building 
+      && status != Disposing
+      && status != Disposed
+    );
 
-  function hydrateElementForComponent(cursor:HydrationCursor, component:Component, ?slot:Slot) {
-    var element = component.createElement();
-    element.hydrate(cursor, this, slot);
-    return element;
-  }
+    status = Disposing;
 
-  function createSlotForChild(index:Int, previous:Null<Element>) {
-    return new Slot(index, previous);
+    lifecycle.onDispose(this);
+    object.dispose();
+    children.dispose();
+    slots.dispose();
+    disposables.dispose();
+
+    status = Disposed;
   }
 }

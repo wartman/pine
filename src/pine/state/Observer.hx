@@ -1,6 +1,8 @@
 package pine.state;
 
 import haxe.Exception;
+import pine.core.Disposable;
+import pine.debug.Debug;
 import pine.state.Engine;
 
 using Lambda;
@@ -19,13 +21,22 @@ class Observer implements Disposable {
   }
 
   final handler:()->Void;
-  final dependencies:List<State<Dynamic>> = new List();
-  var status:ObserverStatus = Valid;
+  final dependencies:List<Atom<Dynamic>> = new List();
+  var status:ObserverStatus = Inactive;
 
   public function new(handler) {
     this.handler = handler;
+    activate();
+  }
 
-    invalidate();
+  public function activate() {
+    if (status != Inactive) {
+      Debug.error('Attempted to activate an Observer that was already active');
+    }
+
+    status = Invalid;
+
+    enqueueObserver(this);
     validateObservers();
   }
 

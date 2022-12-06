@@ -1,58 +1,72 @@
 package pine;
 
-/**
-  The primary use for a Scope is to get access to `Context` at
-  a specific point in a component tree, or to quickly hook into
-  the Element lifecycle (init, render and dispose).
-**/
-@:allow(pine.ScopeElement)
-class Scope extends Component {
-  static final type = new UniqueId();
+import pine.core.HasComponentType;
+import pine.diffing.Key;
+import pine.element.*;
+import pine.element.core.*;
+import pine.element.proxy.*;
+import pine.element.state.*;
 
-  final init:Null<(context:InitContext)->Void>;
-  final render:(context:Context) -> Component;
-  final dispose:Null<(context:Context) -> Void>;
+/**
+  The Scope component allows you to hook into Pine's element
+  lifecycle (via the `init` and `dispose` props). In additon,
+  you can use it to isolate reactive parts of a component
+  instead of forcing an entire component to re-render.
+**/
+final class Scope extends Component implements HasComponentType {
+  final render:(context:Context)->Component;
+  final init:Null<(context:Context)->Void>;
+  final dispose:Null<(context:Context)->Void>;
 
   public function new(props:{
-    render:(context:Context) -> Component,
-    ?init:(context:InitContext) -> Void,
-    ?dispose:(context:Context) -> Void,
+    render:(context:Context)->Component,
+    ?init:(context:Context)->Void,
+    ?dispose:(context:Context)->Void,
     ?key:Key
   }) {
     super(props.key);
     this.init = props.init;
-    this.render = props.render;
     this.dispose = props.dispose;
+    this.render = props.render;
+  }
+  
+  function createAdapterManager(element:Element):AdapterManager {
+    return new CoreAdapterManager();
   }
 
-  public function getComponentType():UniqueId {
-    return type;
+  function createAncestorManager(element:Element):AncestorManager {
+    return new CoreAncestorManager(element);
   }
 
-  function createElement():Element {
-    return new ScopeElement(this);
-  }
-}
-
-@component(Scope)
-class ScopeElement extends Element {
-  var child:Null<Element> = null;
-
-  function performDispose() {
-    if (scope.dispose != null) scope.dispose(this);
+  function createChildrenManager(element:Element):ChildrenManager {
+    return new TrackedChildrenManager(element, context -> {
+      var scope:Scope = context.getComponent();
+      return scope.render(context);
+    });
   }
 
-  function performHydrate(cursor:HydrationCursor) {
-    child = hydrateElementForComponent(cursor, scope.render(this), slot);
-    if (scope.init != null) scope.init(this);
+  function createSlotManager(element:Element):SlotManager {
+    return new ProxySlotManager(element);
   }
 
-  function performBuild(previousComponent:Null<Component>) {
-    child = updateChild(child, scope.render(this), slot);
-    if (previousComponent == null && scope.init != null) scope.init(this);
+  function createObjectManager(element:Element):ObjectManager {
+    return new ProxyObjectManager(element);
   }
 
-  public function visitChildren(visitor:ElementVisitor) {
-    if (child != null) visitor.visit(child);
+  override function createHooks():HookCollection<Dynamic> {
+    return new HookCollection<Scope>([
+      element -> {
+        element.watchLifecycle({
+          beforeInit: element -> {
+            var scope = element.component;
+            if (scope.init != null) scope.init(element);
+          },
+          onDispose: element -> {
+            var scope = element.component;
+            if (scope.dispose != null) scope.dispose(element);
+          }
+        });
+      }
+    ]);
   }
 }

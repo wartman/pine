@@ -1,6 +1,6 @@
 package pine.html.server;
 
-import pine.render.Object;
+import pine.object.Object;
 
 using StringTools;
 

@@ -1,50 +1,18 @@
 package pine;
 
-import haxe.ds.Option;
+import pine.core.*;
+import pine.debug.Debug;
+import pine.diffing.Key;
+import pine.element.*;
+import pine.element.proxy.*;
+import pine.element.core.*;
+import pine.hydration.Cursor;
 
-using pine.Cast;
+using pine.core.OptionTools;
 
-@:allow(pine)
-class Portal extends Component {
-  public static function getObjectMaybeInPortal(target:Element) {
-    var object:Null<Dynamic> = null;
-
-    function visit(el:Element) {
-      Debug.assert(object == null, 'More then one object found');
-      if (el is PortalElement) {
-        switch el.as(PortalElement).getPortalRoot() {
-          case Some(portal): 
-            object = portal.getObject();
-          case None if (el is ObjectElement): 
-            object = el.getObject();
-          case None: 
-            el.visitChildren(visit);
-        }
-      } else if (el is ObjectElement) { 
-        object = el.getObject();
-      } else {
-        el.visitChildren(visit);
-      }
-    }
-
-    if (target is PortalElement) {
-      switch target.as(PortalElement).getPortalRoot() {
-        case Some(portal): return portal.getObject();
-        case None:
-      }
-    }
-
-    target.visitChildren(visit);
-
-    Debug.assert(object != null, 'No object found');
-    
-    return object;
-  }
-
-  public static final type = new UniqueId();
-
-  final target:Dynamic;
-  final child:Component;
+final class Portal extends Component implements HasComponentType {
+  public final target:Dynamic;
+  public final child:Component;
 
   public function new(props:{
     target:Dynamic,
@@ -56,73 +24,145 @@ class Portal extends Component {
     this.child = props.child;
   }
 
-  public function getComponentType():UniqueId {
-    return type;
+  function createAdapterManager(element:Element):AdapterManager {
+    return new CoreAdapterManager();
   }
 
-  public function createElement():Element {
-    return new PortalElement(this);
+  function createAncestorManager(element:Element):AncestorManager {
+    return new CoreAncestorManager(element);
+  }
+
+  function createChildrenManager(element:Element):ChildrenManager {
+    return new PortalChildrenManager(element);
+  }
+
+  function createSlotManager(element:Element):SlotManager {
+    return new ProxySlotManager(element);
+  }
+
+  function createObjectManager(element:Element):ObjectManager {
+    return new PortalObjectManager(element);
   }
 }
 
-@component(Portal)
-class PortalElement extends Element {
+@:allow(pine)
+class PortalChildrenManager implements ChildrenManager {
+  final placeholder:ProxyChildrenManager;
+  final element:ElementOf<Portal>;
+  
+  var previousComponent:Null<Portal> = null;
   var portalRoot:Null<Element> = null;
-  var child:Null<Element> = null;
-
-  function performHydrate(cursor:HydrationCursor) {
-    Debug.assert(portalRoot == null);
-
-    var portalCursor = cursor.clone();
-    portalCursor.move(portal.target);
-    
-    portalRoot = createRootElement();
-    portalRoot.hydrate(portalCursor, this);
-
-    child = updateChild(null, Adapter.from(this).createPlaceholder(), slot);
+  var query:Null<ChildrenQuery> = null;
+  
+  public function new(element) {
+    this.element = element;
+    this.placeholder = new ProxyChildrenManager(element, context -> {
+      var placeholder = context
+        .getAdapter()
+        .orThrow('Adapter expected')
+        .createPlaceholder();
+      return placeholder;
+    });
   }
 
-  function performBuild(previousComponent:Null<Component>) {
+  public function visit(visitor:(child:Element) -> Bool) {
+    if (portalRoot != null) portalRoot.visitChildren(visitor);
+  }
+
+  public function init() {
+    placeholder.init();
+    portalRoot = createRootComponent().createElement();
+    portalRoot.mount(element, null);
+  }
+
+  public function hydrate(cursor:Cursor) {
+    placeholder.update(); // Using update is intentional!
+
+    var portalCursor = cursor.clone();
+    portalCursor.move(element.component.target);
+    
+    portalRoot = createRootComponent().createElement();
+    portalRoot.hydrate(portalCursor, element, null);
+  }
+
+  public function update() {
+    placeholder.update();
+
     if (portalRoot == null) {
-      portalRoot = createRootElement();
-      portalRoot.mount(this);
+      portalRoot = createRootComponent().createElement();
+      portalRoot.mount(element, null);
     } else if (
-      previousComponent != null 
-      && (cast previousComponent:Portal).target != portal.target
+      previousComponent != null
+      && previousComponent.target != element.component.target
     ) {
       portalRoot.dispose();
-      portalRoot = createRootElement();
-      portalRoot.mount(this);
+      portalRoot = createRootComponent().createElement();
+      portalRoot.mount(element, null);
     } else {
       portalRoot.update(createRootComponent());
     }
-
-    child = updateChild(child, Adapter.from(this).createPlaceholder(), slot);
   }
 
-  override function prepareForDisposal() {
+  public function getQuery():ChildrenQuery {
+    if (query == null) query = new CoreChildrenQuery(element);
+    return query;
+  }
+
+  public function dispose() {
     if (portalRoot != null) {
       portalRoot.dispose();
       portalRoot = null;
     }
-    super.prepareForDisposal();
+    previousComponent = null;
+    placeholder.dispose();
   }
 
-  function performDispose() {}
+  function createRootComponent() {
+    var adapter = element.getAdapter().orThrow('Expected an adapter');
+    var component = element.component;
 
-  public function getPortalRoot():Option<Element> {
-    return portalRoot == null ? None : Some(portalRoot);
+    previousComponent = component;
+    
+    return adapter.createPortalRoot(component.target, component.child);
+  }
+}
+
+class PortalObjectManager implements ObjectManager {
+  final element:ElementOf<Portal>;
+
+  public function new(element) {
+    this.element = element;
   }
 
-  public function visitChildren(visitor:ElementVisitor) {
-    if (child != null) visitor.visit(child);
+  public function get():Dynamic {
+    // Note: The reason we need to use this class instead of the
+    // default CoreObjectManager is that elements next to the Portal
+    // will need to get its placeholder object to know where they
+    // should be in the app.
+    //
+    // If we *dont* do this and just visit the Portal's children,
+    // we'll end up getting an object in the Portal target.
+
+    var children:PortalChildrenManager = cast element.children;
+    var placeholder = children.placeholder;
+    var object:Null<Dynamic> = null;
+
+    placeholder.visit(element -> {
+      Debug.assert(object == null, 'Element has more than one objects');
+      object = element.getObject();
+      true;
+    });
+
+    Debug.alwaysAssert(object != null, 'Element does not have an object');
+
+    return object;
   }
 
-  inline function createRootComponent() {
-    return Adapter.from(this).createPortalRoot(portal.target, portal.child);
-  }
+  public function init() {}
 
-  inline function createRootElement() {
-    return createRootComponent().createElement();
-  }
+  public function hydrate(cursor:Cursor) {}
+
+  public function update() {}
+
+  public function dispose() {}
 }

@@ -2,15 +2,24 @@ package pine.macro;
 
 import haxe.ds.Option;
 import haxe.macro.Expr;
+import pine.macro.MacroTools;
 
 using Lambda;
 
 class ClassBuilder {
+  public static function fromContext() {
+    return new ClassBuilder(getBuildFieldsSafe());
+  }
+
   var fields:Array<Field>;
   var newFields:Array<Field> = [];
 
   public function new(fields) {
     this.fields = fields;
+  }
+
+  public function getFields() {
+    return fields;
   }
 
   public function add(t:TypeDefinition) {

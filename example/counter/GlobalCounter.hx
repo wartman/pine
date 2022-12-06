@@ -13,11 +13,11 @@ function main() {
 
   ClientRoot.mount(
     Browser.document.getElementById('root'),
-    new Counter({})
+    new GlobalCounter({})
   );
 }
 
-class Counter extends AutoComponent {
+class GlobalCounter extends AutoComponent {
   function render(context:Context) {
     return new Html<'div'>({
       children: [

@@ -1,5 +1,12 @@
 package pine.html;
 
+import pine.element.*;
+import pine.diffing.Key;
+import pine.element.object.DirectChildrenManager;
+#if debug
+import pine.debug.Debug;
+#end
+
 abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
   public final tag:String;
   public final attrs:Attrs;
@@ -20,11 +27,25 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     children = props.children;
   }
 
-  public function getChildren() {
-    return children == null ? [] : children;
+  function createChildrenManager(element:Element):ChildrenManager {
+    return new DirectChildrenManager(element, context -> {
+      var component:HtmlElementComponent<Attrs> = context.getComponent();
+      var children = component.children;
+      if (children == null) return [];
+      return children;
+    });
   }
 
-  public function createElement():Element {
-    return new ObjectWithChildrenElement(this);
-  }
+  #if debug
+  // override function createHooks():HookCollection<Dynamic> {
+  //   return new HookCollection<HtmlElementComponent<Attrs>>([
+  //     element -> element.watchLifecycle({
+  //       beforeHydrate: (element, cursor) -> {
+  //         // // @todo: We need a cross-platform way to get the tag
+  //         // Debug.assert(element.component.tag == cursor.current());
+  //       }
+  //     })
+  //   ]);
+  // }
+  #end
 }

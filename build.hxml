@@ -12,15 +12,7 @@
 --dce full
 --macro nullSafety("pine")
 
---each
-
--main todo.Todo
-
--js dist/assets/app.js
-
---next
-
 -main Run
 -js dist/test/index.js
 
--cmd node dist/test
+-cmd node dist/test/index.js

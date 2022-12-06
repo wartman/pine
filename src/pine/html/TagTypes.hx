@@ -1,5 +1,7 @@
 package pine.html;
 
+import pine.internal.UniqueId;
+
 final types:Map<String, UniqueId> = [];
 
 function getTypeForTag(tag:String):UniqueId {

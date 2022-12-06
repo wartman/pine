@@ -1,46 +1,54 @@
 package unit;
 
-import pine.Component;
-import pine.Fragment;
-import impl.*;
+import pine.*;
+import pine.html.*;
+import pine.html.server.*;
 
 using Medic;
 using medic.PineAssert;
 
-function text(content:String) {
-  return new TextComponent({content: content});
-}
-
-function fragment(...children:Component) {
-  return new Fragment({children: children.toArray()});
-}
-
 class TestFragment implements TestCase {
   public function new() {}
-
+  
   @:test('Empty fragments work')
-  @:test.async
-  function testEmpty(done) {
-    fragment().renders('', done);
+  function testEmpty() {
+    var fragment = new Fragment({ children: [] });
+    fragment.renders('');
   }
 
   @:test('Fragments work')
-  @:test.async
-  function simpleFragments(done) {
-    fragment(text('a'), text('b'), text('c'), text('d')).renders('a b c d', done);
+  function testSimple() {
+    var fragment = new Fragment({
+      children: [ ('a':HtmlChild), ('b':HtmlChild), ('c':HtmlChild), ('d':HtmlChild) ]
+    });
+    fragment.renders('abcd');
   }
 
-  @:test('Fragments will render relative to the elements around them')
-  @:test.async
-  function fragmentsInContext(done) {
-    fragment(text('a'), fragment(text('b.1'), text('b.2')), text('c')).renders('a b.1 b.2 c', done);
+  @:test('Fragments hydrate')
+  function testHydration() {
+    var doc = new HtmlElementObject('#document', {});
+    var target = new HtmlElementObject('div', {});
+
+    doc.append(target);
+
+    target.append(new HtmlTextObject('a'));
+    target.append(new HtmlTextObject('frag:b'));
+    target.append(new HtmlTextObject('frag:c'));
+    target.append(new HtmlTextObject('d'));
+
+    new Html<'div'>({
+      children: [
+        ('a':HtmlChild),
+        new Fragment({
+          children: [
+            ('frag:b':HtmlChild),
+            ('frag:c':HtmlChild)
+          ]
+        }),
+        ('d':HtmlChild)
+      ]
+    }).hydrates(doc);
   }
 
-  @:test('Empty fragments render relative to the elements around them')
-  @:test.async
-  function testEmptyInContext(done) {
-    fragment(text('before'), fragment(), text('after')).renders('before <marker> after', done);
-  }
-
-  // @todo: Test re-rendering of Fragments
+  // @todo: What we really need to test is the dang hydration.
 }

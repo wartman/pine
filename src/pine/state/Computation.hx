@@ -1,8 +1,9 @@
 package pine.state;
 
 import pine.state.Engine;
+import pine.debug.Debug;
 
-class Computation<T> extends State<T> {
+class Computation<T> extends Atom<T> {
   final observer:Observer;
 
   public function new(handler:() -> T, ?comparator) {

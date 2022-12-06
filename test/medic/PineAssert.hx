@@ -1,24 +1,31 @@
 package medic;
 
 import haxe.PosInfos;
-import impl.*;
 import pine.*;
+import pine.html.server.*;
 
-inline function mount(component:Component, ?handler:(result:TestingObject) -> Void) {
-  var boot = new TestingBootstrap();
-  var root = boot.mount(component);
-  if (handler != null) handler(root.getObject());
+// @todo: Some way to change the current Adapter. 
+
+function mount(component:Component) {
+  var object = new HtmlElementObject('#document', {});
+  var root = ServerRoot.mount(object, component);
   return root;
 }
 
-function renders(widget:Component, expected:String, next:() -> Void, ?p:PosInfos) {
-  mount(widget, actual -> {
-    Assert.equals(actual.toString(), expected, p);
-    next();
-  });
+function hydrates(
+  component:Component,
+  target:HtmlElementObject,
+  ?p:PosInfos
+) {
+  var actual = ServerRoot.hydrate(target, component);
+  Assert.equals(actual.getObject().toString(), target.toString());
 }
 
-function renderWithoutAssert(component:Component) {
-  var boot = new TestingBootstrap();
-  boot.mount(component);
+function renders(
+  component:Component,
+  expected:String,
+  ?p:PosInfos
+):Void {
+  var actual = mount(component);
+  Assert.equals(actual.getObject().toString(), expected, p);
 }

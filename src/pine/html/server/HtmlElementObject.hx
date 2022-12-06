@@ -1,7 +1,7 @@
 package pine.html.server;
 
 import haxe.DynamicAccess;
-import pine.render.Object;
+import pine.object.Object;
 import pine.html.shared.ObjectTools;
 
 class HtmlElementObject extends Object {
@@ -23,6 +23,7 @@ class HtmlElementObject extends Object {
     });
   }
 
+  @:nullSafety(Off)
   public function toString():String {
     var attrs = getFilteredAttributes();
     var children:Array<String> = children.filter(c -> c != null).map(c -> c.toString());
@@ -51,6 +52,7 @@ class HtmlElementObject extends Object {
     }
   }
 
+  @:nullSafety(Off)
   function getFilteredAttributes() {
     var attrs:DynamicAccess<Dynamic> = attributes;
     var out:DynamicAccess<String> = new DynamicAccess();
