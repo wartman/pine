@@ -15,25 +15,24 @@ function useSyncTrackedObject():Hook<AutoComponent> {
         element
           .component
           .asTrackable()
-          .sure()
+          .orThrow('Component is not trackable')
           .initTrackedObject();
       },
     
       beforeUpdate: (element, current, incoming) -> {
         if (current == incoming) return;
-        locateTrackedObject(current)
-          .map(object -> incoming
-            .asTrackable()
-            .map(trackable -> {
-              trackable.reuseTrackedObject(object);
-              Some(object);
-            })
-          )
+        var object = locateTrackedObject(current)
           .orThrow('No tracked object found');
+
+        incoming
+          .asTrackable()
+          .orThrow('Incoming component is not trackable')
+          .reuseTrackedObject(object);
       },
     
       onDispose: element -> {
-        locateTrackedObject(element.component).some(object -> object.dispose());
+        locateTrackedObject(element.component)
+          .some(object -> object.dispose());
       }
     });
   }
