@@ -9,5 +9,7 @@ function main() {
   runner.add(new unit.state.TestComputation());
   runner.add(new unit.state.TestTrackedObject());
 
+  runner.add(new unit.core.TestObjectTools());
+
   runner.run();
 }

@@ -2,7 +2,8 @@ package pine.html.client;
 
 import js.Browser;
 
-using pine.html.shared.ObjectTools;
+using pine.core.ObjectTools;
+using pine.html.client.DomTools;
 
 class HtmlElementApplicator extends BaseClientApplicator<HtmlElementComponent<{}>> {
   public function create(component:HtmlElementComponent<{}>):Dynamic {
@@ -14,8 +15,11 @@ class HtmlElementApplicator extends BaseClientApplicator<HtmlElementComponent<{}
   }
 
   public function update(object:Dynamic, component:HtmlElementComponent<{}>, previousComponent:Null<HtmlElementComponent<{}>>) {
+    var el:js.html.Element = object;
     var newAttrs = component.attrs;
     var oldAttrs = previousComponent != null ? previousComponent.attrs : {};
-    ObjectTools.diffObject(oldAttrs, newAttrs, DomTools.updateNodeAttribute.bind(object));
+    oldAttrs.diff(newAttrs, (key, oldValue, newValue) -> {
+      el.updateNodeAttribute(key, oldValue, newValue);
+    });
   }
 }

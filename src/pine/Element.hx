@@ -24,12 +24,12 @@ class Element
   final lifecycle:LifecycleManager = new LifecycleManager();
   final disposables:DisposableManager = new DisposableManager();
   
-  @lazy var object:ObjectManager = component.createObjectManager(this);
-  @lazy var adapter:AdapterManager = component.createAdapterManager(this);
-  @lazy var hooks:HookCollection<Dynamic> = component.createHooks();
-  @lazy var slots:SlotManager = component.createSlotManager(this);
-  @lazy var children:ChildrenManager = component.createChildrenManager(this);
-  @lazy var ancestors:AncestorManager = component.createAncestorManager(this);
+  @:lazy var object:ObjectManager = component.createObjectManager(this);
+  @:lazy var adapter:AdapterManager = component.createAdapterManager(this);
+  @:lazy var hooks:HookCollection<Dynamic> = component.createHooks();
+  @:lazy var slots:SlotManager = component.createSlotManager(this);
+  @:lazy var children:ChildrenManager = component.createChildrenManager(this);
+  @:lazy var ancestors:AncestorManager = component.createAncestorManager(this);
 
   var component:Component;
   var status:ElementStatus = Pending;

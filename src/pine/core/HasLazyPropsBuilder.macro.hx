@@ -13,13 +13,11 @@ function build() {
 function process(fields) {
   var builder = new ClassBuilder(fields);
 
-  for (field in builder.findFieldsByMeta('lazy')) switch field.kind {
+  for (field in builder.findFieldsByMeta(':lazy')) switch field.kind {
     case FVar(t, null):
       Context.error('An expression is required', field.pos);
     case FVar(t, e) if (e != null):
-      var meta = field.meta.find(m -> m.name == 'lazy');
-      field.meta.remove(meta);
-
+      var meta = field.meta.find(m -> m.name == ':lazy');
       switch meta.params {
         case []:
           var name = field.name;

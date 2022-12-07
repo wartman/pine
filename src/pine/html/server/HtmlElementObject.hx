@@ -2,7 +2,8 @@ package pine.html.server;
 
 import haxe.DynamicAccess;
 import pine.object.Object;
-import pine.html.shared.ObjectTools;
+
+using pine.core.ObjectTools;
 
 class HtmlElementObject extends Object {
   static final VOID_ELEMENTS = [
@@ -18,14 +19,17 @@ class HtmlElementObject extends Object {
   }
 
   public function updateAttributes(newAttrs:{}) {
-    ObjectTools.diffObject(attributes, newAttrs, (key, oldValue, newValue) -> {
-      Reflect.setField(attributes, key, newValue);
+    attributes.diff(newAttrs, (key, oldValue, newValue) -> {
+      if (newValue == null) {
+        Reflect.deleteField(attributes, key);
+      } else {
+        Reflect.setField(attributes, key, newValue);
+      }
     });
   }
 
-  @:nullSafety(Off)
   public function toString():String {
-    var attrs = getFilteredAttributes();
+    var attrs:Map<String, String> = getFilteredAttributes();
     var children:Array<String> = children.filter(c -> c != null).map(c -> c.toString());
 
     if (tag == '#document' || tag == '#fragment') {
@@ -53,9 +57,9 @@ class HtmlElementObject extends Object {
   }
 
   @:nullSafety(Off)
-  function getFilteredAttributes() {
+  function getFilteredAttributes():Map<String, String> {
     var attrs:DynamicAccess<Dynamic> = attributes;
-    var out:DynamicAccess<String> = new DynamicAccess();
+    var out:Map<String, String> = [];
 
     for (key => value in attrs) {
       if (key.charAt(0) == 'o' && key.charAt(1) == 'n') {
