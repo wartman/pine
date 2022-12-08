@@ -9,7 +9,7 @@ import pine.element.state.*;
 
 /**
   The Scope component allows you to hook into Pine's element
-  lifecycle (via the `init` and `dispose` props). In additon,
+  lifecycle (via the `init` and `dispose` props). In addition,
   you can use it to isolate reactive parts of a component
   instead of forcing an entire component to re-render.
 **/

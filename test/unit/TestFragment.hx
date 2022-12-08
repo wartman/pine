@@ -49,6 +49,4 @@ class TestFragment implements TestCase {
       ]
     }).hydrates(doc);
   }
-
-  // @todo: What we really need to test is the dang hydration.
 }

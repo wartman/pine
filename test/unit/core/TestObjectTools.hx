@@ -1,6 +1,5 @@
 package unit.core;
 
-
 using Medic;
 using Reflect;
 using pine.core.ObjectTools;
@@ -36,8 +35,15 @@ class TestObjectTools implements TestCase {
 
     var d = c.merge({ a: 'a', b: null });
 
-    d.fields().length.equals(2);
+    d.fields().length.equals(1);
     (d.field('a'):Null<String>).equals('a');
     (d.field('b'):Null<String>).equals(null);
+
+    var d = c.merge({ a: 'a', b: 'foo', c: 'c' });
+
+    d.fields().length.equals(3);
+    (d.field('a'):Null<String>).equals('a');
+    (d.field('b'):Null<String>).equals('foo');
+    (d.field('c'):Null<String>).equals('c');
   }
 }

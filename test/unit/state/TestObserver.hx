@@ -10,7 +10,7 @@ class TestObserver implements TestCase {
 
   @:test('Observers work')
   function testSimple() {
-    var value = new Atom(1);
+    var value = new Signal(1);
     var expected = 1;
     var tests = 0;
 
@@ -26,7 +26,7 @@ class TestObserver implements TestCase {
 
   @:test('Cycles are caught')
   function testCycles() {
-    var value = new Atom(0, (_, _) -> true);
+    var value = new Signal(0, (_, _) -> true);
     try {
       var i = 0;
       Observer.track(() -> {
@@ -44,5 +44,23 @@ class TestObserver implements TestCase {
     }
   }
 
-  // @todo: more :P
+  @:test('Untrack works')
+  function testUnTracking() {
+    var value = new Signal(0);
+    var tests = 0;
+    var expected = 0;
+
+    Observer.untrack(() ->{
+      tests++;
+      expected = value.get();
+    });
+    
+    tests.equals(1);
+    expected.equals(0);
+    
+    value.set(1);
+
+    tests.equals(1);
+    expected.equals(0);
+  }
 }

@@ -3,7 +3,7 @@ package pine.state;
 import pine.state.Engine;
 import pine.debug.Debug;
 
-class Computation<T> extends Atom<T> {
+class Computation<T> extends Signal<T> {
   final observer:Observer;
 
   public function new(handler:() -> T, ?comparator) {

@@ -1,7 +1,7 @@
 package pine.state;
 
 @:forward
-abstract TrackedArray<T>(Atom<Array<T>>) {
+abstract TrackedArray<T>(Signal<Array<T>>) {
   @:from
   public inline static function ofArray<T>(items:Array<T>) {
     return new TrackedArray(items);
@@ -16,7 +16,7 @@ abstract TrackedArray<T>(Atom<Array<T>>) {
   function get_length() return this.get().length;
 
   public function new(data) {
-    this = new Atom(data);
+    this = new Signal(data);
   }
 
   public inline function replace(items) {

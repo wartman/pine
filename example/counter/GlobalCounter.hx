@@ -6,7 +6,7 @@ import pine.html.*;
 import pine.state.*;
 import pine.html.client.ClientRoot;
 
-final count:Atom<Int> = new Atom(0);
+final count:Signal<Int> = new Signal(0);
 
 function main() {
   Observer.track(() -> trace(count.get()));

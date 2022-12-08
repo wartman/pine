@@ -28,7 +28,7 @@ final class Fragment extends Component implements HasComponentType {
   function createChildrenManager(element:Element):ChildrenManager {
     return new InlineChildrenManager(element, context -> {
       var fragment:Fragment = context.getComponent();
-      return fragment.children.filter(child -> child != null);
+      return fragment.children;
     });
   }
 

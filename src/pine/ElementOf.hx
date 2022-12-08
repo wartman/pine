@@ -9,10 +9,10 @@ abstract ElementOf<T:Component>(Element)
   to Context 
 {
   public var status(get, never):ElementStatus;
-  function get_status() return this.status;
+  inline function get_status() return this.status;
 
   public var component(get, never):T;
-  function get_component():T return this.getComponent();
+  inline function get_component():T return this.getComponent();
 
   public inline function new(element) {
     this = element;

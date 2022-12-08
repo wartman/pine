@@ -10,8 +10,8 @@ class TestComputation implements TestCase {
 
   @:test
   function computationWorks() {
-    var foo = new Atom(1);
-    var bar = new Atom(1);
+    var foo = new Signal(1);
+    var bar = new Signal(1);
     var expected = 2;
     var tests = 0;
     var computation = new Computation(() -> {

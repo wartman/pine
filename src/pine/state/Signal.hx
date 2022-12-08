@@ -4,7 +4,7 @@ import pine.core.Disposable;
 import pine.state.Engine;
 
 @:allow(pine)
-class Atom<T> implements Disposable {
+class Signal<T> implements Disposable {
   var value:T;
   final observers:List<Observer> = new List();
   final comparator:(a:T, b:T) -> Bool;
@@ -19,9 +19,10 @@ class Atom<T> implements Disposable {
   }
 
   public function get():T {
-    var observer = currentObserver;
-    if (observer != null) bind(observer, this);
-
+    switch currentObserver {
+      case null:
+      case observer: bind(observer, this);
+    }
     return value;
   }
 

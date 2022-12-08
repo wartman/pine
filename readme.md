@@ -87,7 +87,7 @@ Pine is doing a quite a bit here behind the scenes, however, and it all comes do
 var count:Int = 0;
 ```
 
-In an `AutoComponent`, a `final` field is just added to the constructor -- nothing special happens. Mutable fields -- like `var count` here -- are different, and they're converted into a property with a getter and a setter that wrap a `pine.state.Atom<T>`.
+In an `AutoComponent`, a `final` field is just added to the constructor -- nothing special happens. Mutable fields -- like `var count` here -- are different, and they're converted into a property with a getter and a setter that wrap a `pine.state.Signal<T>`.
 
 Reactivity
 ----------
@@ -95,11 +95,11 @@ Reactivity
 Let's pull back a bit and look at what Atoms are. Here's a quick example:
 
 ```haxe
-import pine.state.Atom;
+import pine.state.Signal;
 import pine.state.Observer;
 
 function main() { 
-  var location = new Atom('world');
+  var location = new Signal('world');
   var observer = new Observer(() -> trace('hello ' + location.get()));
   // Immediately traces 'hello world'
   
@@ -111,13 +111,13 @@ function main() {
 }
 ```
 
-When we call `location.get()` inside the `Observer`, the Observer subscribes to it and will run its handler function every time the atom changes.
+When we call `location.get()` inside the `Observer`, the Observer subscribes to it and will run its handler function every time the signal changes.
 
-This is basically how Pine is tracking changes in the AutoComponent. It's wrapping in the render method in an Observer, then wrapping each var field in the class with an Atom, and then requests a re-render if any of its subscribed atoms changes. 
+This is basically how Pine is tracking changes in the AutoComponent. It's wrapping in the render method in an Observer, then wrapping each var field in the class with an Signal, and then requests a re-render if any of its subscribed signals changes. 
 
 > It's actually a bit more complex than that, as Components are designed to change constantly and we need to do some things to ensure that we're not constantly creating new Observers and Atoms, but that's the general idea.
 
-This means that *any* Atom will be subscribed to if its used inside an `AutoComponent`. For example, we can use a global Atom if we want:
+This means that *any* Signal will be subscribed to if its used inside an `AutoComponent`. For example, we can use a global Signal if we want:
 
 ```haxe
 import js.Browser;
@@ -126,7 +126,7 @@ import pine.html.*;
 import pine.state.*;
 import pine.html.client.ClientRoot;
 
-final count:Atom<Int> = new Atom(0);
+final count:Signal<Int> = new Signal(0);
 
 function main() {
   Observer.track(() -> trace(count.get()));

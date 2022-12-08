@@ -20,8 +20,12 @@ class Observer implements Disposable {
     return new Observer(handler);
   }
 
+  inline public static function untrack(handler) {
+    return pine.state.Engine.untrack(handler);
+  }
+
   final handler:()->Void;
-  final dependencies:List<Atom<Dynamic>> = new List();
+  final dependencies:List<Signal<Dynamic>> = new List();
   var status:ObserverStatus = Inactive;
 
   public function new(handler) {

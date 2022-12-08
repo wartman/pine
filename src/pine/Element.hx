@@ -8,7 +8,7 @@ import pine.hydration.Cursor;
 using pine.core.OptionTools;
 
 /**
-  Elements are the persistant part of Pine. They're configured by
+  Elements are the persistent part of Pine. They're configured by
   Components, and most of their functionality is provided by various
   "Managers". Generally, you should not be creating subclasses of Element
   -- instead, use Components to configure the Managers the Element will
@@ -106,7 +106,7 @@ class Element
   }
 
   /**
-    Mark this Element as invalid and enqeue it for rebuilding.
+    Mark this Element as invalid and enqueue it for rebuilding.
   **/
   public function invalidate() {
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
@@ -170,9 +170,10 @@ class Element
   }
 
   /**
-    Get this element's current Component.
+    Get this element's current Component and auto-cast it to 
+    the requested type.
   **/
-  public function getComponent<T:Component>():T {
+  public inline function getComponent<T:Component>():T {
     return cast component;
   }
   
@@ -216,7 +217,7 @@ class Element
   }
 
   /**
-    Add a Disposible to be disposed when this Element is.
+    Add a Disposable to be disposed when this Element is.
   **/
   public function addDisposable(disposable:DisposableItem) {
     disposables.addDisposable(disposable);
