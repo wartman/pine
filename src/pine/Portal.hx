@@ -140,7 +140,7 @@ class PortalObjectManager implements ObjectManager {
     // will need to get its placeholder object to know where they
     // should be in the app.
     //
-    // If we *dont* do this and just visit the Portal's children,
+    // If we *don't* do this and just visit the Portal's children,
     // we'll end up getting an object in the Portal target.
 
     var children:PortalChildrenManager = cast element.children;
@@ -163,6 +163,8 @@ class PortalObjectManager implements ObjectManager {
   public function hydrate(cursor:Cursor) {}
 
   public function update() {}
+
+  public function move(oldSlot:Null<Slot>, newSlot:Null<Slot>) {}
 
   public function dispose() {}
 }

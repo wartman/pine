@@ -8,7 +8,14 @@ import pine.element.proxy.*;
 
 /**
   The AutoComponent is likely the only Component you'll need
-  to use, and it takes care of most of the boilerplate for you.
+  to use. It automatically creates a constructor for you and sets up
+  the correct Managers to make the component reactive.
+
+  When authoring a component, keep in mind that *all* fields 
+  will be added to the constructor. `final` fields are simply
+  initialized there, but non-final fields are converted via a macro
+  into properties backed by `pine.state.Signal`. If you don't want a field
+  to be processed, mark it with `@:skip`.
 **/
 @:allow(pine)
 @:autoBuild(pine.AutoComponentBuilder.build())

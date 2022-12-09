@@ -52,15 +52,18 @@ class TestObserver implements TestCase {
 
     Observer.untrack(() ->{
       tests++;
-      expected = value.get();
+      value.get();
+      Observer.track(() -> {
+        value.get().equals(expected);
+      });
     });
     
     tests.equals(1);
-    expected.equals(0);
     
+    expected = 1;
     value.set(1);
 
     tests.equals(1);
-    expected.equals(0);
+    expected.equals(1);
   }
 }

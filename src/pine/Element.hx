@@ -38,6 +38,11 @@ class Element
     this.component = component;
   }
 
+  /**
+    Mount this element using whatever adapter you've decided to use.
+
+    This will initialize the element and all its managers.
+  **/
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
@@ -51,6 +56,12 @@ class Element
     lifecycle.afterInit(this);
   }
 
+  /**
+    Hydrate an existing target.
+    
+    This will initialize the element and all its managers. Note that
+    you should NOT run `mount` and `initialize` on the same Element.
+  **/
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
@@ -166,6 +177,7 @@ class Element
   public function updateSlot(newSlot:Slot) {
     var oldSlot = slots.get();
     slots.update(newSlot);
+    object.move(oldSlot, newSlot);
     lifecycle.onUpdateSlot(this, oldSlot, newSlot);
   }
 

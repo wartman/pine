@@ -6,7 +6,7 @@ using pine.core.OptionTools;
 
 abstract class Adapter {
   public static function from(context:Context):Adapter {
-    return maybeFrom(context).orThrow('No Adapater was found');
+    return maybeFrom(context).orThrow('No Adapter was found');
   }
 
   public static function maybeFrom(context:Context):Option<Adapter> {
@@ -17,8 +17,8 @@ abstract class Adapter {
   var invalidElements:Null<Array<Element>> = null;
 
   abstract public function getProcess():Process;
-  abstract public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
-  abstract public function getTextApplicator(component:ObjectComponent):ObjectApplicator<Dynamic>;
+  abstract public function getApplicator():ObjectApplicator<Dynamic>;
+  abstract public function getTextApplicator():ObjectApplicator<Dynamic>;
   abstract public function createPlaceholder():Component;
   abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
 

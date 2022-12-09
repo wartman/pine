@@ -27,7 +27,7 @@ class HookBuilder extends ClassBuilder {
   }
 
   function process() {
-    // @todo: The way I'm doing this here breaks completeion and
+    // @todo: The way I'm doing this here breaks completion and
     // creates a really useless error message. We need to figure out how
     // to do this correctly. 
     var meta = Context.getLocalClass().get().meta.extract(':hook');

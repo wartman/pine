@@ -13,11 +13,11 @@ class ServerAdapter extends Adapter {
     return process;
   }
 
-  public function getApplicator(component:ObjectComponent):ObjectApplicator<Dynamic> {
+  public function getApplicator():ObjectApplicator<Dynamic> {
     return elementApplicator;
   }
   
-  public function getTextApplicator(component:ObjectComponent):ObjectApplicator<Dynamic> {
+  public function getTextApplicator():ObjectApplicator<Dynamic> {
     return textApplicator;
   }
 

@@ -31,6 +31,8 @@ class RootObjectManager implements ObjectManager {
 
   public function update() {}
 
+  public function move(oldSlot:Null<Slot>, newSlot:Null<Slot>) {}
+
   public function dispose() {
     object = None;
   }

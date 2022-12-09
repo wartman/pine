@@ -26,7 +26,7 @@ function enqueueObserver(observer:Observer) {
 function untrack(compute:()->Void) {
   var prev = currentObserver;
   currentObserver = null;
-  compute();
+  batch(compute);
   currentObserver = prev;
 }
 

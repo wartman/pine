@@ -1,5 +1,6 @@
 package pine.element.object;
 
+import pine.adapter.ObjectApplicator;
 import pine.debug.Debug;
 import pine.hydration.Cursor;
 
@@ -7,12 +8,15 @@ using pine.core.OptionTools;
 
 class DirectObjectManager implements ObjectManager {
   final element:ElementOf<ObjectComponent>;
+  final applicator:ObjectApplicator<Dynamic>;
 
   var object:Null<Dynamic> = null;
   var previousComponent:Null<ObjectComponent> = null;
 
-  public function new(element) {
+  public function new(element, applicator) {
     this.element = element;
+    this.applicator = applicator;
+
     element.watchLifecycle({
       afterHydrate: (element, cursor) -> {
         if (object != null) cursor.next();
@@ -27,44 +31,31 @@ class DirectObjectManager implements ObjectManager {
 
   public function init() {
     Debug.assert(object == null);
-
-    var applicator = findApplicator();
-
     object = applicator.create(element.component);
-    applicator.insert(object, element.slots.get(), () -> element
-      .queryAncestors()
-      .ofType(ObjectComponent)
-      .orThrow('No ancestor object exists')
-      .getObject()
-    );
+    applicator.insert(object, element.slots.get(), findAncestorObject);
   }
 
   public function hydrate(cursor:Cursor) {
     Debug.assert(object == null);
     object = cursor.current();
     Debug.assert(object != null);
-
-    var applicator = findApplicator();
-
     applicator.update(object, element.component, null);
   }
 
   public function update() {
     Debug.assert(object != null);
 
-    var applicator = findApplicator();
-
     applicator.update(object, element.component, previousComponent);
     
     previousComponent = element.component;
   }
 
+  public function move(oldSlot:Null<Slot>, newSlot:Null<Slot>) {
+    if (object != null) applicator.move(object, oldSlot, newSlot, findAncestorObject);
+  }
+
   public function dispose() {
     if (object != null) {
-      var adapter = element.getAdapter().orThrow('No adapter found');
-      var component = element.component;
-      var applicator = component.getApplicatorFrom(adapter);
-
       applicator.remove(object, element.slots.get());
     }
     
@@ -72,9 +63,11 @@ class DirectObjectManager implements ObjectManager {
     previousComponent = null;
   }
 
-  inline function findApplicator() {
-    var adapter = element.getAdapter().orThrow('No adapter found');
-    var component = element.component;
-    return component.getApplicatorFrom(adapter);
+  function findAncestorObject() {
+    return element
+      .queryAncestors()
+      .ofType(ObjectComponent)
+      .orThrow('No ancestor object exists')
+      .getObject();
   }
 }

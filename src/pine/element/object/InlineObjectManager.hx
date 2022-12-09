@@ -24,6 +24,8 @@ class InlineObjectManager implements ObjectManager {
     return object;
   }
 
+  public function move(oldSlot:Null<Slot>, newSlot:Null<Slot>) {}
+
   public function init() {}
 
   public function hydrate(cursor:Cursor) {}
