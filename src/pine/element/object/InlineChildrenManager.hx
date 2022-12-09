@@ -1,5 +1,6 @@
 package pine.element.object;
 
+import pine.core.HasLazyProps;
 import pine.hydration.Cursor;
 import pine.diffing.Engine;
 import pine.element.core.CoreChildrenQuery;
@@ -10,13 +11,16 @@ using pine.core.OptionTools;
   Manage children that are not directly children of the
   parent component (this is a Fragment, basically).
 **/
-class InlineChildrenManager implements ChildrenManager {
+class InlineChildrenManager 
+  implements ChildrenManager
+  implements HasLazyProps
+{
   final element:Element;
   final render:(context:Context)->Array<Component>;
 
   var children:Array<Element> = [];
   var marker:Element;
-  var query:Null<ChildrenQuery> = null;
+  @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);
 
   public function new(element, render) {
     this.element = element;
@@ -76,7 +80,6 @@ class InlineChildrenManager implements ChildrenManager {
   }
 
   public function getQuery():ChildrenQuery {
-    if (query == null) query = new CoreChildrenQuery(element);
     return query;
   }
 

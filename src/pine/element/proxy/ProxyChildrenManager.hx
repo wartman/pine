@@ -1,15 +1,19 @@
 package pine.element.proxy;
 
+import pine.core.HasLazyProps;
 import pine.diffing.Engine;
 import pine.element.core.CoreChildrenQuery;
 import pine.hydration.Cursor;
 
-class ProxyChildrenManager implements ChildrenManager {
+class ProxyChildrenManager 
+  implements ChildrenManager
+  implements HasLazyProps
+{
   final element:Element;
   final render:(context:Context)->Component;
 
   var child:Null<Element> = null;
-  var query:Null<ChildrenQuery> = null;
+  @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);
 
   public function new(element, render) {
     this.element = element;
@@ -35,7 +39,6 @@ class ProxyChildrenManager implements ChildrenManager {
   }
 
   public function getQuery():ChildrenQuery {
-    if (query == null) query = new CoreChildrenQuery(element);
     return query;
   }
 
@@ -44,7 +47,6 @@ class ProxyChildrenManager implements ChildrenManager {
       child.dispose();
       true;
     });
-    query = null;
   }
 
   function renderSafe(context:Context):Component {

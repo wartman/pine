@@ -1,16 +1,20 @@
 package pine.element.object;
 
+import pine.core.HasLazyProps;
 import pine.hydration.Cursor;
 import pine.diffing.Engine;
 import pine.debug.Debug;
 import pine.element.core.CoreChildrenQuery;
 
-class DirectChildrenManager implements ChildrenManager {
+class DirectChildrenManager 
+  implements ChildrenManager
+  implements HasLazyProps
+{
   final element:Element;
   final render:(context:Context)->Array<Component>;
 
   var children:Array<Element> = [];
-  var query:Null<ChildrenQuery> = null;
+  @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);
 
   public function new(element, render, ?options) {
     this.element = element;
@@ -52,14 +56,12 @@ class DirectChildrenManager implements ChildrenManager {
   }
 
   public function getQuery():ChildrenQuery {
-    if (query == null) query = new CoreChildrenQuery(element);
     return query;
   }
 
   public function dispose() {
     for (child in children) child.dispose();
     children = [];
-    query = null;
   }
 
   function renderSafe() {
