@@ -3,6 +3,13 @@ package pine;
 import pine.element.ElementStatus;
 import pine.element.Lifecycle;
 
+/**
+  A simple wrapper over `Element` that makes it more convenient
+  to get at the current, properly typed Component.
+
+  Generally speaking, you should always prefer using an `ElementOf`
+  over a bare `Element` in type definitions.
+**/
 @:forward
 abstract ElementOf<T:Component>(Element) 
   from Element to Element 
@@ -16,11 +23,6 @@ abstract ElementOf<T:Component>(Element)
 
   public inline function new(element) {
     this = element;
-  }
-
-  @:deprecated('Use the component property instead')
-  public inline function getComponent():T {
-    return this.getComponent();
   }
 
   public inline function watchLifecycle(hook:Lifecycle<T>) {

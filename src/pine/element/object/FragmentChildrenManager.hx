@@ -9,9 +9,9 @@ using pine.core.OptionTools;
 
 /**
   Manage children that are not directly children of the
-  parent component (this is a Fragment, basically).
+  parent component.
 **/
-class InlineChildrenManager 
+class FragmentChildrenManager 
   implements ChildrenManager
   implements HasLazyProps
 {

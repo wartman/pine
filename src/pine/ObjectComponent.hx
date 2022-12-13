@@ -20,7 +20,7 @@ abstract class ObjectComponent extends Component {
   }
 
   function createObjectManager(element:Element):ObjectManager {
-    var applicator = element.getAdapter().orThrow('No adapter found').getApplicator();
+    var applicator = element.getAdapter().orThrow('No Adapter found').getApplicator();
     return new DirectObjectManager(element, applicator);
   }
 }

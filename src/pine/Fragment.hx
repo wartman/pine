@@ -26,17 +26,17 @@ final class Fragment extends Component implements HasComponentType {
   }
 
   function createChildrenManager(element:Element):ChildrenManager {
-    return new InlineChildrenManager(element, context -> {
+    return new FragmentChildrenManager(element, context -> {
       var fragment:Fragment = context.getComponent();
       return fragment.children;
     });
   }
 
   function createSlotManager(element:Element):SlotManager {
-    return new InlineSlotManager(element);
+    return new FragmentSlotManager(element);
   }
 
   function createObjectManager(element:Element):ObjectManager {
-    return new InlineObjectManager(element);
+    return new FragmentObjectManager(element);
   }
 }

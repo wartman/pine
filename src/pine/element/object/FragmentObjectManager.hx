@@ -7,7 +7,7 @@ import pine.hydration.Cursor;
   This ObjectManager finds the last object in an Element's children.
   This should be used for any object that's Fragment-like. 
 **/
-class InlineObjectManager implements ObjectManager {
+class FragmentObjectManager implements ObjectManager {
   final element:Element;
 
   public function new(element) {

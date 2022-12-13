@@ -78,7 +78,7 @@ abstract class ProviderComponent<T> extends Component {
             incomingComponent.value = incomingComponent.create();
           },
     
-          onDispose: element -> {
+          beforeDispose: element -> {
             var component = element.component;
             var value = component.getValue();
             if (value != null) {

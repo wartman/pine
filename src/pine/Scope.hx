@@ -61,7 +61,7 @@ final class Scope extends Component implements HasComponentType {
             var scope = element.component;
             if (scope.init != null) scope.init(element);
           },
-          onDispose: element -> {
+          beforeDispose: element -> {
             var scope = element.component;
             if (scope.dispose != null) scope.dispose(element);
           }

@@ -8,11 +8,11 @@ abstract Action(()->Void) {
     batch(handler);
   }
   
-  public function new(handler) {
+  inline public function new(handler) {
     this = () -> batch(handler);
   }
 
-  public inline function trigger() {
+  inline public function trigger() {
     this();
   }
 }

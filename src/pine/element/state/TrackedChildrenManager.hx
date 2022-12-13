@@ -18,14 +18,15 @@ class TrackedChildrenManager extends ProxyChildrenManager {
         var component = render(context);
         switch element.status {
           case Building if (isUpdating):
-            // This means we're updating or initializing, which is expected.
+            // This means we're updating or initializing and the Computation
+            // has been revalidated, so this is expected.
           case Valid: 
             element.invalidate();
           default:
             Debug.warn(
               'A pine.Signal was changed when an element was not Valid.'
               + ' Check your components and make sure you aren\'t updating'
-              + ' states directly in a render method, after an element'
+              + ' Signals directly in a render method, after an element'
               + ' has been disposed, *or* before it has been initialized.'
             );
         }

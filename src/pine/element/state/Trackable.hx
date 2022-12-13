@@ -30,7 +30,7 @@ function syncTrackedObject():Hook<AutoComponent> {
           .reuseTrackedObject(object);
       },
     
-      onDispose: element -> {
+      beforeDispose: element -> {
         locateTrackedObject(element.component)
           .some(object -> object.dispose());
       }

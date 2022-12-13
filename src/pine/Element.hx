@@ -250,12 +250,15 @@ class Element
 
     status = Disposing;
 
-    lifecycle.onDispose(this);
+    lifecycle.beforeDispose(this);
+    
     object.dispose();
     children.dispose();
     slots.dispose();
     disposables.dispose();
 
     status = Disposed;
+    
+    lifecycle.afterDispose();
   }
 }
