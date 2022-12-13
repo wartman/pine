@@ -1,6 +1,7 @@
 package pine.element.state;
 
 import pine.state.*;
+import pine.debug.Debug;
 import pine.element.proxy.ProxyChildrenManager;
 
 /**
@@ -9,14 +10,24 @@ import pine.element.proxy.ProxyChildrenManager;
 **/
 class TrackedChildrenManager extends ProxyChildrenManager {
   var computation:Null<Computation<Component>> = null;
+  var isUpdating:Bool = false;
 
   public function new(element, render) {
     super(element, context -> {
       if (computation == null) computation = new Computation(() -> {
         var component = render(context);
         switch element.status {
-          case Pending | Building | Disposed:
-          default: element.invalidate();
+          case Building if (isUpdating):
+            // This means we're updating or initializing, which is expected.
+          case Valid: 
+            element.invalidate();
+          default:
+            Debug.warn(
+              'A pine.Signal was changed when an element was not Valid.'
+              + ' Check your components and make sure you aren\'t updating'
+              + ' states directly in a render method, after an element'
+              + ' has been disposed, *or* before it has been initialized.'
+            );
         }
         return component;
       });
@@ -24,9 +35,17 @@ class TrackedChildrenManager extends ProxyChildrenManager {
     });
   }
 
+  override function init() {
+    isUpdating = true;
+    super.init();
+    isUpdating = false;
+  }
+
   override function update() {
+    isUpdating = true;
     if (computation != null) computation.revalidate();
     super.update();
+    isUpdating = false;
   }
 
   override function dispose() {

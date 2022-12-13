@@ -1,11 +1,28 @@
 package pine.debug;
 
+// @todo: Consider freeing these functions from their
+// static class.
 class Debug {
   static public macro function assert(expr:haxe.macro.Expr.ExprOf<Bool>, ?message:haxe.macro.Expr.ExprOf<String>) {
     if (haxe.macro.Context.defined('debug')) {
       return createAssertion(expr, message);
     }
 
+    return macro null;
+  }
+
+  static public macro function warn(message:haxe.macro.Expr.ExprOf<String>) {
+    if (haxe.macro.Context.defined('debug')) {
+      if (haxe.macro.Context.defined('nodejs')) {
+        return macro js.Node.console.warn($message);
+      }
+      if (haxe.macro.Context.defined('sys')) {
+        return macro Sys.println('Warning: ' + $message);
+      }
+      if (haxe.macro.Context.defined('js')) {
+        return macro js.Browser.console.warn($message);
+      }
+    }
     return macro null;
   }
 

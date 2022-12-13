@@ -1,30 +1,27 @@
 package todo;
 
-import haxe.Json;
-#if (js && !nodejs)
-import pine.html.dom.DomBootstrap;
-#else
-import pine.html.server.ServerBootstrap;
-#end
+import js.Browser;
 import pine.*;
+import pine.CoreHooks;
 import pine.html.*;
+import pine.html.client.ClientRoot;
+import pine.state.*;
+import haxe.Json;
 
 using Reflect;
 
 function main() {
-  var boot = #if (js && !nodejs) 
-    new DomBootstrap();
-  #else 
-    new ServerBootstrap();
-  #end
-  boot.mount(new TodoApp({}));
+  ClientRoot.mount(
+    Browser.document.getElementById('root'),
+    new TodoApp({})
+  );
 }
 
 class Todo implements Record {
-  @prop public final id:Int;
-  @track public var description:String;
-  @track public var isCompleted:Bool;
-  @track public var isEditing:Bool;
+  public final id:Int;
+  public var description:String;
+  public var isCompleted:Bool;
+  public var isEditing:Bool;
 
   public function toJson() {
     return {
@@ -52,22 +49,18 @@ class TodoStore implements Record {
   }
 
   public static function load() {
-    #if nodejs
-      return new TodoStore({uid: 0, todos: [], visibility: All});
-    #else
-      var data = js.Browser.window.localStorage.getItem(storageId);
-      var store = if (data == null) {
-        new TodoStore({uid: 0, todos: [], visibility: All});
-      } else {
-        fromJson(Json.parse(data));
-      }
+    var data = js.Browser.window.localStorage.getItem(storageId);
+    var store = if (data == null) {
+      new TodoStore({uid: 0, todos: [], visibility: All});
+    } else {
+      fromJson(Json.parse(data));
+    }
 
-      Observer.track(() -> {
-        js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(store.toJson()));
-      });
+    Observer.track(() -> {
+      js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(store.toJson()));
+    });
 
-      return store;
-    #end
+    return store;
   }
 
   public static function fromJson(data:Dynamic) {
@@ -78,9 +71,9 @@ class TodoStore implements Record {
     });
   }
 
-  @track var uid:Int;
-  @track public var visibility:TodoVisibility;
-  @track public var todos:Array<Todo>;
+  var uid:Int;
+  public var visibility:TodoVisibility;
+  public var todos:Array<Todo>;
 
   public function addTodo(description:String) {
     todos.unshift(new Todo({
@@ -108,7 +101,7 @@ class TodoStore implements Record {
   }
 }
 
-class TodoApp extends ImmutableComponent {
+class TodoApp extends AutoComponent {
   public function render(context:Context):Component {
     return new TodoProvider({
       create: TodoStore.load,
@@ -118,8 +111,8 @@ class TodoApp extends ImmutableComponent {
         children: [
           new Portal({
             target: js.Browser.document.head,
-            child: new Isolate({ 
-              wrap: context -> {
+            child: new Scope({ 
+              render: context -> {
                 // note: We could use `store` from the wrapping scope,
                 // but this shows that `context` is passed down even through
                 // portals.
@@ -161,8 +154,8 @@ class TodoApp extends ImmutableComponent {
   }
 }
 
-class TodoFooter extends ObserverComponent {
-  @prop final store:TodoStore;
+class TodoFooter extends AutoComponent {
+  final store:TodoStore;
 
   public function render(context:Context):Component {
     var total = store.todos.length;
@@ -216,8 +209,9 @@ class TodoFooter extends ObserverComponent {
   }
 }
 
-class TodoContainer extends ObserverComponent {
-  @prop final store:TodoStore;
+
+class TodoContainer extends AutoComponent {
+  final store:TodoStore;
 
   function render(context:Context) {
     var len = store.todos.length;
@@ -245,8 +239,8 @@ class TodoContainer extends ObserverComponent {
   }
 }
 
-class TodoItem extends ObserverComponent {
-  @prop final todo:Todo;
+class TodoItem extends AutoComponent {
+  final todo:Todo;
 
   inline function getClassName() {
     return [
@@ -304,28 +298,19 @@ class TodoItem extends ObserverComponent {
   }
 }
 
-class TodoInput extends ObserverComponent {
-  @prop final className:String;
-  @prop final clearOnComplete:Bool;
-  @prop final onSubmit:(data:String) -> Void;
-  @prop final onCancel:() -> Void;
-  @track var isEditing:Bool = false;
-  @track var value:String;
-
-  #if (js && !nodejs)
-  override function init(context:InitContext) {
-    var obs = new Observer(() -> {
-      if (isEditing) {
-        var el:js.html.InputElement = cast context.getObject();
-        el.focus();
-      }
-    });
-    // If you create an observer here, be sure you also
-    // enqueue it for disposal. This pattern probably won't
-    // come up a lot, but it's here just in case.
-    context.addDisposable(obs);
+@:hook(createEffect((element:ElementOf<TodoInput>) -> {
+  if (element.component.isEditing) {
+    var el:js.html.InputElement = cast element.getObject();
+    el.focus();
   }
-  #end
+}))
+class TodoInput extends AutoComponent {
+  final className:String;
+  final clearOnComplete:Bool;
+  final onSubmit:(data:String) -> Void;
+  final onCancel:() -> Void;
+  public var isEditing:Bool = false;
+  var value:String;
 
   function render(context:Context):Component {
     return new Html<'input'>({

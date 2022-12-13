@@ -25,7 +25,7 @@ function process(fields) {
   var trackedInitProps = tracked.getInitializerProps();
   
   properties.addProp('key'.makeField(macro:pine.diffing.Key, true));
-  
+
   if (trackedInitProps.length > 0) {
     var ct = Context.getLocalType().toComplexType();
     var trackedObjectProps:ComplexType = tracked.getTrackedObjectPropsType();
@@ -68,7 +68,7 @@ function process(fields) {
 
       override function createHooks():pine.HookCollection<$ct> {
         return [$a{[
-          macro cast pine.element.state.Trackable.useSyncTrackedObject()
+          macro cast pine.element.state.Trackable.syncTrackedObject()
         ].concat(hooks.getHooks())}];
       }
     });

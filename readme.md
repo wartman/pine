@@ -92,7 +92,7 @@ In an `AutoComponent`, a `final` field is just added to the constructor -- nothi
 Reactivity
 ----------
 
-Let's pull back a bit and look at what Atoms are. Here's a quick example:
+Let's pull back a bit and look at what Signals are. Here's a quick example:
 
 ```haxe
 import pine.state.Signal;
@@ -111,11 +111,11 @@ function main() {
 }
 ```
 
-When we call `location.get()` inside the `Observer`, the Observer subscribes to it and will run its handler function every time the signal changes.
+When we call `location.get()` inside the `Observer`, the Observer subscribes to it and will run its handler function every time the Signal changes.
 
-This is basically how Pine is tracking changes in the AutoComponent. It's wrapping in the render method in an Observer, then wrapping each var field in the class with an Signal, and then requests a re-render if any of its subscribed signals changes. 
+This is basically how Pine is tracking changes in the AutoComponent. It's wrapping in the render method in an Observer, then wrapping each var field in the class with a Signal, and then requests a re-render if any of its subscribed Signals changes. 
 
-> It's actually a bit more complex than that, as Components are designed to change constantly and we need to do some things to ensure that we're not constantly creating new Observers and Atoms, but that's the general idea.
+> It's actually a bit more complex than that, as Components are designed to change constantly and we need to do some things to ensure that we're not constantly creating new Observers and Signals, but that's the general idea.
 
 This means that *any* Signal will be subscribed to if its used inside an `AutoComponent`. For example, we can use a global Signal if we want:
 
@@ -158,7 +158,7 @@ class Counter extends AutoComponent {
 }
 ```
 
-> Do **NOT** create Atoms directly inside render methods. They won't be disposed of properly and all sorts of strange things could happen.
+> Do **NOT** create Signals directly inside render methods. They won't be disposed of properly and all sorts of strange things could happen.
 
 Lifecycles and Hooks
 --------------------
