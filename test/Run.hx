@@ -10,6 +10,8 @@ function main() {
   runner.add(new unit.state.TestTrackedObject());
 
   runner.add(new unit.core.TestObjectTools());
+  runner.add(new unit.core.TestHasLazyProps());
+  runner.add(new unit.core.TestHasAutoConstructor());
 
   runner.run();
 }

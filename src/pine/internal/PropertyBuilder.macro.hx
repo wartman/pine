@@ -51,28 +51,12 @@ class PropertyBuilder extends ClassBuilder {
       case FVar(t, e) if (
         field.access.contains(AFinal)
         && !field.access.contains(AStatic)
-        && !field.meta.exists(m -> m.name == ':skip')
+        && !field.meta.exists(m -> m.name == ':skip' || m.name == ':lazy')
       ):
         var name = field.name;
         addProp(name.makeField(t, e != null));
         addInitializer(e == null ? macro this.$name = props.$name : macro if (props.$name != null) this.$name = props.$name);
       default:
     }
-
-    // for (field in findFieldsByMeta(':prop')) {
-    //   switch field.kind {
-    //     case FVar(t, e):
-    //       var name = field.name;
-    //       var meta = field.meta.find(m -> m.name == ':prop');
-
-    //       if (!field.access.contains(AFinal)) {
-    //         Context.error('All @:prop fields must be final', field.pos);
-    //       }
-
-    //       addProp(name.makeField(t, e != null));
-    //       addInitializer(e == null ? macro this.$name = props.$name : macro if (props.$name != null) this.$name = props.$name);
-    //     default:
-    //   }
-    // }
   }
 }
