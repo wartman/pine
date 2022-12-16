@@ -7,6 +7,7 @@ import haxe.macro.Expr;
 
 using StringTools;
 using haxe.macro.Tools;
+using pine.internal.Hash;
 
 function typeExists(name:String) {
   try {
@@ -42,7 +43,6 @@ function resolveComplexType(expr:Expr):ComplexType {
   }
 }
 
-// @todo: Refactor this to use ComplexTypes, not Types.
 function stringifyTypeForClassName(type:haxe.macro.Type):String {
   return switch type {
     // Attempt to use human-readable names if possible
@@ -51,9 +51,8 @@ function stringifyTypeForClassName(type:haxe.macro.Type):String {
     case TInst(t, params):
       t.toString().replace('.', '_') + '__' + params.map(stringifyTypeForClassName).join('_'); 
     default: 
-      // Fallback to using an Md5 string to ensure we're not outputting
-      // weird characters.
-      haxe.crypto.Md5.encode(type.toString()); 
+      // Fallback to using a hash.
+      type.toString().hash();
   }
 }
 
