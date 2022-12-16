@@ -39,10 +39,10 @@ final class Scope extends Component implements HasComponentType {
   }
 
   function createChildrenManager(element:Element):ChildrenManager {
-    return new TrackedChildrenManager(element, context -> {
-      var scope:Scope = context.getComponent();
-      return scope.render(context);
-    });
+    return new TrackedChildrenManager<Scope>(
+      element, 
+      element -> element.component.render(element)
+    );
   }
 
   function createSlotManager(element:Element):SlotManager {

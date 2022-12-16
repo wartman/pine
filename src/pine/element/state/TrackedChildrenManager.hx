@@ -8,7 +8,7 @@ import pine.element.proxy.ProxyChildrenManager;
   Use the TrackedChildrenManager to automatically react to state
   changes in a `render` method.
 **/
-class TrackedChildrenManager extends ProxyChildrenManager {
+class TrackedChildrenManager<T:Component> extends ProxyChildrenManager<T> {
   var computation:Null<Computation<Component>> = null;
   var isUpdating:Bool = false;
 

@@ -5,12 +5,12 @@ import pine.diffing.Engine;
 import pine.element.core.CoreChildrenQuery;
 import pine.hydration.Cursor;
 
-class ProxyChildrenManager 
+class ProxyChildrenManager<T:Component>
   implements ChildrenManager
   implements HasLazyProps
 {
   final element:Element;
-  final render:(context:Context)->Component;
+  final render:(element:ElementOf<T>)->Component;
 
   var child:Null<Element> = null;
   @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);
@@ -49,8 +49,8 @@ class ProxyChildrenManager
     });
   }
 
-  function renderSafe(context:Context):Component {
-    var component = render(context);
+  function renderSafe(element:ElementOf<T>):Component {
+    var component = render(element);
     if (component == null) return new Fragment({ children: [] });
     return component;
   }

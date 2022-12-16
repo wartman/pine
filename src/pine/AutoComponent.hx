@@ -34,10 +34,10 @@ abstract class AutoComponent extends Component {
   }
 
   final function createChildrenManager(element:Element):ChildrenManager {
-    return new TrackedChildrenManager(element, context -> {
-      var auto:AutoComponent = context.getComponent();
-      return auto.render(context);
-    });
+    return new TrackedChildrenManager<AutoComponent>(
+      element, 
+      element -> element.component.render(element)
+    );
   }
 
   final function createSlotManager(element:Element):SlotManager {

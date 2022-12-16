@@ -6,12 +6,12 @@ import pine.diffing.Engine;
 import pine.debug.Debug;
 import pine.element.core.CoreChildrenQuery;
 
-class DirectChildrenManager 
+class DirectChildrenManager<T:Component>
   implements ChildrenManager
   implements HasLazyProps
 {
   final element:Element;
-  final render:(context:Context)->Array<Component>;
+  final render:(element:ElementOf<T>)->Array<Component>;
 
   var children:Array<Element> = [];
   @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);

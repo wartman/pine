@@ -11,12 +11,12 @@ using pine.core.OptionTools;
   Manage children that are not directly children of the
   parent component.
 **/
-class FragmentChildrenManager 
+class FragmentChildrenManager<T:Component>
   implements ChildrenManager
   implements HasLazyProps
 {
   final element:Element;
-  final render:(context:Context)->Array<Component>;
+  final render:(element:ElementOf<T>)->Array<Component>;
 
   var children:Array<Element> = [];
   var marker:Element;

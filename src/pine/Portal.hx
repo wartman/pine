@@ -47,7 +47,7 @@ final class Portal extends Component implements HasComponentType {
 
 @:allow(pine)
 class PortalChildrenManager implements ChildrenManager {
-  final placeholder:ProxyChildrenManager;
+  final placeholder:ProxyChildrenManager<Portal>;
   final element:ElementOf<Portal>;
   
   var previousComponent:Null<Portal> = null;
@@ -56,8 +56,8 @@ class PortalChildrenManager implements ChildrenManager {
   
   public function new(element) {
     this.element = element;
-    this.placeholder = new ProxyChildrenManager(element, context -> {
-      var placeholder = context
+    this.placeholder = new ProxyChildrenManager<Portal>(element, element -> {
+      var placeholder = element
         .getAdapter()
         .orThrow('Adapter expected')
         .createPlaceholder();

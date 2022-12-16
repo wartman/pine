@@ -22,10 +22,10 @@ abstract class RootComponent extends ObjectComponent {
   abstract public function createAdapter():Adapter;
 
   function createChildrenManager(element:Element):ChildrenManager {
-    return new DirectChildrenManager(element, context -> {
-      var root:RootComponent = context.getComponent();
-      [ root.child ];
-    });
+    return new DirectChildrenManager<RootComponent>(
+      element, 
+      element -> [ element.component.child ]
+    );
   }
   
   override function createAdapterManager(_) {

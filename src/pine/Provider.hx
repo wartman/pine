@@ -1,9 +1,10 @@
 package pine;
 
-import pine.element.core.*;
-import pine.element.proxy.*;
+import pine.debug.Debug;
 import pine.diffing.Key;
 import pine.element.*;
+import pine.element.core.*;
+import pine.element.proxy.*;
 
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}
@@ -39,12 +40,10 @@ abstract class ProviderComponent<T> extends Component {
   }
 
   function createChildrenManager(element:Element):ChildrenManager {
-    return new ProxyChildrenManager(element, context -> {
-      var component:ProviderComponent<T> = context.getComponent();
-      // Our lifecycle hooks *should* ensure our value is ready
-      // by now, so...
-      var value:T = cast component.getValue();
-      return component.render(value);
+    return new ProxyChildrenManager<ProviderComponent<T>>(element, element -> {
+      var value = element.component.value;
+      Debug.assert(value != null);
+      return element.component.render(value);
     });
   }
 

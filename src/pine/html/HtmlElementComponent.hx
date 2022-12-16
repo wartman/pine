@@ -28,24 +28,13 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
   }
 
   function createChildrenManager(element:Element):ChildrenManager {
-    return new DirectChildrenManager(element, context -> {
-      var component:HtmlElementComponent<Attrs> = context.getComponent();
-      var children = component.children;
-      if (children == null) return [];
-      return children;
-    });
+    return new DirectChildrenManager<HtmlElementComponent<Attrs>>(
+      element, 
+      element -> {
+        var children = element.component.children;
+        if (children == null) return [];
+        return children;
+      }
+    );
   }
-
-  #if debug
-  // override function createHooks():HookCollection<Dynamic> {
-  //   return new HookCollection<HtmlElementComponent<Attrs>>([
-  //     element -> element.watchLifecycle({
-  //       beforeHydrate: (element, cursor) -> {
-  //         // // @todo: We need a cross-platform way to get the tag
-  //         // Debug.assert(element.component.tag == cursor.current());
-  //       }
-  //     })
-  //   ]);
-  // }
-  #end
 }
