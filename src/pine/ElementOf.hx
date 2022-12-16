@@ -25,13 +25,11 @@ abstract ElementOf<T:Component>(Element)
     this = element;
   }
 
-  public inline function watchLifecycle(hook:Lifecycle<T>) {
-    this.lifecycle.add(cast hook);
+  public inline function watchLifecycle(lifecycle:Lifecycle<T>) {
+    this.events.addLifecycle(cast lifecycle);
   }
 
-  public inline function onReady(hook:(element:ElementOf<T>)->Void) {
-    watchLifecycle({
-      afterInit: hook
-    });
+  public inline function onReady(listener:(element:ElementOf<T>)->Void) {
+    this.events.afterInit.add(cast listener);
   }
 }

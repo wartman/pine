@@ -21,7 +21,7 @@ class Element
   implements DisposableHost
   implements HasLazyProps 
 {
-  final lifecycle:LifecycleManager = new LifecycleManager();
+  final events:EventManager<Dynamic> = new EventManager();
   final disposables:DisposableManager = new DisposableManager();
   
   @:lazy var object:ObjectManager = component.createObjectManager(this);
@@ -46,14 +46,14 @@ class Element
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    lifecycle.beforeInit(this);
+    events.beforeInit.dispatch(this);
 
     status = Building;
     object.init();
     children.init();
     status = Valid;
     
-    lifecycle.afterInit(this);
+    events.afterInit.dispatch(this);
   }
 
   /**
@@ -65,21 +65,16 @@ class Element
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    lifecycle.beforeInit(this);
-    lifecycle.beforeHydrate(this, cursor);
-    if (!lifecycle.shouldHydrate(this, cursor)) {
-      lifecycle.afterHydrate(this, cursor);
-      lifecycle.afterInit(this);
-      return;
-    }
+    events.beforeInit.dispatch(this);
+    events.beforeHydrate.dispatch(this, cursor);
 
     status = Building;
     object.hydrate(cursor);
     children.hydrate(cursor);
     status = Valid;
     
-    lifecycle.afterHydrate(this, cursor);
-    lifecycle.afterInit(this);
+    events.afterHydrate.dispatch(this, cursor);
+    events.afterInit.dispatch(this);
   }
 
   function init(parent:Null<Element>, slot:Null<Slot>) {
@@ -101,11 +96,7 @@ class Element
   public function update(incomingComponent:Component) {
     Debug.assert(status != Building);
     
-    lifecycle.beforeUpdate(this, component, incomingComponent);
-    if (!lifecycle.shouldUpdate(this, component, incomingComponent, false)) {
-      lifecycle.afterUpdate(this);
-      return;
-    }
+    events.beforeUpdate.dispatch(this, component, incomingComponent);
 
     status = Building;
     this.component = incomingComponent;
@@ -113,7 +104,7 @@ class Element
     children.update();
     status = Valid;
 
-    lifecycle.afterUpdate(this);
+    events.afterUpdate.dispatch(this);
   }
 
   /**
@@ -144,18 +135,14 @@ class Element
     Debug.assert(status != Building);
     if (status != Invalid) return;
     
-    lifecycle.beforeUpdate(this, component, component);
-    if (!lifecycle.shouldUpdate(this, component, component, true)) {
-      lifecycle.afterUpdate(this);
-      return;
-    }
+    events.beforeUpdate.dispatch(this, component, component);
 
     status = Building;
     object.update();
     children.update();
     status = Valid;
     
-    lifecycle.afterUpdate(this);
+    events.afterUpdate.dispatch(this);
   }
 
   /**
@@ -178,7 +165,7 @@ class Element
     var oldSlot = slots.get();
     slots.update(newSlot);
     object.move(oldSlot, newSlot);
-    lifecycle.onUpdateSlot(this, oldSlot, newSlot);
+    events.slotUpdated.dispatch(this, oldSlot, newSlot);
   }
 
   /**
@@ -250,7 +237,7 @@ class Element
 
     status = Disposing;
 
-    lifecycle.beforeDispose(this);
+    events.beforeDispose.dispatch(this);
     
     object.dispose();
     children.dispose();
@@ -259,6 +246,6 @@ class Element
 
     status = Disposed;
     
-    lifecycle.afterDispose();
+    events.afterDispose.dispatch();
   }
 }
