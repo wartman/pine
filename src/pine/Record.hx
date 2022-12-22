@@ -10,5 +10,5 @@ import pine.core.Disposable;
   Use Records (alongside Providers) when you need to have 
   state outside of a single component.
 **/
-@:autoBuild(pine.internal.RecordBuilder.build())
+@:autoBuild(pine.RecordBuilder.build())
 interface Record extends Disposable {}

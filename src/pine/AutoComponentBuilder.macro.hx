@@ -10,17 +10,15 @@ using haxe.macro.Tools;
 using pine.macro.MacroTools;
 
 function build() {
-  return process(getBuildFieldsSafe()).export();
-}
-
-function process(fields) {
+  var cls = Context.getLocalClass().get();
+  var fields = getBuildFieldsSafe();
   var builder = new ClassBuilder(fields);
-  var componentType = pine.core.HasComponentTypeBuilder.process(builder.getFields());
-  var properties = new PropertyBuilder(builder.getFields());
-  var hooks = new HookBuilder(builder.getFields());
-  var tracked = new TrackedPropertyBuilder(builder.getFields(), {
+  var properties = new PropertyBuilder(fields);
+  var hooks = new HookBuilder(fields);
+  var tracked = new TrackedPropertyBuilder(fields, {
     trackedName: 'trackedObject',
-    trackerIsNullable: true
+    trackerIsNullable: true,
+    params: cls.params.map(param -> param.name)
   });
   var trackedInitProps = tracked.getInitializerProps();
   
@@ -96,7 +94,7 @@ function process(fields) {
   }
 
   return builder
-    .merge(componentType)
     .merge(properties)
-    .merge(tracked);
+    .merge(tracked)
+    .export();
 }

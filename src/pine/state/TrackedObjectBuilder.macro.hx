@@ -1,4 +1,4 @@
-package pine.internal;
+package pine.state;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -7,6 +7,7 @@ import pine.macro.ClassBuilder;
 
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
+using pine.internal.Hash;
 
 function buildGeneric() {
   return switch Context.getLocalType() {
@@ -14,16 +15,32 @@ function buildGeneric() {
       buildTrackedObject(type);
     case TInst(_, []):
       buildTrackedObject((macro:Dynamic).toType());
+    case TInst(_, params):
+      var type = params.shift();
+      var params = params.map(p -> switch p {
+        case TInst(_.get() => {kind: KExpr(macro $v{(name:String)})}, _):
+          name;
+        default:
+          Context.error('Expected a string', Context.currentPos());
+          '';
+      });
+      buildTrackedObject(type, params);
     default:
       throw 'assert';
   }
 }
 
-private function buildTrackedObject(type:Type):ComplexType {
+private function buildTrackedObject(type:Type, ?params:Array<String>):ComplexType {
+  if (params == null) params = [];
+
   var pack = ['pine', 'state'];
-  var name = 'TrackedObject_' + resolveName(type);
+  var name = 'TrackedObject_' + resolveName(type) + params.length;
   var ct = type.toComplexType();
-  var path:TypePath = {pack: pack, name: name};
+  var path:TypePath = {
+    pack: pack,
+    name: name,
+    params: params.map(p -> TPType(TPath({ pack: [], name: p })))
+  };
 
   if (!path.typePathExists()) {
     var builder = new ClassBuilder([]);
@@ -59,22 +76,22 @@ private function buildTrackedObject(type:Type):ComplexType {
               });
             default:
               var name = prop.name;
-              var atom = '__trackedAtom_$name';
+              var signal = '__signal_$name';
               var setter = 'set_$name';
               var getter = 'get_$name';
               var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
 
-              inits.push(macro this.$atom = new pine.state.Signal($init));
-              updates.push(macro this.$atom.set(props.$name));
-              dispose.push(macro this.$atom.dispose());
+              inits.push(macro this.$signal = new pine.state.Signal($init));
+              updates.push(macro this.$signal.set(props.$name));
+              dispose.push(macro this.$signal.dispose());
               builder.add(macro class {
-                final $atom:pine.state.Signal<$t>;
+                final $signal:pine.state.Signal<$t>;
 
                 public var $name(get, set):$t;
 
-                inline function $getter():$t return this.$atom.get();
+                inline function $getter():$t return this.$signal.get();
 
-                inline function $setter(value):$t return this.$atom.set(value);
+                inline function $setter(value):$t return this.$signal.set(value);
               });
           }
         default:
@@ -102,6 +119,7 @@ private function buildTrackedObject(type:Type):ComplexType {
       pack: pack,
       name: name,
       pos: Context.currentPos(),
+      params: [ for (param in params) ({ name: param }:TypeParamDecl) ],
       kind: TDClass(null, [
         {
           pack: [ 'pine', 'core' ],
@@ -131,7 +149,7 @@ private function resolveName(type:Type):String {
       Context.error('Expected an anonymous object', Context.currentPos());
       '';
   }
-  return haxe.crypto.Md5.encode(name);
+  return name.hash();
 }
 
 // @todo: find a better solution for this hack
@@ -147,7 +165,8 @@ private function hack_fixCompilerTypingOrder() {
     switch cls {
       case TInst(t, params):
         @:keep t.get();
-      default: throw 'assert';
+      default: 
+        throw 'assert';
     }
   }
   ensure('pine.state.Observer');

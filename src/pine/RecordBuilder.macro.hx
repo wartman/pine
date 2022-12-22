@@ -1,14 +1,20 @@
-package pine.internal;
+package pine;
 
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
+import pine.internal.*;
 
 using pine.macro.MacroTools;
 
 function build() {
+  var cls = haxe.macro.Context.getLocalClass().get();
   var builder = ClassBuilder.fromContext();
   var properties = new PropertyBuilder(builder.getFields());
-  var tracked = new TrackedPropertyBuilder(builder.getFields());
+  var tracked = new TrackedPropertyBuilder(builder.getFields(), {
+    trackedName: 'tracked',
+    trackerIsNullable: false,
+    params: cls.params.map(p -> p.name)
+  });
   var trackedInitProps = tracked.getInitializerProps();
 
   if (trackedInitProps.length > 0) {

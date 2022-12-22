@@ -41,46 +41,47 @@ function buildProvider(type:Type) {
   var providerName = name + '_' + type.stringifyTypeForClassName();
   var providerPath:TypePath = { pack: pack, name: providerName, params: [] };
 
-  if (!providerPath.typePathExists()) {
-    var builder = new ClassBuilder(getBuildFieldsSafe());
-    
-    builder.add(macro class {
-      public static function from(context:pine.Context):$ct {
-        return switch maybeFrom(context) {
-          case Some(value): value;
-          case None: throw new pine.core.PineException(
-            'No provider exists for the type ' + $v{typeName}
-          );
-        }
-      }
+  if (providerPath.typePathExists()) return TPath(providerPath);
 
-      public static function maybeFrom(context:pine.Context):haxe.ds.Option<$ct> {
-        return switch context.queryAncestors().find(parent -> parent.getComponent().getComponentType() == componentType) {
-          case Some(element):
-            var value = (element.getComponent():pine.Provider.ProviderComponent<$ct>).getValue();
-            if (value == null) return None;
-            Some(value);
-          case None: None;
-        }
+  var fields = getBuildFieldsSafe();
+  var builder = new ClassBuilder(fields);
+  
+  builder.add(macro class {
+    public static function from(context:pine.Context):$ct {
+      return switch maybeFrom(context) {
+        case Some(value): value;
+        case None: throw new pine.core.PineException(
+          'No provider exists for the type ' + $v{typeName}
+        );
       }
-    });
+    }
 
-    Context.defineType({
-      pack: pack,
-      name: providerName,
-      pos: (macro null).pos,
-      kind: TDClass({
-        pack: [ 'pine' ],
-        name: 'Provider',
-        sub: 'ProviderComponent',
-        params: [TPType(ct)]
-      }, [
-        { pack: [ 'pine', 'core' ], name: 'HasComponentType' }
-      ], false, true, false),
-      meta: [],
-      fields: builder.export()
-    });
-  }
+    public static function maybeFrom(context:pine.Context):haxe.ds.Option<$ct> {
+      return switch context.queryAncestors().find(parent -> parent.getComponent().getComponentType() == componentType) {
+        case Some(element):
+          var value = (element.getComponent():pine.Provider.ProviderComponent<$ct>).getValue();
+          if (value == null) return None;
+          Some(value);
+        case None: None;
+      }
+    }
+  });
+
+  Context.defineType({
+    pack: pack,
+    name: providerName,
+    pos: (macro null).pos,
+    kind: TDClass({
+      pack: [ 'pine' ],
+      name: 'Provider',
+      sub: 'ProviderComponent',
+      params: [TPType(ct)]
+    }, [
+      { pack: [ 'pine', 'core' ], name: 'HasComponentType' }
+    ], false, true, false),
+    meta: [],
+    fields: builder.export()
+  });
 
   return TPath(providerPath);
 }

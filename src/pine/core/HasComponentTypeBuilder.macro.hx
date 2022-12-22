@@ -8,14 +8,11 @@ import pine.macro.MacroTools;
 using Lambda;
 
 function build() {
-  return process(getBuildFieldsSafe()).export();
-}
-
-function process(fields) {
+  var fields = getBuildFieldsSafe();
   var builder = new ClassBuilder(fields);
 
   if (hasComponentType(Context.getLocalClass().get())) {
-    return builder;
+    return builder.export();
   }
 
   builder.add(macro class {
@@ -26,7 +23,7 @@ function process(fields) {
     }
   });
   
-  return builder;
+  return builder.export();
 }
 
 function hasComponentType(cls:ClassType) {

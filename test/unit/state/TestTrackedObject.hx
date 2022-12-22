@@ -43,4 +43,12 @@ class TestTrackedObject implements TestCase {
 
     tests.equals(2);
   }
+
+  @:test('Ugly workaround works for tracked object generics')
+  public function testGenerics() {
+    var foo = new WithGenerics<String>({ bar: 'ok' });
+    foo.bar.equals('ok');
+  }
 }
+
+typedef WithGenerics<T> = TrackedObject<{ bar: T }, 'T'>;

@@ -10,6 +10,7 @@ using pine.macro.MacroTools;
 typedef TrackedPropertyBuilderOptions = {
   public final trackedName:String;
   public final trackerIsNullable:Bool;
+  public final params:Array<String>;
 } 
 
 /**
@@ -35,7 +36,8 @@ class TrackedPropertyBuilder extends ClassBuilder {
     super(fields);
     this.options = options == null ? {
       trackedName: 'tracked',
-      trackerIsNullable: false 
+      trackerIsNullable: false,
+      params: []
     } : options;
     process();
   }
@@ -72,9 +74,17 @@ class TrackedPropertyBuilder extends ClassBuilder {
     return TAnonymous(getTrackedObjectProps());
   }
 
-  public function getTrackedObjectType() {
+  public function getTrackedObjectTypePath():TypePath {
     var props = getTrackedObjectPropsType();
-    return macro:pine.state.TrackedObject<$props>;
+    return {
+      pack: [ 'pine', 'state' ],
+      name: 'TrackedObject',
+      params: [ TPType(props) ].concat(options.params.map(name -> TPExpr(macro $v{name})))
+    };
+  }
+
+  public function getTrackedObjectType():ComplexType {
+    return TPath(getTrackedObjectTypePath());
   }
 
   public function getTrackedObjectConstructorArg(propsName = 'props'):Expr {
@@ -90,10 +100,10 @@ class TrackedPropertyBuilder extends ClassBuilder {
     };
   }
 
-  public function instantiateTrackedObject(propsName = 'props') {
-    var props = getTrackedObjectPropsType();
+  public function instantiateTrackedObject(propsName = 'props'):Expr {
     var arg = getTrackedObjectConstructorArg(propsName);
-    return macro new pine.state.TrackedObject<$props>($arg);
+    var path = getTrackedObjectTypePath();
+    return macro new $path($arg);
   }
 
   public function getTrackedObjectExpr() {
