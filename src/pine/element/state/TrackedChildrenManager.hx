@@ -23,6 +23,8 @@ class TrackedChildrenManager<T:Component> extends ProxyChildrenManager<T> {
           case Valid: 
             element.invalidate();
           default:
+            // @todo: This might be fine, actually? Need to think
+            // some more on how things are ordered.
             Debug.warn(
               'A pine.Signal was changed when an element was not Valid.'
               + ' Check your components and make sure you aren\'t updating'

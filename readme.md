@@ -8,7 +8,7 @@ A UI framework for haxe.
 Getting Started
 ---------------
 
-Here's a look at an extremely simple app.
+Here's an extremely simple app to show how Pine works:
 
 ```haxe
 import pine.*;
@@ -37,9 +37,13 @@ class HelloWorld extends AutoComponent {
 AutoComponent
 -------------
 
-The `AutoComponent` does a little bit of magic for us: it takes all our `final` fields and creates a constructor for us. We then us it to create a html `div`, which in turn will display a greeting for us (where again Pine is helpfully converting Strings into pine.html.HtmlTextComponents for us).
+Unless you're doing something really complicated, the `AutoComponent` will be the main way you interact with Pine. 
 
-Right now isn't too exciting: it'll just display a div with `hello world` in it. What if we want our component to change?
+The class does a little bit of macro magic for us to get rid of boilerplate. For starters, we don't need to define a constructor -- instead, the AutoComponent will create one for us using all the classes `final` fields (it does something similar with `var` fields, but more on that in a second). 
+
+To actually render something to the user's screen, we (unsurprisingly) use the `render` method to return other components. Here we're targeting html, so we can use Pine's `html` package and return a `Html<'div'>` with some text content.
+
+Right now this isn't too exciting, and it'll just display a div with `hello world` in it. What if we want our component to change?
 
 Let's look at another example: a simple counter.
 
@@ -115,9 +119,9 @@ When we call `location.get()` inside the `Observer`, the Observer subscribes to 
 
 This is basically how Pine is tracking changes in the AutoComponent. It's wrapping in the render method in an Observer, then wrapping each var field in the class with a Signal, and then requests a re-render if any of its subscribed Signals changes. 
 
-> It's actually a bit more complex than that, as Components are designed to change constantly and we need to do some things to ensure that we're not constantly creating new Observers and Signals, but that's the general idea.
+> It's actually a bit more complex than that, as Components are designed to change constantly and we need to do some things to ensure that we're not needlessly creating new Observers and Signals, but that's the general idea.
 
-This means that *any* Signal will be subscribed to if its used inside an `AutoComponent`. For example, we can use a global Signal if we want:
+This means that *any* Signal will be subscribed to if its used inside an AutoComponent. Feel free to define Signals anywhere, and your AutoComponent will react to any changes made to them.
 
 ```haxe
 import js.Browser;
@@ -158,14 +162,82 @@ class Counter extends AutoComponent {
 }
 ```
 
-> Do **NOT** create Signals directly inside render methods. They won't be disposed of properly and all sorts of strange things could happen.
+Records
+-------
 
-Lifecycles and Hooks
---------------------
+To make global states a bit easer to handle, Pine provides a `Record` interface. It works just like AutoComponents, where `final` fields are added to the constructor and `var` fields become Signals.
+
+```haxe
+import pine.Record;
+
+class Greeting implements Record {
+  final greeting:String = 'hello';
+  var location:String = 'world';
+}
+```
+
+Incidentally, if you don't want Pine to process your fields, just mark them with `@:skip`. This works for Records and AutoComponents.
+
+```haxe
+import pine.Record;
+
+class Greeting implements Record {
+  final greeting:String = 'hello';
+  // Won't be turned into a Signal:
+  @:skip var location:String = 'world';
+}
+```
+
+Note that Arrays, Maps and anonymous objects get special treatment, again on both AutoComponents and on Records. They aren't simply wrapped in a Signal: instead, they're turned into a `TrackedArray`, `TrackedMap` or `TrackedObject` respectively.
+
+```haxe
+import pine.Record;
+
+class Items implements Record {
+  var names:Array<String>;
+  var locations:Map<String, String>;
+  var greeting:{ value:String };
+}
+```
+
+This is done to ensure reactivity and make sure using Signals feels as natural as possible.
+
+```haxe
+import pine.state.*;
+
+function main() {
+  // If we didn't use a tracked array, this is how you'd need
+  // to make a Signal<Array<String>> reactive:
+  var names = new Signal([ 'Bill', 'Alice' ]);
+  var obs = new Observer(() -> {
+    trace(names.get().join(' '));
+  });
+  // This won't work:
+  names.get().push('Fred');
+  // ...you'd have to do this:
+  names.set(names.peek().concat([ 'fred' ]));
+
+  // With a TrackedArray, this is much easier:
+  var names = new TrackedArray([ 'Bill', 'Alice' ]);
+  var obs = new Observer(() -> {
+    // We don't even need to call `get()` -- the TrackedArray
+    // does that for us. Just treat it like a normal Array!
+    trace(names.join(' '));
+  });
+  // And now this will be reactive:
+  names.push('Fred');
+
+  // The same idea applies to TrackedMaps and TrackedObjects.
+}
+```
+
+Providers
+---------
 
 > Todo
 
-Records
--------
+
+Lifecycles and Hooks
+--------------------
 
 > Todo
