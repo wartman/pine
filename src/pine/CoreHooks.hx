@@ -24,7 +24,7 @@ function createEffect<T:Component>(handle:(element:ElementOf<T>)->Void):Hook<T> 
 **/
 function beforeInit<T:Component>(handler):Hook<T> {
   return element -> element.watchLifecycle({
-    beforeInit: handler
+    beforeInit: (element, _) -> handler(element)
   });
 }
 
@@ -36,7 +36,7 @@ function beforeInit<T:Component>(handler):Hook<T> {
 **/
 function afterInit<T:Component>(handler):Hook<T> {
   return element -> element.watchLifecycle({
-    afterInit: handler
+    afterInit: (element, _) -> handler(element)
   });
 }
 
@@ -46,7 +46,7 @@ function afterInit<T:Component>(handler):Hook<T> {
 **/
 function beforeChange<T:Component>(handler:(element:ElementOf<T>)->Void):Hook<T> {
   return element -> element.watchLifecycle({
-    beforeInit: handler,
+    beforeInit: (element, _) -> handler(element),
     beforeUpdate: (element, _, _) -> handler(element) 
   });
 }

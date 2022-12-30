@@ -1,6 +1,6 @@
 package pine.html;
 
-import pine.internal.UniqueId;
+import pine.core.UniqueId;
 
 final types:Map<String, UniqueId> = [];
 

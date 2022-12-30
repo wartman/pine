@@ -51,4 +51,5 @@ class TestTrackedObject implements TestCase {
   }
 }
 
+// @todo: There may be a better way to handle this.
 typedef WithGenerics<T> = TrackedObject<{ bar: T }, 'T'>;

@@ -1,4 +1,4 @@
-package pine.internal;
+package pine.core;
 
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;

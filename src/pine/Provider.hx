@@ -59,7 +59,7 @@ abstract class ProviderComponent<T> extends Component {
     return new HookCollection([
       (element:ElementOf<ProviderComponent<T>>) -> {
         element.watchLifecycle({
-          beforeInit: element -> {
+          beforeInit: (element, _) -> {
             var component = element.component;
             component.value = component.create();
           },

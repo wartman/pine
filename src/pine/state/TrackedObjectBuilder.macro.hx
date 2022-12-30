@@ -7,7 +7,7 @@ import pine.macro.ClassBuilder;
 
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
-using pine.internal.Hash;
+using pine.core.Hash;
 
 function buildGeneric() {
   return switch Context.getLocalType() {
@@ -34,7 +34,9 @@ private function buildTrackedObject(type:Type, ?params:Array<String>):ComplexTyp
   if (params == null) params = [];
 
   var pack = ['pine', 'state'];
-  var name = 'TrackedObject_' + resolveName(type) + params.length;
+  var name = 'TrackedObject_' 
+    + resolveName(type) 
+    + if (params.length > 0) params.join('_').hash() else '';
   var ct = type.toComplexType();
   var path:TypePath = {
     pack: pack,

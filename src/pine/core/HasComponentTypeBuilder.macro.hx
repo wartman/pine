@@ -16,9 +16,9 @@ function build() {
   }
 
   builder.add(macro class {
-    public static final componentType:pine.internal.UniqueId = new pine.internal.UniqueId();
+    public static final componentType:pine.core.UniqueId = new pine.core.UniqueId();
 
-    public function getComponentType():pine.internal.UniqueId {
+    public function getComponentType():pine.core.UniqueId {
       return componentType;
     }
   });

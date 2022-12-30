@@ -1,6 +1,5 @@
 package pine.core;
 
-import pine.internal.PropertyBuilder;
 import pine.macro.ClassBuilder;
 
 function build() {

@@ -54,7 +54,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
   var props = tag.type.toComplexType();
 
   builder.add(macro class {
-    static final type:pine.internal.UniqueId = pine.html.TagTypes.getTypeForTag($v{tag.name});
+    static final type:pine.core.UniqueId = pine.html.TagTypes.getTypeForTag($v{tag.name});
     
     public function getComponentType() {
       return type;

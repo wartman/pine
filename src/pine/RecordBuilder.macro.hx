@@ -2,7 +2,7 @@ package pine;
 
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
-import pine.internal.*;
+import pine.core.*;
 
 using pine.macro.MacroTools;
 

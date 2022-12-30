@@ -17,8 +17,9 @@ function hydrates(
   target:HtmlElementObject,
   ?p:PosInfos
 ) {
+  var expected = target.toString();
   var actual = ServerRoot.hydrate(target, component);
-  Assert.equals(actual.getObject().toString(), target.toString());
+  Assert.equals(actual.getObject().toString(), expected);
 }
 
 function renders(

@@ -11,7 +11,7 @@ typedef Trackable<T> = {
 function syncTrackedObject():Hook<AutoComponent> {
   return (element:ElementOf<AutoComponent>) -> {
     element.watchLifecycle({
-      beforeInit: element -> {
+      beforeInit: (element, mode) -> {
         element
           .component
           .asTrackable()

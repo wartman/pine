@@ -1,4 +1,4 @@
-package pine.internal;
+package pine.core;
 
 abstract Event0(Array<()->Void>) {
   public inline function new() {

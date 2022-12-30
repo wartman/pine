@@ -10,9 +10,12 @@ using pine.core.OptionTools;
 /**
   Elements are the persistent part of Pine. They're configured by
   Components, and most of their functionality is provided by various
-  "Managers". Generally, you should not be creating subclasses of Element
-  -- instead, use Components to configure the Managers the Element will
-  use.
+  "Managers" that they compose. While you *could* create a subclass
+  of an Element, generally you should be able to do everything
+  you need by changing one of the managers an Element uses (and Pine
+  already has a lot, mostly found in the `pine.element` package).
+  Generally you won't even need to do that: AutoComponents and
+  Hooks should nearly every use case you need.
 **/
 @:allow(pine)
 class Element
@@ -46,14 +49,14 @@ class Element
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    events.beforeInit.dispatch(this);
+    events.beforeInit.dispatch(this, Normal);
 
     status = Building;
     object.init();
     children.init();
     status = Valid;
     
-    events.afterInit.dispatch(this);
+    events.afterInit.dispatch(this, Normal);
   }
 
   /**
@@ -65,16 +68,14 @@ class Element
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    events.beforeInit.dispatch(this);
-    events.beforeHydrate.dispatch(this, cursor);
+    events.beforeInit.dispatch(this, Hydrating(cursor));
 
     status = Building;
     object.hydrate(cursor);
     children.hydrate(cursor);
     status = Valid;
     
-    events.afterHydrate.dispatch(this, cursor);
-    events.afterInit.dispatch(this);
+    events.afterInit.dispatch(this, Hydrating(cursor));
   }
 
   function init(parent:Null<Element>, slot:Null<Slot>) {

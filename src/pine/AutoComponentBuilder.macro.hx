@@ -4,7 +4,7 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import pine.macro.ClassBuilder;
 import pine.macro.MacroTools;
-import pine.internal.*;
+import pine.core.*;
 
 using haxe.macro.Tools;
 using pine.macro.MacroTools;

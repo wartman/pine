@@ -1,10 +1,11 @@
 package pine.element;
 
+import pine.element.ElementInitMode;
 import pine.hydration.Cursor;
 
 typedef Lifecycle<T:Component> = {
-  public final ?beforeInit:(element:ElementOf<T>)->Void;
-  public final ?afterInit:(element:ElementOf<T>)->Void;
+  public final ?beforeInit:(element:ElementOf<T>, mode:ElementInitMode)->Void;
+  public final ?afterInit:(element:ElementOf<T>, mode:ElementInitMode)->Void;
   public final ?beforeHydrate:(element:ElementOf<T>, cursor:Cursor)->Void;
   public final ?afterHydrate:(element:ElementOf<T>, cursor:Cursor)->Void;
   public final ?beforeUpdate:(element:ElementOf<T>, currentComponent:T, incomingComponent:T)->Void;

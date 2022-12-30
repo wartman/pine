@@ -1,6 +1,6 @@
 package pine;
 
-import pine.internal.*;
+import pine.core.*;
 import pine.diffing.*;
 import pine.element.*;
 
