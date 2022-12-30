@@ -1,5 +1,6 @@
 package pine;
 
+import pine.adapter.*;
 import pine.element.*;
 import pine.element.core.*;
 import pine.element.object.*;
@@ -7,6 +8,10 @@ import pine.element.object.*;
 using pine.core.OptionTools;
 
 abstract class ObjectComponent extends Component {
+  abstract public function getObjectType():ObjectType;
+
+  abstract public function getObjectData():Dynamic;
+
   function createAncestorManager(element:Element):AncestorManager {
     return new CoreAncestorManager(element);
   }
@@ -20,7 +25,10 @@ abstract class ObjectComponent extends Component {
   }
 
   function createObjectManager(element:Element):ObjectManager {
-    var applicator = element.getAdapter().orThrow('No Adapter found').getApplicator();
+    var applicator = element
+      .getAdapter()
+      .orThrow('No Adapter found')
+      .getObjectApplicator(getObjectType());
     return new DirectObjectManager(element, applicator);
   }
 }

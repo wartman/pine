@@ -51,7 +51,9 @@ class DirectObjectManager implements ObjectManager {
   }
 
   public function move(oldSlot:Null<Slot>, newSlot:Null<Slot>) {
-    if (object != null) applicator.move(object, oldSlot, newSlot, findAncestorObject);
+    if (object != null) {
+      applicator.move(object, oldSlot, newSlot, findAncestorObject);
+    }
   }
 
   public function dispose() {

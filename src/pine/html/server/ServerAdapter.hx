@@ -12,13 +12,12 @@ class ServerAdapter extends Adapter {
   public function getProcess():Process {
     return process;
   }
-
-  public function getApplicator():ObjectApplicator<Dynamic> {
-    return elementApplicator;
-  }
   
-  public function getTextApplicator():ObjectApplicator<Dynamic> {
-    return textApplicator;
+  public function getObjectApplicator(type:ObjectType):ObjectApplicator<Dynamic> {
+    return switch type {
+      case ObjectText: textApplicator;
+      default: elementApplicator;
+    }
   }
 
   public function createPlaceholder():Component {

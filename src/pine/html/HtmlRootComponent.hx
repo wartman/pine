@@ -1,5 +1,6 @@
 package pine.html;
 
+import pine.adapter.ObjectType;
 import pine.diffing.Key;
 
 abstract class HtmlRootComponent<T> extends RootComponent {
@@ -12,6 +13,14 @@ abstract class HtmlRootComponent<T> extends RootComponent {
   }) {
     super(props);
     this.el = props.el;
+  }
+  
+  function getObjectType():ObjectType {
+    return ObjectElement('#root');
+  }
+
+  public function getObjectData() {
+    return {};
   }
   
   public function getRootObject():Dynamic {

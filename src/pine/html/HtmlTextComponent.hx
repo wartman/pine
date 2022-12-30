@@ -1,5 +1,6 @@
 package pine.html;
 
+import pine.adapter.ObjectType;
 import pine.core.HasComponentType;
 import pine.diffing.Key;
 import pine.element.*;
@@ -23,8 +24,11 @@ final class HtmlTextComponent extends ObjectComponent implements HasComponentTyp
     return new NoChildrenManager(element);
   }
 
-  override function createObjectManager(element:Element):ObjectManager {
-    var applicator = element.getAdapter().orThrow('No adapter found').getTextApplicator();
-    return new DirectObjectManager(element, applicator);
+  function getObjectType():ObjectType {
+    return ObjectText;
+  }
+
+  public function getObjectData() {
+    return content;
   }
 }

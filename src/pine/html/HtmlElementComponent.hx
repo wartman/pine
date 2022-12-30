@@ -1,5 +1,6 @@
 package pine.html;
 
+import pine.adapter.*;
 import pine.element.*;
 import pine.diffing.Key;
 import pine.element.object.DirectChildrenManager;
@@ -25,6 +26,14 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     attrs = props.attrs;
     isSvg = props.isSvg == null ? false : props.isSvg;
     children = props.children;
+  }
+
+  function getObjectType():ObjectType {
+    return ObjectElement(tag);
+  }
+
+  public function getObjectData() {
+    return attrs;
   }
 
   function createChildrenManager(element:Element):ChildrenManager {

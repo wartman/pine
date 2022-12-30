@@ -16,8 +16,8 @@ class HtmlElementApplicator extends BaseClientApplicator<HtmlElementComponent<{}
 
   public function update(object:Dynamic, component:HtmlElementComponent<{}>, previousComponent:Null<HtmlElementComponent<{}>>) {
     var el:js.html.Element = object;
-    var newAttrs = component.attrs;
-    var oldAttrs = previousComponent != null ? previousComponent.attrs : {};
+    var newAttrs = component.getObjectData();
+    var oldAttrs = previousComponent != null ? previousComponent.getObjectData() : {};
     oldAttrs.diff(newAttrs, (key, oldValue, newValue) -> {
       el.updateNodeAttribute(key, oldValue, newValue);
     });
