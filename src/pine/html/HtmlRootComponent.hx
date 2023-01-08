@@ -1,6 +1,6 @@
 package pine.html;
 
-import pine.adapter.ObjectType;
+import pine.adaptor.ObjectType;
 import pine.diffing.Key;
 
 abstract class HtmlRootComponent<T> extends RootComponent {

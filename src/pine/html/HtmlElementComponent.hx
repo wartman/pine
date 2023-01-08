@@ -1,6 +1,6 @@
 package pine.html;
 
-import pine.adapter.*;
+import pine.adaptor.*;
 import pine.element.*;
 import pine.diffing.Key;
 import pine.element.object.DirectChildrenManager;

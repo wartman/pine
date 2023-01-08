@@ -2,7 +2,6 @@ package pine.element.proxy;
 
 import pine.core.HasLazyProps;
 import pine.diffing.Engine;
-import pine.element.core.CoreChildrenQuery;
 import pine.hydration.Cursor;
 
 class ProxyChildrenManager<T:Component>
@@ -13,7 +12,7 @@ class ProxyChildrenManager<T:Component>
   final render:(element:ElementOf<T>)->Component;
 
   var child:Null<Element> = null;
-  @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);
+  @:lazy var query:ChildrenQuery = new ChildrenQuery(element);
 
   public function new(element, render) {
     this.element = element;

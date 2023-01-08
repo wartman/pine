@@ -42,7 +42,7 @@ function build() {
       }
 
       @:noCompletion
-      final public function asTrackable():haxe.ds.Option<pine.element.state.Trackable<Dynamic>> {
+      final public function getTrackedObjectManager():haxe.ds.Option<pine.element.state.TrackedObjectManager<Dynamic>> {
         return Some(this);
       }
 
@@ -66,7 +66,7 @@ function build() {
 
       override function createHooks():pine.HookCollection<$ct> {
         return [$a{[
-          macro cast pine.element.state.Trackable.syncTrackedObject()
+          macro cast pine.element.state.TrackedObjectManager.syncTrackedObject()
         ].concat(hooks.getHooks())}];
       }
     });
@@ -79,7 +79,7 @@ function build() {
         @:mergeBlock ${properties.getInitializers()}
       }
       
-      final public function asTrackable():haxe.ds.Option<pine.element.state.Trackable<Dynamic>> {
+      final public function getTrackedObjectManager():haxe.ds.Option<pine.element.state.TrackedObjectManager<Dynamic>> {
         return None;
       }
     });

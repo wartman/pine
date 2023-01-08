@@ -1,6 +1,6 @@
 package pine.html.client;
 
-import pine.adapter.Process;
+import pine.adaptor.Process;
 
 private final hasRaf:Bool = js.Syntax.code("typeof window != 'undefined' && 'requestAnimationFrame' in window");
 

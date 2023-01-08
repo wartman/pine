@@ -1,11 +1,12 @@
 package pine.element.core;
 
+import pine.core.HasLazyProps;
 import pine.hydration.Cursor;
 
-class NoChildrenManager implements ChildrenManager {
+class NoChildrenManager implements ChildrenManager implements HasLazyProps {
   final element:Element;
 
-  var query:Null<ChildrenQuery> = null;
+  @:lazy var query:ChildrenQuery = new ChildrenQuery(element);
   
   public function new(element) {
     this.element = element;
@@ -20,7 +21,6 @@ class NoChildrenManager implements ChildrenManager {
   public function update() {}
 
   public function getQuery():ChildrenQuery {
-    if (query == null) query = new CoreChildrenQuery(element);
     return query;
   }
 

@@ -1,18 +1,18 @@
-package pine.html.client;
+package pine.html.server;
 
-import pine.adapter.*;
+import pine.adaptor.*;
 
-class ClientAdapter extends Adapter {
-  final process = new ClientProcess();
+class ServerAdaptor extends Adaptor {
+  final process = new ServerProcess();
   final elementApplicator = new HtmlElementApplicator();
   final textApplicator = new HtmlTextApplicator();
 
-  public function new() {}
+  public function new() {}  
 
   public function getProcess():Process {
     return process;
   }
-
+  
   public function getObjectApplicator(type:ObjectType):ObjectApplicator<Dynamic> {
     return switch type {
       case ObjectText: textApplicator;
@@ -25,6 +25,6 @@ class ClientAdapter extends Adapter {
   }
 
   public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {
-    return new ClientRoot({ el: target, child: child });
+    return new ServerRoot({ el: target, child: child });
   }
 }

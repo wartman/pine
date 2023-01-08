@@ -4,7 +4,7 @@ import haxe.PosInfos;
 import pine.*;
 import pine.html.server.*;
 
-// @todo: Some way to change the current Adapter. 
+// @todo: Some way to change the current Adaptor. 
 
 function mount(component:Component) {
   var object = new HtmlElementObject('#document', {});

@@ -31,8 +31,8 @@ abstract class ProviderComponent<T> extends Component {
     return value;
   }
 
-  function createAdapterManager(element:Element):AdapterManager {
-    return new CoreAdapterManager();
+  function createAdaptorManager(element:Element):AdaptorManager {
+    return new CoreAdaptorManager();
   }
 
   function createAncestorManager(element:Element):AncestorManager {

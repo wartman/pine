@@ -1,7 +1,7 @@
 package pine.html.client;
 
 import pine.core.HasComponentType;
-import pine.adapter.Adapter;
+import pine.adaptor.Adaptor;
 
 final class ClientRoot 
   extends HtmlRootComponent<js.html.Element>
@@ -22,7 +22,7 @@ final class ClientRoot
     return element;
   }
 
-  public function createAdapter():Adapter {
-    return new ClientAdapter();
+  public function createAdaptor():Adaptor {
+    return new ClientAdaptor();
   }
 }

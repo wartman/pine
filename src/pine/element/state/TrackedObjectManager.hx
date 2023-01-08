@@ -2,7 +2,7 @@ package pine.element.state;
 
 using pine.core.OptionTools;
 
-typedef Trackable<T> = {
+typedef TrackedObjectManager<T> = {
   public function initTrackedObject():T;
   public function getTrackedObject():T;
   public function reuseTrackedObject(trackedObject:T):T;
@@ -14,7 +14,7 @@ function syncTrackedObject():Hook<AutoComponent> {
       beforeInit: (element, mode) -> {
         element
           .component
-          .asTrackable()
+          .getTrackedObjectManager()
           .orThrow('Component is not trackable')
           .initTrackedObject();
       },
@@ -25,7 +25,7 @@ function syncTrackedObject():Hook<AutoComponent> {
           .orThrow('No tracked object found');
 
         incoming
-          .asTrackable()
+          .getTrackedObjectManager()
           .orThrow('Incoming component is not trackable')
           .reuseTrackedObject(object);
       },
@@ -39,7 +39,7 @@ function syncTrackedObject():Hook<AutoComponent> {
 }
 
 inline function locateTrackedObject(comp:AutoComponent) {
-  return comp.asTrackable().map(trackable -> {
+  return comp.getTrackedObjectManager().map(trackable -> {
     var object = trackable.getTrackedObject();
     if (object == null) return None; 
     Some(object);

@@ -1,6 +1,6 @@
 package pine.html.server;
 
-import pine.adapter.Process;
+import pine.adaptor.Process;
 
 class ServerProcess extends Process {
   function nextFrame(exec:() -> Void) {

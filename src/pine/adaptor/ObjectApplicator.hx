@@ -1,4 +1,4 @@
-package pine.adapter;
+package pine.adaptor;
 
 import pine.element.*;
 

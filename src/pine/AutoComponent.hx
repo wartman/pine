@@ -24,10 +24,10 @@ abstract class AutoComponent extends Component {
   abstract public function render(context:Context):Component;
 
   @:noCompletion
-  abstract function asTrackable():Option<Trackable<Dynamic>>;
+  abstract function getTrackedObjectManager():Option<TrackedObjectManager<Dynamic>>;
   
-  function createAdapterManager(element:Element):AdapterManager {
-    return new CoreAdapterManager();
+  function createAdaptorManager(element:Element):AdaptorManager {
+    return new CoreAdaptorManager();
   }
 
   final function createAncestorManager(element:Element):AncestorManager {

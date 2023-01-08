@@ -1,6 +1,6 @@
 package pine.html;
 
-import pine.adapter.ObjectType;
+import pine.adaptor.ObjectType;
 import pine.core.HasComponentType;
 import pine.diffing.Key;
 import pine.element.*;

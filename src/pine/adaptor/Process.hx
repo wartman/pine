@@ -1,4 +1,4 @@
-package pine.adapter;
+package pine.adaptor;
 
 import haxe.ds.Option;
 
@@ -10,8 +10,8 @@ abstract class Process {
   }
 
   public static function maybeFrom(context:Context):Option<Process> {
-    return switch Adapter.maybeFrom(context) {
-      case Some(adapter): Some(adapter.getProcess());
+    return switch Adaptor.maybeFrom(context) {
+      case Some(adaptor): Some(adaptor.getProcess());
       case None: None;
     }
   }

@@ -1,11 +1,11 @@
 package pine.element;
 
 import haxe.ds.Option;
-import pine.adapter.Adapter;
+import pine.adaptor.Adaptor;
 import pine.core.Disposable;
 
-interface AdapterManager extends Disposable {
-  public function get():Option<Adapter>;
+interface AdaptorManager extends Disposable {
+  public function get():Option<Adaptor>;
   public function update(parent:Null<Element>):Void;
 }
 

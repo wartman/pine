@@ -4,10 +4,10 @@ import pine.debug.Debug;
 
 /**
   A simple Object that can be used as the target for a
-  Pine Adapter, such as for the server-side rendering
+  Pine Adaptor, such as for the server-side rendering
   for pine.html.
 
-  Note that Adapters do *not* need to use Object, it
+  Note that Adaptors do *not* need to use Object, it
   just provides some convenience and the minimal 
   functionality to create dom-like trees.
 **/

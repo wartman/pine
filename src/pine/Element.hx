@@ -7,6 +7,7 @@ import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
 
+
 /**
   Elements are the persistent part of Pine. They're configured by
   Components, and most of their functionality is provided by various
@@ -26,10 +27,22 @@ class Element
 {
   final events:EventManager<Dynamic> = new EventManager();
   final disposables:DisposableManager = new DisposableManager();
-  
-  @:lazy var object:ObjectManager = component.createObjectManager(this);
-  @:lazy var adapter:AdapterManager = component.createAdapterManager(this);
+
+  // @note: The following managers thing was done in an attempt to move away 
+  // from inheritance and towards composition. Unfortunately, what it has 
+  // really done is scatter closely related code across a bunch of small
+  // classes, making it extremely hard to parse what's going on. It works,
+  // but it was a bad plan. Future refactors will address this, however most
+  // of the component API (like AutoComponent) feels solid and 
+  // should remain the same.
+  //
+  // Let this be a lesson not to go blindly chasing a new shiny
+  // concept without thinking it through and really understanding
+  // what you're doing.
+
   @:lazy var hooks:HookCollection<Dynamic> = component.createHooks();
+  @:lazy var adaptor:AdaptorManager = component.createAdaptorManager(this);
+  @:lazy var object:ObjectManager = component.createObjectManager(this);
   @:lazy var slots:SlotManager = component.createSlotManager(this);
   @:lazy var children:ChildrenManager = component.createChildrenManager(this);
   @:lazy var ancestors:AncestorManager = component.createAncestorManager(this);
@@ -42,7 +55,7 @@ class Element
   }
 
   /**
-    Mount this element using whatever adapter you've decided to use.
+    Mount this element using whatever adaptor you've decided to use.
 
     This will initialize the element and all its managers.
   **/
@@ -81,7 +94,7 @@ class Element
   function init(parent:Null<Element>, slot:Null<Slot>) {
     Debug.assert(status == Pending, 'Attempted to mount an already mounted Element');
     
-    adapter.update(parent);
+    adaptor.update(parent);
     ancestors.update(parent);
     slots.init(slot);
     hooks.init(this);
@@ -113,16 +126,17 @@ class Element
   **/
   public function invalidate() {
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
+    Debug.assert(status != Disposing, 'Attempted to invalidate an Element while it was disposing');
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
-    Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
+    // Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
     
     if (status == Invalid) return;
 
     status = Invalid;
 
-    adapter
+    adaptor
       .get()
-      .orThrow('No adapter found')
+      .orThrow('No adaptor found')
       .requestRebuild(this);
   }
 
@@ -160,7 +174,7 @@ class Element
     in the Element tree.
     
     Note: This is mostly an internal detail. You should never
-    have to use this unless you're creating an Adapter.
+    have to use this unless you're creating an Adaptor.
   **/
   public function updateSlot(newSlot:Slot) {
     var oldSlot = slots.get();
@@ -183,7 +197,7 @@ class Element
     An `object` is the lower-level implementation of the UI
     -- for example, if you're using the `pine.html.client`,
     `getObject` will return a `js.html.Node`, while the same
-    element using the adapter from `pine.html.server` will
+    element using the adaptor from `pine.html.server` will
     return a `pine.object.Object`.
   **/
   public function getObject():Dynamic {
@@ -191,15 +205,15 @@ class Element
   }
 
   /**
-    Get the current `Adapter` this element is using. Adapters
+    Get the current `Adaptor` this element is using. Adaptors
     provide the bridge between Pine's Element tree and whatever
     platform the app is running on. For example, the 
-    `pine.html.client.ClientAdapter` is responsible for actually
+    `pine.html.client.ClientAdaptor` is responsible for actually
     adding, removing and updating the DOM based on the current state 
     of the app.
   **/
-  public function getAdapter() {
-    return adapter.get();
+  public function getAdaptor() {
+    return adaptor.get();
   }
 
   /**

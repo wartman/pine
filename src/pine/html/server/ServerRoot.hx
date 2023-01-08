@@ -1,6 +1,6 @@
 package pine.html.server;
 
-import pine.adapter.Adapter;
+import pine.adaptor.Adaptor;
 import pine.core.HasComponentType;
 import pine.object.ObjectCursor;
 import pine.object.Object;
@@ -28,7 +28,7 @@ class ServerRoot
     return element;
   }
 
-  public function createAdapter():Adapter {
-    return new ServerAdapter();
+  public function createAdaptor():Adaptor {
+    return new ServerAdaptor();
   }
 }

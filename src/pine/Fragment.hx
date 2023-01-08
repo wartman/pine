@@ -17,8 +17,8 @@ final class Fragment extends Component implements HasComponentType {
     this.children = props.children;
   }
 
-  function createAdapterManager(element:Element):AdapterManager {
-    return new CoreAdapterManager();
+  function createAdaptorManager(element:Element):AdaptorManager {
+    return new CoreAdaptorManager();
   }
 
   function createAncestorManager(element:Element):AncestorManager {

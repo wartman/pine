@@ -1,6 +1,6 @@
 package pine.object;
 
-import pine.adapter.ObjectApplicator;
+import pine.adaptor.ObjectApplicator;
 import pine.debug.Debug;
 import pine.element.*;
 

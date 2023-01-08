@@ -3,7 +3,6 @@ package pine.element.object;
 import pine.core.HasLazyProps;
 import pine.hydration.Cursor;
 import pine.diffing.Engine;
-import pine.element.core.CoreChildrenQuery;
 
 using pine.core.OptionTools;
 
@@ -20,7 +19,7 @@ class FragmentChildrenManager<T:Component>
 
   var children:Array<Element> = [];
   var marker:Element;
-  @:lazy var query:ChildrenQuery = new CoreChildrenQuery(element);
+  @:lazy var query:ChildrenQuery = new ChildrenQuery(element);
 
   public function new(element, render) {
     this.element = element;
@@ -91,7 +90,7 @@ class FragmentChildrenManager<T:Component>
 
   function createMarker() {
     return element
-      .adapter
+      .adaptor
       .get()
       .sure()
       .createPlaceholder()

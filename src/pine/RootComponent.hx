@@ -1,6 +1,6 @@
 package pine;
 
-import pine.adapter.Adapter;
+import pine.adaptor.Adaptor;
 import pine.diffing.Key;
 import pine.element.*;
 import pine.element.root.*;
@@ -19,7 +19,7 @@ abstract class RootComponent extends ObjectComponent {
 
   abstract public function getRootObject():Dynamic;
 
-  abstract public function createAdapter():Adapter;
+  abstract public function createAdaptor():Adaptor;
 
   function createChildrenManager(element:Element):ChildrenManager {
     return new DirectChildrenManager<RootComponent>(
@@ -28,8 +28,8 @@ abstract class RootComponent extends ObjectComponent {
     );
   }
   
-  override function createAdapterManager(_) {
-    return new RootAdapterManager(createAdapter());
+  override function createAdaptorManager(_) {
+    return new RootAdaptorManager(createAdaptor());
   }
 
   override function createObjectManager(element:Element):ObjectManager {

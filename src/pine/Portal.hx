@@ -24,8 +24,8 @@ final class Portal extends Component implements HasComponentType {
     this.child = props.child;
   }
 
-  function createAdapterManager(element:Element):AdapterManager {
-    return new CoreAdapterManager();
+  function createAdaptorManager(element:Element):AdaptorManager {
+    return new CoreAdaptorManager();
   }
 
   function createAncestorManager(element:Element):AncestorManager {
@@ -46,20 +46,20 @@ final class Portal extends Component implements HasComponentType {
 }
 
 @:allow(pine)
-class PortalChildrenManager implements ChildrenManager {
+class PortalChildrenManager implements ChildrenManager implements HasLazyProps {
   final placeholder:ProxyChildrenManager<Portal>;
   final element:ElementOf<Portal>;
   
   var previousComponent:Null<Portal> = null;
   var portalRoot:Null<Element> = null;
-  var query:Null<ChildrenQuery> = null;
+  @:lazy var query:ChildrenQuery = new ChildrenQuery(element);
   
   public function new(element) {
     this.element = element;
     this.placeholder = new ProxyChildrenManager<Portal>(element, element -> {
       var placeholder = element
-        .getAdapter()
-        .orThrow('Adapter expected')
+        .getAdaptor()
+        .orThrow('Adaptor expected')
         .createPlaceholder();
       return placeholder;
     });
@@ -104,7 +104,6 @@ class PortalChildrenManager implements ChildrenManager {
   }
 
   public function getQuery():ChildrenQuery {
-    if (query == null) query = new CoreChildrenQuery(element);
     return query;
   }
 
@@ -118,12 +117,12 @@ class PortalChildrenManager implements ChildrenManager {
   }
 
   function createRootComponent() {
-    var adapter = element.getAdapter().orThrow('Expected an adapter');
+    var adaptor = element.getAdaptor().orThrow('Expected an adaptor');
     var component = element.component;
 
     previousComponent = component;
     
-    return adapter.createPortalRoot(component.target, component.child);
+    return adaptor.createPortalRoot(component.target, component.child);
   }
 }
 
@@ -135,14 +134,6 @@ class PortalObjectManager implements ObjectManager {
   }
 
   public function get():Dynamic {
-    // Note: The reason we need to use this class instead of the
-    // default CoreObjectManager is that elements next to the Portal
-    // will need to get its placeholder object to know where they
-    // should be in the app.
-    //
-    // If we *don't* do this and just visit the Portal's children,
-    // we'll end up getting an object in the Portal target.
-
     var children:PortalChildrenManager = cast element.children;
     var placeholder = children.placeholder;
     var object:Null<Dynamic> = null;

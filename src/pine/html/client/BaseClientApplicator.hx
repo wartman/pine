@@ -1,6 +1,6 @@
 package pine.html.client;
 
-import pine.adapter.*;
+import pine.adaptor.*;
 import pine.debug.Debug;
 import pine.element.*;
 

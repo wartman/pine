@@ -1,6 +1,6 @@
 package pine;
 
-import pine.adapter.*;
+import pine.adaptor.*;
 import pine.element.*;
 import pine.element.core.*;
 import pine.element.object.*;
@@ -16,8 +16,8 @@ abstract class ObjectComponent extends Component {
     return new CoreAncestorManager(element);
   }
   
-  function createAdapterManager(element:Element):AdapterManager {
-    return new CoreAdapterManager();
+  function createAdaptorManager(element:Element):AdaptorManager {
+    return new CoreAdaptorManager();
   }
 
   function createSlotManager(element:Element):SlotManager {
@@ -26,8 +26,8 @@ abstract class ObjectComponent extends Component {
 
   function createObjectManager(element:Element):ObjectManager {
     var applicator = element
-      .getAdapter()
-      .orThrow('No Adapter found')
+      .getAdaptor()
+      .orThrow('No Adaptor found')
       .getObjectApplicator(getObjectType());
     return new DirectObjectManager(element, applicator);
   }

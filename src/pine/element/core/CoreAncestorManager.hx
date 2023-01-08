@@ -10,7 +10,7 @@ class CoreAncestorManager
   final element:Element;
   
   var parent:Null<Element> = null;
-  @:lazy var query:AncestorQuery = new CoreAncestorQuery(element);
+  @:lazy var query:AncestorQuery = new AncestorQuery(element);
 
   public function new(element) {
     this.element = element;
