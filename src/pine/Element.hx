@@ -1,57 +1,37 @@
 package pine;
 
+import haxe.ds.Option;
+import pine.adaptor.Adaptor;
 import pine.core.*;
 import pine.debug.Debug;
 import pine.element.*;
+import pine.element.ElementEngine;
+import pine.element.Slot;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
 
-
-/**
-  Elements are the persistent part of Pine. They're configured by
-  Components, and most of their functionality is provided by various
-  "Managers" that they compose. While you *could* create a subclass
-  of an Element, generally you should be able to do everything
-  you need by changing one of the managers an Element uses (and Pine
-  already has a lot, mostly found in the `pine.element` package).
-  Generally you won't even need to do that: AutoComponents and
-  Hooks should nearly every use case you need.
-**/
 @:allow(pine)
 class Element
   implements Context
   implements Disposable 
   implements DisposableHost
-  implements HasLazyProps 
 {
-  final events:EventManager<Dynamic> = new EventManager();
-  final disposables:DisposableManager = new DisposableManager();
-
-  // @note: The following managers thing was done in an attempt to move away 
-  // from inheritance and towards composition. Unfortunately, what it has 
-  // really done is scatter closely related code across a bunch of small
-  // classes, making it extremely hard to parse what's going on. It works,
-  // but it was a bad plan. Future refactors will address this, however most
-  // of the component API (like AutoComponent) feels solid and 
-  // should remain the same.
-  //
-  // Let this be a lesson not to go blindly chasing a new shiny
-  // concept without thinking it through and really understanding
-  // what you're doing.
-
-  @:lazy var hooks:HookCollection<Dynamic> = component.createHooks();
-  @:lazy var adaptor:AdaptorManager = component.createAdaptorManager(this);
-  @:lazy var object:ObjectManager = component.createObjectManager(this);
-  @:lazy var slots:SlotManager = component.createSlotManager(this);
-  @:lazy var children:ChildrenManager = component.createChildrenManager(this);
-  @:lazy var ancestors:AncestorManager = component.createAncestorManager(this);
+  public final events:Events<Dynamic> = new Events();
+  public final disposables:DisposableManager = new DisposableManager();
+  public final engine:ElementEngine;
+  public final hooks:HookCollection<Dynamic>;
 
   var component:Component;
   var status:ElementStatus = Pending;
+  var slot:Null<Slot> = null;
+  var parent:Null<Element> = null;
+  var adaptor:Null<Adaptor> = null;
 
-  public function new(component) {
+  public function new(component, createEngine:CreateElementEngine, hooks) {
     this.component = component;
+    this.hooks = hooks;
+    this.engine = createEngine(this); // Must come last.
   }
 
   /**
@@ -65,8 +45,7 @@ class Element
     events.beforeInit.dispatch(this, Normal);
 
     status = Building;
-    object.init();
-    children.init();
+    engine.init();
     status = Valid;
     
     events.afterInit.dispatch(this, Normal);
@@ -84,8 +63,7 @@ class Element
     events.beforeInit.dispatch(this, Hydrating(cursor));
 
     status = Building;
-    object.hydrate(cursor);
-    children.hydrate(cursor);
+    engine.hydrate(cursor);
     status = Valid;
     
     events.afterInit.dispatch(this, Hydrating(cursor));
@@ -93,10 +71,10 @@ class Element
 
   function init(parent:Null<Element>, slot:Null<Slot>) {
     Debug.assert(status == Pending, 'Attempted to mount an already mounted Element');
-    
-    adaptor.update(parent);
-    ancestors.update(parent);
-    slots.init(slot);
+
+    this.parent = parent;
+    this.adaptor = parent != null ? parent.adaptor : null;
+    this.slot = slot;
     hooks.init(this);
 
     status = Valid;
@@ -114,8 +92,7 @@ class Element
 
     status = Building;
     this.component = incomingComponent;
-    object.update();
-    children.update();
+    engine.update();
     status = Valid;
 
     events.afterUpdate.dispatch(this);
@@ -134,10 +111,7 @@ class Element
 
     status = Invalid;
 
-    adaptor
-      .get()
-      .orThrow('No adaptor found')
-      .requestRebuild(this);
+    getAdaptor().orThrow('No adaptor found').requestRebuild(this);
   }
 
   /**
@@ -153,8 +127,7 @@ class Element
     events.beforeUpdate.dispatch(this, component, component);
 
     status = Building;
-    object.update();
-    children.update();
+    engine.update();
     status = Valid;
     
     events.afterUpdate.dispatch(this);
@@ -166,7 +139,14 @@ class Element
     `true`.
   **/
   public function visitChildren(visitor) {
-    children.visit(visitor);
+    engine.visitChildren(visitor);
+  }
+
+  /**
+    Create a new slot using this Element's engine implementation.
+  **/
+  public function createSlot(index:Int, previous:Null<Element>) {
+    return engine.createSlot(index, previous);
   }
 
   /**
@@ -176,11 +156,10 @@ class Element
     Note: This is mostly an internal detail. You should never
     have to use this unless you're creating an Adaptor.
   **/
-  public function updateSlot(newSlot:Slot) {
-    var oldSlot = slots.get();
-    slots.update(newSlot);
-    object.move(oldSlot, newSlot);
-    events.slotUpdated.dispatch(this, oldSlot, newSlot);
+  public function updateSlot(newSlot:Null<Slot>) {
+    var oldSlot = slot;
+    engine.updateSlot(newSlot);
+    events.slotUpdated.dispatch(this, oldSlot, this.slot);
   }
 
   /**
@@ -201,7 +180,7 @@ class Element
     return a `pine.object.Object`.
   **/
   public function getObject():Dynamic {
-    return object.get();
+    return engine.getObject();
   }
 
   /**
@@ -212,22 +191,29 @@ class Element
     adding, removing and updating the DOM based on the current state 
     of the app.
   **/
-  public function getAdaptor() {
-    return adaptor.get();
+  public function getAdaptor():Option<Adaptor> {
+    return adaptor == null ? None : Some(adaptor);
+  }
+
+  /**
+    Get this Element's parent, if any.
+  **/
+  public function getParent():Option<Element> {
+    return parent == null ? None : Some(parent);
   }
 
   /**
     Query this component's ancestors.
   **/
   public function queryAncestors():AncestorQuery {
-    return ancestors.getQuery();
+    return engine.createAncestorQuery();
   }
 
   /**
     Query this component's children.
   **/
   public function queryChildren():ChildrenQuery {
-    return children.getQuery();
+    return engine.createChildrenQuery();
   }
 
   /**
@@ -254,10 +240,10 @@ class Element
 
     events.beforeDispose.dispatch(this);
     
-    object.dispose();
-    children.dispose();
-    slots.dispose();
+    engine.dispose();
     disposables.dispose();
+
+    slot = null;
 
     status = Disposed;
     

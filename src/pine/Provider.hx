@@ -1,5 +1,6 @@
 package pine;
 
+import pine.element.ProxyElementEngine.useProxyElementEngine;
 import pine.debug.Debug;
 import pine.diffing.Key;
 import pine.element.*;
@@ -31,62 +32,46 @@ abstract class ProviderComponent<T> extends Component {
     return value;
   }
 
-  function createAdaptorManager(element:Element):AdaptorManager {
-    return new CoreAdaptorManager();
-  }
-
-  function createAncestorManager(element:Element):AncestorManager {
-    return new CoreAncestorManager(element);
-  }
-
-  function createChildrenManager(element:Element):ChildrenManager {
-    return new ProxyChildrenManager<ProviderComponent<T>>(element, element -> {
-      var value = element.component.value;
-      Debug.assert(value != null);
-      return element.component.render(value);
-    });
-  }
-
-  function createSlotManager(element:Element):SlotManager {
-    return new ProxySlotManager(element);
-  }
-
-  function createObjectManager(element:Element):ObjectManager {
-    return new ProxyObjectManager(element);
-  }
-
-  override function createHooks():HookCollection<Dynamic> {
-    return new HookCollection([
-      (element:ElementOf<ProviderComponent<T>>) -> {
-        element.watchLifecycle({
-          beforeInit: (element, _) -> {
-            var component = element.component;
-            component.value = component.create();
-          },
-    
-          beforeUpdate: (
-            element:ElementOf<ProviderComponent<T>>,
-            currentComponent:ProviderComponent<T>,
-            incomingComponent:ProviderComponent<T>
-          ) -> {
-            var curValue = currentComponent.getValue();
-            if (curValue != null) {
-              currentComponent.dispose(curValue);
-              currentComponent.value = null;
+  public function createElement() {
+    return new Element(
+      this,
+      useProxyElementEngine((element:ElementOf<ProviderComponent<T>>) -> {
+        var value = element.component.value;
+        Debug.assert(value != null);
+        return element.component.render(value);
+      }),
+      new HookCollection([
+        (element:ElementOf<ProviderComponent<T>>) -> {
+          element.watchLifecycle({
+            beforeInit: (element, _) -> {
+              var component = element.component;
+              component.value = component.create();
+            },
+      
+            beforeUpdate: (
+              element:ElementOf<ProviderComponent<T>>,
+              currentComponent:ProviderComponent<T>,
+              incomingComponent:ProviderComponent<T>
+            ) -> {
+              var curValue = currentComponent.getValue();
+              if (curValue != null) {
+                currentComponent.dispose(curValue);
+                currentComponent.value = null;
+              }
+              incomingComponent.value = incomingComponent.create();
+            },
+      
+            beforeDispose: element -> {
+              var component = element.component;
+              var value = component.getValue();
+              if (value != null) {
+                component.dispose(value);
+                component.value = null;
+              }
             }
-            incomingComponent.value = incomingComponent.create();
-          },
-    
-          beforeDispose: element -> {
-            var component = element.component;
-            var value = component.getValue();
-            if (value != null) {
-              component.dispose(value);
-              component.value = null;
-            }
-          }
-        });
-      }
-    ]);
+          });
+        }
+      ])
+    );
   }
 }

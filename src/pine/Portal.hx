@@ -4,8 +4,7 @@ import pine.core.*;
 import pine.debug.Debug;
 import pine.diffing.Key;
 import pine.element.*;
-import pine.element.proxy.*;
-import pine.element.core.*;
+import pine.element.ElementEngine;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
@@ -24,59 +23,32 @@ final class Portal extends Component implements HasComponentType {
     this.child = props.child;
   }
 
-  function createAdaptorManager(element:Element):AdaptorManager {
-    return new CoreAdaptorManager();
-  }
-
-  function createAncestorManager(element:Element):AncestorManager {
-    return new CoreAncestorManager(element);
-  }
-
-  function createChildrenManager(element:Element):ChildrenManager {
-    return new PortalChildrenManager(element);
-  }
-
-  function createSlotManager(element:Element):SlotManager {
-    return new ProxySlotManager(element);
-  }
-
-  function createObjectManager(element:Element):ObjectManager {
-    return new PortalObjectManager(element);
+  function createElement() {
+    return new Element(this, element -> new PortalElementEngine(element), []);
   }
 }
 
-@:allow(pine)
-class PortalChildrenManager implements ChildrenManager implements HasLazyProps {
-  final placeholder:ProxyChildrenManager<Portal>;
+class PortalElementEngine implements ElementEngine {
   final element:ElementOf<Portal>;
-  
+  var placeholder:Null<Element> = null;
   var previousComponent:Null<Portal> = null;
   var portalRoot:Null<Element> = null;
-  @:lazy var query:ChildrenQuery = new ChildrenQuery(element);
-  
+
   public function new(element) {
     this.element = element;
-    this.placeholder = new ProxyChildrenManager<Portal>(element, element -> {
-      var placeholder = element
-        .getAdaptor()
-        .orThrow('Adaptor expected')
-        .createPlaceholder();
-      return placeholder;
-    });
-  }
-
-  public function visit(visitor:(child:Element) -> Bool) {
-    if (portalRoot != null) portalRoot.visitChildren(visitor);
   }
 
   public function init() {
-    placeholder.init();
+    placeholder = createPlaceholderComponent().createElement();
+    placeholder.mount(element, element.slot);
+    
     portalRoot = createRootComponent().createElement();
     portalRoot.mount(element, null);
   }
 
   public function hydrate(cursor:Cursor) {
-    placeholder.update(); // Using update is intentional!
+    placeholder = createPlaceholderComponent().createElement();
+    placeholder.mount(element, element.slot);
 
     var portalCursor = cursor.clone();
     portalCursor.move(element.component.target);
@@ -86,7 +58,8 @@ class PortalChildrenManager implements ChildrenManager implements HasLazyProps {
   }
 
   public function update() {
-    placeholder.update();
+    Debug.assert(placeholder != null);
+    placeholder.update(createPlaceholderComponent());
 
     if (portalRoot == null) {
       portalRoot = createRootComponent().createElement();
@@ -103,19 +76,50 @@ class PortalChildrenManager implements ChildrenManager implements HasLazyProps {
     }
   }
 
-  public function getQuery():ChildrenQuery {
-    return query;
+  public function getObject():Dynamic {
+    Debug.assert(placeholder != null);
+    return placeholder.getObject();
   }
 
+  public function createSlot(index:Int, previous:Null<Element>):Slot {
+    return new Slot(index, previous);
+  }
+
+  public function updateSlot(slot:Null<Slot>) {
+    Debug.assert(placeholder != null);
+    element.slot = slot;
+    placeholder.updateSlot(slot);
+  }
+
+  public function visitChildren(visitor:(child:Element) -> Bool) {
+    if (portalRoot != null) portalRoot.visitChildren(visitor);
+  }
+
+  public function createChildrenQuery():ChildrenQuery {
+    return new ChildrenQuery(element);
+  }
+
+  public function createAncestorQuery():AncestorQuery {
+    return new AncestorQuery(element);
+  }
+  
   public function dispose() {
+    if (placeholder != null) {
+      placeholder.dispose();
+      placeholder = null;
+    }
     if (portalRoot != null) {
       portalRoot.dispose();
       portalRoot = null;
     }
     previousComponent = null;
-    placeholder.dispose();
   }
 
+  function createPlaceholderComponent() {
+    var adaptor = element.getAdaptor().orThrow('Adaptor expected');
+    return adaptor.createPlaceholder();
+  }
+  
   function createRootComponent() {
     var adaptor = element.getAdaptor().orThrow('Expected an adaptor');
     var component = element.component;
@@ -124,38 +128,4 @@ class PortalChildrenManager implements ChildrenManager implements HasLazyProps {
     
     return adaptor.createPortalRoot(component.target, component.child);
   }
-}
-
-class PortalObjectManager implements ObjectManager {
-  final element:ElementOf<Portal>;
-
-  public function new(element) {
-    this.element = element;
-  }
-
-  public function get():Dynamic {
-    var children:PortalChildrenManager = cast element.children;
-    var placeholder = children.placeholder;
-    var object:Null<Dynamic> = null;
-
-    placeholder.visit(element -> {
-      Debug.assert(object == null, 'Element has more than one objects');
-      object = element.getObject();
-      true;
-    });
-
-    Debug.alwaysAssert(object != null, 'Element does not have an object');
-
-    return object;
-  }
-
-  public function init() {}
-
-  public function hydrate(cursor:Cursor) {}
-
-  public function update() {}
-
-  public function move(oldSlot:Null<Slot>, newSlot:Null<Slot>) {}
-
-  public function dispose() {}
 }

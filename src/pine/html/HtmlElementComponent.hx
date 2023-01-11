@@ -3,7 +3,6 @@ package pine.html;
 import pine.adaptor.*;
 import pine.element.*;
 import pine.diffing.Key;
-import pine.element.object.DirectChildrenManager;
 #if debug
 import pine.debug.Debug;
 #end
@@ -36,14 +35,7 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     return attrs;
   }
 
-  function createChildrenManager(element:Element):ChildrenManager {
-    return new DirectChildrenManager<HtmlElementComponent<Attrs>>(
-      element, 
-      element -> {
-        var children = element.component.children;
-        if (children == null) return [];
-        return children;
-      }
-    );
+  public function render() {
+    return children;
   }
 }

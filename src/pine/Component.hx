@@ -2,7 +2,6 @@ package pine;
 
 import pine.core.*;
 import pine.diffing.*;
-import pine.element.*;
 
 @:allow(pine)
 abstract class Component {
@@ -14,27 +13,11 @@ abstract class Component {
 
   abstract public function getComponentType():UniqueId;
 
-  public function createElement():Element {
-    return new Element(this);
-  }
+  abstract public function createElement():Element;
 
   public function shouldBeUpdated(newComponent:Component):Bool {
     return 
       getComponentType() == newComponent.getComponentType() 
       && key == newComponent.key;
-  }
-
-  abstract function createAdaptorManager(element:Element):AdaptorManager;
-
-  abstract function createAncestorManager(element:Element):AncestorManager;
-
-  abstract function createChildrenManager(element:Element):ChildrenManager;
-
-  abstract function createSlotManager(element:Element):SlotManager;
-
-  abstract function createObjectManager(element:Element):ObjectManager;
-  
-  function createHooks():HookCollection<Dynamic> {
-    return [];
   }
 }

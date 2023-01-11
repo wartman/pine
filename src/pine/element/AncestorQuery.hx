@@ -10,10 +10,11 @@ final class AncestorQuery {
   }
 
   public function ofType<T:Component>(kind:Class<T>):Option<ElementOf<T>> {
-    return switch element.ancestors.getParent() {
+    return switch element.getParent() {
       case None if (Std.isOfType(element.component, kind)): 
         Some(element);
       case None: 
+        @:nullSafety(Off) trace(Type.getClassName(Type.getClass(element.component)));
         None;
       case Some(parent) if (Std.isOfType(parent.component, kind)):
         Some(parent);
@@ -24,7 +25,7 @@ final class AncestorQuery {
 
   public function find(match:(element:Element) -> Bool):Option<Element> {
     if (match(element)) return Some(element);
-    return switch element.ancestors.getParent() {
+    return switch element.getParent() {
       case Some(parent) if (match(parent)): Some(parent);
       case Some(parent): parent.queryAncestors().find(match);
       case None: None;

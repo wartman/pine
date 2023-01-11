@@ -42,7 +42,7 @@ function build() {
       }
 
       @:noCompletion
-      final public function getTrackedObjectManager():haxe.ds.Option<pine.element.state.TrackedObjectManager<Dynamic>> {
+      final public function getTrackedObjectManager():haxe.ds.Option<pine.AutoComponent.TrackedObjectManager<Dynamic>> {
         return Some(this);
       }
 
@@ -64,10 +64,14 @@ function build() {
         return this.trackedObject;
       }
 
-      override function createHooks():pine.HookCollection<$ct> {
-        return [$a{[
-          macro cast pine.element.state.TrackedObjectManager.syncTrackedObject()
-        ].concat(hooks.getHooks())}];
+      public function createElement() {
+        return new pine.Element(
+          this,
+          pine.AutoComponent.useTrackedElementEngine((element:pine.ElementOf<pine.AutoComponent>) -> element.component.render(element)),
+          new pine.HookCollection([$a{[
+            macro cast pine.AutoComponent.syncTrackedObject()
+          ].concat(hooks.getHooks())}])
+        );
       }
     });
   } else {
@@ -79,18 +83,18 @@ function build() {
         @:mergeBlock ${properties.getInitializers()}
       }
       
-      final public function getTrackedObjectManager():haxe.ds.Option<pine.element.state.TrackedObjectManager<Dynamic>> {
+      final public function getTrackedObjectManager():haxe.ds.Option<pine.AutoComponent.TrackedObjectManager<Dynamic>> {
         return None;
       }
-    });
 
-    if (hooks.hasHooks()) {
-      builder.add(macro class {
-        override function createHooks():pine.HookCollection<Dynamic> {
-          return ${hooks.getHookCollection()};
-        }
-      });
-    }
+      public function createElement() {
+        return new pine.Element(
+          this,
+          pine.AutoComponent.useTrackedElementEngine((element:pine.ElementOf<AutoComponent>) -> element.component.render(element)),
+          ${if (hooks.hasHooks()) hooks.getHookCollection() else macro []}
+        );
+      }
+    });
   }
 
   return builder

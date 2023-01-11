@@ -5,7 +5,6 @@ import pine.core.HasComponentType;
 import pine.diffing.Key;
 import pine.element.*;
 import pine.element.object.*;
-import pine.element.core.NoChildrenManager;
 
 using pine.core.OptionTools;
 
@@ -20,15 +19,15 @@ final class HtmlTextComponent extends ObjectComponent implements HasComponentTyp
     content = props.content;
   }
 
-  function createChildrenManager(element:Element):ChildrenManager {
-    return new NoChildrenManager(element);
-  }
-
   function getObjectType():ObjectType {
     return ObjectText;
   }
 
   public function getObjectData() {
     return content;
+  }
+
+  public function render() {
+    return [];
   }
 }

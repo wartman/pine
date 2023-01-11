@@ -3,7 +3,7 @@ package pine.element;
 import pine.Component;
 import pine.core.Event;
 
-class EventManager<T:Component> {
+class Events<T:Component> {
   public final beforeInit:Event2<ElementOf<T>, ElementInitMode> = new Event2();
   public final afterInit:Event2<ElementOf<T>, ElementInitMode> = new Event2();
   public final beforeUpdate:Event3<ElementOf<T>, T, T> = new Event3();

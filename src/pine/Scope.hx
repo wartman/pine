@@ -1,11 +1,8 @@
 package pine;
 
+import pine.AutoComponent;
 import pine.core.HasComponentType;
 import pine.diffing.Key;
-import pine.element.*;
-import pine.element.core.*;
-import pine.element.proxy.*;
-import pine.element.state.*;
 
 /**
   The Scope component is designed to help isolate reactive parts 
@@ -22,27 +19,12 @@ final class Scope extends Component implements HasComponentType {
     super(props.key);
     this.render = props.render;
   }
-  
-  function createAdaptorManager(element:Element):AdaptorManager {
-    return new CoreAdaptorManager();
-  }
 
-  function createAncestorManager(element:Element):AncestorManager {
-    return new CoreAncestorManager(element);
-  }
-
-  function createChildrenManager(element:Element):ChildrenManager {
-    return new TrackedChildrenManager<Scope>(
-      element, 
-      element -> element.component.render(element)
+  public function createElement() {
+    return new Element(
+      this,
+      useTrackedElementEngine((element:ElementOf<Scope>) -> element.component.render(element)),
+      []
     );
-  }
-
-  function createSlotManager(element:Element):SlotManager {
-    return new ProxySlotManager(element);
-  }
-
-  function createObjectManager(element:Element):ObjectManager {
-    return new ProxyObjectManager(element);
   }
 }

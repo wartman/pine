@@ -1,9 +1,5 @@
 package pine.element;
 
-/**
-  Slots help Elements keep track of where they are in the
-  Element tree.
-**/
 class Slot {
   public final index:Int;
   public final previous:Null<Element>;

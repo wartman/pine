@@ -20,10 +20,10 @@ function updateChild(
 
   return if (child != null) {
     if (child.component == component) {
-      if (!child.slots.equals(slot)) child.slots.update(slot);
+      if (child.slot != slot) child.updateSlot(slot);
       child;
     } else if (child.component.shouldBeUpdated(component)) {
-      if (!child.slots.equals(slot)) child.slots.update(slot);
+      if (child.slot != slot) child.updateSlot(slot);
       child.update(component);
       child;
     } else {
@@ -47,7 +47,6 @@ function diffChildren(
 ):Array<Element> {
   var newHead = 0;
   var oldHead = 0;
-  var slots = parent.slots;
   var newTail = newComponents.length - 1;
   var oldTail = oldChildren.length - 1;
   var previousChild:Null<Element> = null;
@@ -61,7 +60,7 @@ function diffChildren(
       break;
     }
 
-    var newChild = updateChild(parent, oldChild, newComponent, slots.create(newHead, previousChild));
+    var newChild = updateChild(parent, oldChild, newComponent, parent.createSlot(newHead, previousChild));
     newChildren[newHead] = newChild;
     previousChild = newChild;
     newHead += 1;
@@ -128,7 +127,7 @@ function diffChildren(
       }
     }
 
-    var newChild = updateChild(parent, oldChild, newComponent, slots.create(newHead, previousChild));
+    var newChild = updateChild(parent, oldChild, newComponent, parent.createSlot(newHead, previousChild));
     newChildren[newHead] = newChild;
     previousChild = newChild;
     newHead += 1;
@@ -141,7 +140,7 @@ function diffChildren(
   while ((oldHead <= oldTail) && (newHead <= newTail)) {
     var oldChild = oldChildren[oldHead];
     var newComponent = newComponents[newHead];
-    var newChild = updateChild(parent, oldChild, newComponent, slots.create(newHead, previousChild));
+    var newChild = updateChild(parent, oldChild, newComponent, parent.createSlot(newHead, previousChild));
     newChildren[newHead] = newChild;
     previousChild = newChild;
     newHead += 1;
