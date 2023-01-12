@@ -11,21 +11,21 @@ import pine.state.*;
 function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Component):CreateElementEngine {
   return (element:ElementOf<T>) -> {
     var computation:Null<Computation<Component>> = null;
-    var requestedUpdate:Bool = false;  
+    var wasCalledByElement:Bool = false;  
     var factory = useProxyElementEngine(element -> {
+      Debug.assert(element.status == Building);
+      wasCalledByElement = true;
+
       if (computation != null) {
-        if (requestedUpdate) {
-          computation.revalidate();
-          requestedUpdate = false;
-        }
+        computation.revalidate();
+        wasCalledByElement = false;
         return computation.peek();
       }
-
-      requestedUpdate = true;
+      
       computation = new Computation(() -> {
         var component = render(element);
         switch element.status {
-          case Building if (requestedUpdate):
+          case Building if (wasCalledByElement):
           case Disposing | Disposed:
             Debug.warn(
               'A pine.Signal was changed when an element was not Disposed or Disposing.'
@@ -38,14 +38,12 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
         }
         return component;
       });
-      requestedUpdate = false;
+
+      wasCalledByElement = false;
       computation.peek();
     });
 
     element.watchLifecycle({
-      beforeUpdate: (_, _, _) -> { 
-        requestedUpdate = true;
-      },
       beforeDispose: _ -> {
         if (computation != null) {
           computation.dispose();
