@@ -35,6 +35,7 @@ abstract class RootComponent extends ObjectComponent {
         (element:ElementOf<RootComponent>) -> element.component.render(),
         {
           createObject: (_, element) -> element.component.getRootObject(),
+          destroyObject: (applicator, element, object) -> null,
           findAdaptor: element -> element.component.createAdaptor()
         }
       ),

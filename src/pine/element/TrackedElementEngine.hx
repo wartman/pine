@@ -1,5 +1,7 @@
 package pine.element;
 
+import pine.CoreHooks.beforeInit;
+import pine.element.ProxyElementEngine.useProxyElementEngine;
 import pine.core.Disposable;
 import pine.Component;
 import pine.debug.Debug;
@@ -7,19 +9,42 @@ import pine.element.ElementEngine;
 import pine.state.*;
 
 function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Component):CreateElementEngine {
-  var computation:Null<Computation<Component>> = null;
-  var isUpdating:Bool = false;
+  return (element:ElementOf<T>) -> {
+    var computation:Null<Computation<Component>> = null;
+    var requestedUpdate:Bool = false;  
+    var factory = useProxyElementEngine(element -> {
+      if (computation != null) {
+        if (requestedUpdate) {
+          computation.revalidate();
+          requestedUpdate = false;
+        }
+        return computation.peek();
+      }
 
-  return (element:ElementOf<T>) -> new ProxyElementEngine<T>(element, element -> {
-    if (computation != null) return computation.peek();
+      requestedUpdate = true;
+      computation = new Computation(() -> {
+        var component = render(element);
+        switch element.status {
+          case Building if (requestedUpdate):
+          case Disposing | Disposed:
+            Debug.warn(
+              'A pine.Signal was changed when an element was not Disposed or Disposing.'
+              + ' Check your components and make sure you aren\'t updating'
+              + ' Signals directly in a render method, after an element'
+              + ' has been disposed, *or* before it has been initialized.'
+            );
+          default:
+            element.invalidate(); 
+        }
+        return component;
+      });
+      requestedUpdate = false;
+      computation.peek();
+    });
 
     element.watchLifecycle({
-      beforeUpdate: (_, _, _) -> {
-        isUpdating = true;
-        if (computation != null) computation.revalidate();
-      },
-      afterUpdate: _ -> {
-        isUpdating = false;
+      beforeUpdate: (_, _, _) -> { 
+        requestedUpdate = true;
       },
       beforeDispose: _ -> {
         if (computation != null) {
@@ -28,28 +53,9 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
         }
       }
     });
-
-    computation = new Computation(() -> {
-      var component = render(element);
-      switch element.status {
-        case Building if (isUpdating):
-          // This means we're updating or initializing and the Computation
-          // has been revalidated, so this is expected.
-        case Disposing | Disposed:
-          Debug.warn(
-            'A pine.Signal was changed when an element was not Disposed or Disposing.'
-            + ' Check your components and make sure you aren\'t updating'
-            + ' Signals directly in a render method, after an element'
-            + ' has been disposed, *or* before it has been initialized.'
-          );
-        default: 
-          element.invalidate();
-      }
-      return component;
-    });
-
-    computation.peek();
-  }, {});
+    
+    return factory(element);
+  };
 }
 
 typedef TrackedObjectOptions<T:Component, O:Disposable> = {

@@ -32,6 +32,7 @@ typedef ObjectElementEngineOptions<T:ObjectComponent> = {
   public final ?findAdaptor:(element:ElementOf<T>)->Adaptor;
   public final ?findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
   public final ?createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
+  public final ?destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
 } 
 
 function useObjectElementEngine<T:ObjectComponent>(render, ?options):CreateElementEngine {
@@ -59,13 +60,18 @@ function defaultCreateObject<T:ObjectComponent>(applicator:ObjectApplicator<Dyna
   return object;
 }
 
+function defaultDestroyObject<T:ObjectComponent>(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic) {
+  applicator.remove(object, element.slot);
+}
+
 class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   final element:ElementOf<T>;
   final render:(element:ElementOf<T>)->Null<Array<Component>>;
   final findAdaptor:(element:ElementOf<T>)->Adaptor;
   final findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
   final createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
-  
+  final destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
+
   var object:Null<Dynamic> = null;
   var children:Array<Element> = [];
   var previousComponent:Null<T> = null;
@@ -81,6 +87,9 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     this.createObject = options.createObject == null
       ? defaultCreateObject
       : options.createObject;
+    this.destroyObject = options.destroyObject == null
+      ? defaultDestroyObject
+      : options.destroyObject;
     this.findAdaptor = options.findAdaptor == null
       ? findParentAdaptor
       : options.findAdaptor;
@@ -177,7 +186,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
 
     if (object != null) {
       var applicator = findApplicator(element);
-      applicator.remove(object, element.slot);
+      destroyObject(applicator, element, object);
     }
     
     object = null;
