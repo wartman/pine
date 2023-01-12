@@ -5,6 +5,7 @@ import pine.debug.Debug;
 import pine.diffing.Key;
 import pine.element.*;
 import pine.element.ElementEngine;
+import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
@@ -74,6 +75,10 @@ class PortalElementEngine implements ElementEngine {
     } else {
       portalRoot.update(createRootComponent());
     }
+  }
+
+  public function getAdaptor() {
+    return findParentAdaptor(element);
   }
 
   public function getObject():Dynamic {

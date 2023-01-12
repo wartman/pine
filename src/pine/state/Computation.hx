@@ -1,7 +1,7 @@
 package pine.state;
 
-import pine.state.Engine;
 import pine.debug.Debug;
+import pine.state.Engine;
 
 class Computation<T> extends Signal<T> {
   final observer:Observer;

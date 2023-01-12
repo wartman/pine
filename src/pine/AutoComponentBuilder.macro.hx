@@ -2,9 +2,9 @@ package pine;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import pine.core.*;
 import pine.macro.ClassBuilder;
 import pine.macro.MacroTools;
-import pine.core.*;
 
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
@@ -41,36 +41,22 @@ function build() {
         trackedObjectProps = ${tracked.getTrackedObjectConstructorArg()};
       }
 
-      @:noCompletion
-      final public function getTrackedObjectManager():haxe.ds.Option<pine.AutoComponent.TrackedObjectManager<Dynamic>> {
-        return Some(this);
-      }
-
-      @:noCompletion
-      public function getTrackedObject():$trackedType {
-        return trackedObject;
-      }
-  
-      @:noCompletion
-      public function initTrackedObject():$trackedType {
-        trackedObject = ${tracked.instantiateTrackedObject('trackedObjectProps')};
-        return trackedObject;
-      }
-
-      @:noCompletion
-      public function reuseTrackedObject(trackedObject:$trackedType):$trackedType {
-        this.trackedObject = trackedObject;
-        this.trackedObject.replace(this.trackedObjectProps);
-        return this.trackedObject;
-      }
-
       public function createElement() {
         return new pine.Element(
           this,
-          pine.AutoComponent.useTrackedElementEngine((element:pine.ElementOf<pine.AutoComponent>) -> element.component.render(element)),
-          new pine.HookCollection([$a{[
-            macro cast pine.AutoComponent.syncTrackedObject()
-          ].concat(hooks.getHooks())}])
+          pine.element.TrackedElementEngine.useSyncedTrackedProxyEngine((element:pine.ElementOf<$ct>) -> element.component.render(element), {
+            init: (component:$ct) -> {
+              var trackedObjectProps = component.trackedObjectProps;
+              var trackedObject = ${tracked.instantiateTrackedObject('trackedObjectProps')};
+              component.trackedObject = trackedObject;
+              return trackedObject;
+            },
+            bind: (component:$ct, trackedObject:$trackedType) -> {
+              component.trackedObject = trackedObject;
+              component.trackedObject.replace(component.trackedObjectProps);
+            }
+          }),
+          ${hooks.getHookCollection()}
         );
       }
     });
@@ -82,16 +68,12 @@ function build() {
         super(props.key);
         @:mergeBlock ${properties.getInitializers()}
       }
-      
-      final public function getTrackedObjectManager():haxe.ds.Option<pine.AutoComponent.TrackedObjectManager<Dynamic>> {
-        return None;
-      }
 
       public function createElement() {
         return new pine.Element(
           this,
-          pine.AutoComponent.useTrackedElementEngine((element:pine.ElementOf<AutoComponent>) -> element.component.render(element)),
-          ${if (hooks.hasHooks()) hooks.getHookCollection() else macro []}
+          pine.element.TrackedElementEngine.useTrackedProxyEngine((element:pine.ElementOf<AutoComponent>) -> element.component.render(element)),
+          ${hooks.getHookCollection()}
         );
       }
     });

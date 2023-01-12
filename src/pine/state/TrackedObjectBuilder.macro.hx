@@ -6,8 +6,8 @@ import haxe.macro.Type;
 import pine.macro.ClassBuilder;
 
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
 using pine.core.Hash;
+using pine.macro.MacroTools;
 
 function buildGeneric() {
   return switch Context.getLocalType() {

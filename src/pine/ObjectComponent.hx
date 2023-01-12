@@ -1,12 +1,12 @@
 package pine;
 
-import haxe.ds.Option;
-import pine.debug.Debug;
 import pine.adaptor.*;
+import pine.debug.Debug;
+import pine.diffing.Engine;
 import pine.element.*;
 import pine.element.ElementEngine;
+import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
-import pine.diffing.Engine;
 
 using pine.core.OptionTools;
 
@@ -28,8 +28,14 @@ abstract class ObjectComponent extends Component {
   }
 }
 
-function useObjectElementEngine<T:ObjectComponent>(render, ?findApplicator, ?createObject):CreateElementEngine {
-  return element -> new ObjectElementEngine<T>(element, render, findApplicator, createObject);
+typedef ObjectElementEngineOptions<T:ObjectComponent> = {
+  public final ?findAdaptor:(element:ElementOf<T>)->Adaptor;
+  public final ?findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
+  public final ?createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
+} 
+
+function useObjectElementEngine<T:ObjectComponent>(render, ?options):CreateElementEngine {
+  return element -> new ObjectElementEngine<T>(element, render, options);
 }
 
 function defaultFindApplicator<T:ObjectComponent>(element:ElementOf<T>) {
@@ -39,37 +45,52 @@ function defaultFindApplicator<T:ObjectComponent>(element:ElementOf<T>) {
     .getObjectApplicator(element.component.getObjectType());
 }
 
-function defaultCreateObject<T:ObjectComponent>(applicator:ObjectApplicator<Dynamic>, component:T) {
-  return applicator.create(component);
+function findAncestorObject(element:Element) {
+  return element
+    .queryAncestors()
+    .ofType(ObjectComponent)
+    .orThrow('No ancestor object exists')
+    .getObject();
+}
+
+function defaultCreateObject<T:ObjectComponent>(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>) {
+  var object = applicator.create(element.component);
+  applicator.insert(object, element.slot, () -> findAncestorObject(element));
+  return object;
 }
 
 class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   final element:ElementOf<T>;
   final render:(element:ElementOf<T>)->Null<Array<Component>>;
+  final findAdaptor:(element:ElementOf<T>)->Adaptor;
   final findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
-  final createObject:(applicator:ObjectApplicator<Dynamic>, component:T)->Dynamic;
+  final createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
   
   var object:Null<Dynamic> = null;
   var children:Array<Element> = [];
   var previousComponent:Null<T> = null;
   
-  public function new(element, render, ?findApplicator, ?createObject) {
+  public function new(element, render, ?options:ObjectElementEngineOptions<T>) {
+    if (options == null) options = {};
+    
     this.element = element;
     this.render = render;
-    this.findApplicator = findApplicator == null 
+    this.findApplicator = options.findApplicator == null 
       ? defaultFindApplicator
-      : findApplicator;
-    this.createObject = createObject == null
+      : options.findApplicator;
+    this.createObject = options.createObject == null
       ? defaultCreateObject
-      : createObject;
+      : options.createObject;
+    this.findAdaptor = options.findAdaptor == null
+      ? findParentAdaptor
+      : options.findAdaptor;
   }
 
   public function init():Void {
     var applicator = findApplicator(element);
 
     Debug.assert(object == null);
-    object = createObject(applicator, element.component);
-    applicator.insert(object, element.slot, findAncestorObject);
+    object = createObject(applicator, element);
 
     update();
   }
@@ -118,6 +139,10 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     return object;
   }
 
+  public function getAdaptor():Adaptor {
+    return findAdaptor(element);
+  }
+
   public function createSlot(index:Int, previous:Null<Element>):Slot {
     return new Slot(index, previous);
   }
@@ -128,7 +153,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
 
     if (object != null) {
       var applicator = findApplicator(element);
-      applicator.move(object, oldSlot, newSlot, findAncestorObject);
+      applicator.move(object, oldSlot, newSlot, () -> findAncestorObject(element));
     }
   }
 
@@ -163,13 +188,5 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     var components = render(element);
     if (components == null) return [];
     return components.filter(e -> e != null);
-  }
-
-  function findAncestorObject() {
-    return element
-      .queryAncestors()
-      .ofType(ObjectComponent)
-      .orThrow('No ancestor object exists')
-      .getObject();
   }
 }

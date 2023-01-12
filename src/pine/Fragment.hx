@@ -1,10 +1,12 @@
 package pine;
 
-import pine.diffing.Engine;
-import pine.debug.Debug;
+import pine.adaptor.Adaptor;
 import pine.core.HasComponentType;
+import pine.debug.Debug;
+import pine.diffing.Engine;
 import pine.diffing.Key;
 import pine.element.*;
+import pine.element.ProxyElementEngine.findParentAdaptor;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
@@ -42,7 +44,6 @@ class FragmentEngine implements ElementEngine {
   }
 
   public function init() {
-    trace('Fragment Init');
     var slot = element.slot;
     var previous:Null<Element> = slot != null ? slot.previous : null;
     
@@ -88,6 +89,10 @@ class FragmentEngine implements ElementEngine {
     var currentSlot = element.slot;
     if (currentSlot != null) getMarker().updateSlot(currentSlot);
     children = diffChildren(element, children, renderSafe());
+  }
+
+  public function getAdaptor():Adaptor {
+    return findParentAdaptor(element);
   }
 
   public function getObject():Dynamic {

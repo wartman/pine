@@ -73,8 +73,8 @@ class Element
     Debug.assert(status == Pending, 'Attempted to mount an already mounted Element');
 
     this.parent = parent;
-    this.adaptor = parent != null ? parent.adaptor : null;
     this.slot = slot;
+    this.adaptor = engine.getAdaptor();
     hooks.init(this);
 
     status = Valid;

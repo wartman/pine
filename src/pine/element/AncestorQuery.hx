@@ -14,7 +14,6 @@ final class AncestorQuery {
       case None if (Std.isOfType(element.component, kind)): 
         Some(element);
       case None: 
-        @:nullSafety(Off) trace(Type.getClassName(Type.getClass(element.component)));
         None;
       case Some(parent) if (Std.isOfType(parent.component, kind)):
         Some(parent);

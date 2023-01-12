@@ -1,8 +1,8 @@
 package pine;
 
+import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
-import haxe.macro.Context;
 import pine.macro.ClassBuilder;
 import pine.macro.MacroTools;
 

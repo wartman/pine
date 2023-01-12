@@ -1,11 +1,8 @@
 package pine;
 
-import pine.element.ProxyElementEngine.useProxyElementEngine;
 import pine.debug.Debug;
 import pine.diffing.Key;
-import pine.element.*;
-import pine.element.core.*;
-import pine.element.proxy.*;
+import pine.element.ProxyElementEngine;
 
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}

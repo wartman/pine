@@ -7,6 +7,8 @@ import pine.macro.MacroTools;
 using Lambda;
 using pine.macro.MacroTools;
 
+// @todo: Replace this with simple functions.
+
 /**
   Finds all the `final` fields of a class and builds an
   initializer for them.

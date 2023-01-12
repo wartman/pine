@@ -1,8 +1,8 @@
 package pine;
 
-import pine.AutoComponent;
 import pine.core.HasComponentType;
 import pine.diffing.Key;
+import pine.element.TrackedElementEngine;
 
 /**
   The Scope component is designed to help isolate reactive parts 
@@ -23,7 +23,7 @@ final class Scope extends Component implements HasComponentType {
   public function createElement() {
     return new Element(
       this,
-      useTrackedElementEngine((element:ElementOf<Scope>) -> element.component.render(element)),
+      useTrackedProxyEngine((element:ElementOf<Scope>) -> element.component.render(element)),
       []
     );
   }

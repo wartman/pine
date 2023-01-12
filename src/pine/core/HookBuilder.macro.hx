@@ -6,6 +6,8 @@ import pine.macro.ClassBuilder;
 
 using Lambda;
 
+// @todo: Replace this with simple functions.
+
 class HookBuilder extends ClassBuilder {
   var hooks:Array<Expr> = [];
 
