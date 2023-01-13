@@ -45,7 +45,7 @@ class Debug {
     switch message {
       case macro null:
         var str = 'Failed assertion: ' + haxe.macro.ExprTools.toString(expr);
-        message = macro $v{str};
+        message = macro @:pos(expr.pos) $v{str};
       default:
     }
 

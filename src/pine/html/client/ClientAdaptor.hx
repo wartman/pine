@@ -1,11 +1,13 @@
 package pine.html.client;
 
 import pine.adaptor.*;
+import pine.object.NullObjectApplicator;
 
 class ClientAdaptor extends Adaptor {
   final process = new ClientProcess();
   final elementApplicator = new HtmlElementApplicator();
   final textApplicator = new HtmlTextApplicator();
+  final rootApplicator = new NullObjectApplicator();
 
   public function new() {}
 
@@ -15,6 +17,7 @@ class ClientAdaptor extends Adaptor {
 
   public function getObjectApplicator(type:ObjectType):ObjectApplicator<Dynamic> {
     return switch type {
+      case ObjectRoot: rootApplicator;
       case ObjectText: textApplicator;
       default: elementApplicator;
     }

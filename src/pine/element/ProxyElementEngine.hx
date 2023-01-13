@@ -1,5 +1,6 @@
 package pine.element;
 
+import pine.debug.Boundary;
 import pine.core.PineElementException;
 import pine.core.PineException;
 import pine.adaptor.Adaptor;
@@ -67,6 +68,7 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
   }
 
   public function hydrate(cursor:Cursor):Void {
+    // @todo: Think up a way to recover from hydration errors.
     child = renderSafe(element).createElement();
     child.hydrate(cursor, element, element.slot);
   }
@@ -115,8 +117,13 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
   }
   
   function renderSafe(element:ElementOf<T>):Component {
-    var component = render(element);
-    if (component == null) return new Fragment({ children: [] });
-    return component;
+    try {
+      var component = render(element);
+      if (component == null) return new Fragment({ children: [] });
+      return component;
+    } catch (e) {
+      Boundary.from(element).catchException(e);
+      return new Fragment({ children: [] });
+    }
   }
 }

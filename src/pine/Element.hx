@@ -1,9 +1,11 @@
 package pine;
 
+import haxe.Exception;
 import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.*;
 import pine.debug.Debug;
+import pine.debug.Boundary;
 import pine.element.*;
 import pine.element.ElementEngine;
 import pine.element.Slot;
@@ -12,6 +14,7 @@ import pine.hydration.Cursor;
 using pine.core.OptionTools;
 
 @:allow(pine)
+@:allow(pine.debug)
 class Element
   implements Context
   implements Disposable 
@@ -46,7 +49,7 @@ class Element
 
     status = Building;
     engine.init();
-    status = Valid;
+    if (status != Invalid) status = Valid;
     
     events.afterInit.dispatch(this, Normal);
   }
@@ -64,8 +67,9 @@ class Element
 
     status = Building;
     engine.hydrate(cursor);
-    status = Valid;
-    
+
+    if (status != Invalid) status = Valid;
+   
     events.afterInit.dispatch(this, Hydrating(cursor));
   }
 
@@ -77,7 +81,7 @@ class Element
     this.adaptor = engine.getAdaptor();
     hooks.init(this);
 
-    status = Valid;
+    if (status != Invalid) status = Valid;
   }
 
   /**
@@ -93,7 +97,7 @@ class Element
     status = Building;
     this.component = incomingComponent;
     engine.update();
-    status = Valid;
+    if (status != Invalid) status = Valid;
 
     events.afterUpdate.dispatch(this);
   }
@@ -128,7 +132,7 @@ class Element
 
     status = Building;
     engine.update();
-    status = Valid;
+    if (status != Invalid) status = Valid;
     
     events.afterUpdate.dispatch(this);
   }

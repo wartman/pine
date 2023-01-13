@@ -17,5 +17,7 @@ function main() {
   runner.add(new unit.core.TestHasLazyProps());
   runner.add(new unit.core.TestHasAutoConstructor());
 
+  runner.add(new unit.debug.TestBoundary());
+
   runner.run();
 }

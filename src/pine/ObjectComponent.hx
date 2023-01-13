@@ -1,5 +1,7 @@
 package pine;
 
+import pine.debug.Boundary;
+import pine.core.PineException;
 import pine.adaptor.*;
 import pine.debug.Debug;
 import pine.diffing.Engine;
@@ -107,12 +109,24 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   public function hydrate(cursor:Cursor):Void {
     var applicator = findApplicator(element);
 
-    Debug.assert(object == null);
-    object = cursor.current();
-    Debug.assert(object != null);
-    applicator.update(object, element.component, null);
+    try {
+      Debug.assert(object == null);
+      object = cursor.current();
+      Debug.assert(object != null);
+      applicator.update(object, element.component, null);
+    } catch (e:PineException) {
+      Boundary.from(element).catchException(e);
+      return;
+    } 
 
     var components = renderSafe();
+
+    if (Boundary.from(element).exceptionWasCaught()) {
+      // @todo: Think up a more robust way to cancel hydration.
+      cursor.next();
+      return;
+    }
+
     var children:Array<Element> = [];
     var previous:Null<Element> = null;
     var cursorChildren = cursor.currentChildren();
@@ -194,8 +208,13 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   function renderSafe() {
-    var components = render(element);
-    if (components == null) return [];
-    return components.filter(e -> e != null);
+    try {
+      var components = render(element);
+      if (components == null) return [];
+      return components.filter(e -> e != null);
+    } catch (e) {
+      Boundary.from(element).catchException(e);
+      return [];
+    }
   }
 }

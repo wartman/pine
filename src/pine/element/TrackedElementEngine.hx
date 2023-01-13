@@ -1,11 +1,11 @@
 package pine.element;
 
-import pine.CoreHooks.beforeInit;
-import pine.element.ProxyElementEngine.useProxyElementEngine;
-import pine.core.Disposable;
 import pine.Component;
+import pine.core.Disposable;
+import pine.debug.Boundary;
 import pine.debug.Debug;
 import pine.element.ElementEngine;
+import pine.element.ProxyElementEngine.useProxyElementEngine;
 import pine.state.*;
 
 function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Component):CreateElementEngine {
@@ -23,7 +23,11 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
       }
       
       computation = new Computation(() -> {
-        var component = render(element);
+        var component = try render(element) catch (e) {
+          Boundary.from(element).catchException(e);
+          return (new Fragment({ children: [] }):Component);
+        }
+
         switch element.status {
           case Building if (wasCalledByElement):
           case Disposing | Disposed:
@@ -36,6 +40,7 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
           default:
             element.invalidate(); 
         }
+
         return component;
       });
 
