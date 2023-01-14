@@ -1,5 +1,6 @@
 package pine;
 
+import pine.element.ProxyElementEngine.bubbleErrorsUp;
 import pine.adaptor.Adaptor;
 import pine.core.HasComponentType;
 import pine.debug.Debug;
@@ -126,6 +127,10 @@ class FragmentEngine implements ElementEngine {
 
   public function createAncestorQuery():AncestorQuery {
     return new AncestorQuery(element);
+  }
+
+  public function handleError(target:Element, e:Dynamic) {
+    bubbleErrorsUp(element, target, e);
   }
 
   public function dispose() {

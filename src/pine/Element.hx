@@ -5,8 +5,8 @@ import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.*;
 import pine.debug.Debug;
-import pine.debug.Boundary;
 import pine.element.*;
+import pine.element.Events;
 import pine.element.ElementEngine;
 import pine.element.Slot;
 import pine.hydration.Cursor;
@@ -45,13 +45,17 @@ class Element
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    events.beforeInit.dispatch(this, Normal);
+    try {
+      events.beforeInit.dispatch(this, Normal);
 
-    status = Building;
-    engine.init();
-    if (status != Invalid) status = Valid;
-    
-    events.afterInit.dispatch(this, Normal);
+      status = Building;
+      engine.init();
+      if (status != Invalid) status = Valid;
+      
+      events.afterInit.dispatch(this, Normal);
+    } catch (e) {
+      catchError(e);
+    }
   }
 
   /**
@@ -63,25 +67,28 @@ class Element
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    events.beforeInit.dispatch(this, Hydrating(cursor));
+    try {
+      events.beforeInit.dispatch(this, Hydrating(cursor));
 
-    status = Building;
-    engine.hydrate(cursor);
+      status = Building;
+      engine.hydrate(cursor);
 
-    if (status != Invalid) status = Valid;
-   
-    events.afterInit.dispatch(this, Hydrating(cursor));
+      if (status != Invalid) status = Valid;
+    
+      events.afterInit.dispatch(this, Hydrating(cursor));
+    } catch (e) {
+      catchError(e);
+    }
   }
 
   function init(parent:Null<Element>, slot:Null<Slot>) {
     Debug.assert(status == Pending, 'Attempted to mount an already mounted Element');
-
+    
     this.parent = parent;
     this.slot = slot;
     this.adaptor = engine.getAdaptor();
-    hooks.init(this);
 
-    if (status != Invalid) status = Valid;
+    hooks.init(this);
   }
 
   /**
@@ -92,14 +99,23 @@ class Element
   public function update(incomingComponent:Component) {
     Debug.assert(status != Building);
     
-    events.beforeUpdate.dispatch(this, component, incomingComponent);
+    switch status {
+      case Failed(_): return;
+      default:
+    }
+    
+    try {
+      events.beforeUpdate.dispatch(this, component, incomingComponent);
 
-    status = Building;
-    this.component = incomingComponent;
-    engine.update();
-    if (status != Invalid) status = Valid;
+      status = Building;
+      this.component = incomingComponent;
+      engine.update();
+      if (status != Invalid) status = Valid;
 
-    events.afterUpdate.dispatch(this);
+      events.afterUpdate.dispatch(this);
+    } catch (e) {
+      catchError(e);
+    }
   }
 
   /**
@@ -111,7 +127,10 @@ class Element
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
     // Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
     
-    if (status == Invalid) return;
+    switch status {
+      case Failed(_) | Invalid: return;
+      default:
+    }
 
     status = Invalid;
 
@@ -128,13 +147,17 @@ class Element
     Debug.assert(status != Building);
     if (status != Invalid) return;
     
-    events.beforeUpdate.dispatch(this, component, component);
+    try {
+      events.beforeUpdate.dispatch(this, component, component);
 
-    status = Building;
-    engine.update();
-    if (status != Invalid) status = Valid;
-    
-    events.afterUpdate.dispatch(this);
+      status = Building;
+      engine.update();
+      if (status != Invalid) status = Valid;
+      
+      events.afterUpdate.dispatch(this);
+    } catch (e) {
+      catchError(e);
+    }
   }
 
   /**
@@ -234,11 +257,9 @@ class Element
     Note: you should almost *never* call this directly.
   **/
   public function dispose() {
-    Debug.assert(
-      status != Building 
-      && status != Disposing
-      && status != Disposed
-    );
+    Debug.assert(status != Building, 'Attempted to dispose an element while it was building');
+    Debug.assert(status != Disposing, 'Attempted to dispose an element this is already Disposing');
+    Debug.assert(status != Disposed, 'Attempted to dispose an element that was already disposed');
 
     status = Disposing;
 
@@ -252,5 +273,17 @@ class Element
     status = Disposed;
     
     events.afterDispose.dispatch();
+  }
+
+  public function recover() {
+    switch status {
+      case Failed(_): status = Invalid;
+      default:
+    }
+  }
+
+  function catchError(e:Dynamic) {
+    status = Failed(e);
+    engine.handleError(this, e);
   }
 }

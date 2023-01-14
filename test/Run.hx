@@ -8,6 +8,7 @@ function main() {
   }));
 
   runner.add(new unit.TestFragment());
+  runner.add(new unit.TestErrorBoundary());
 
   runner.add(new unit.state.TestObserver());
   runner.add(new unit.state.TestComputation());
@@ -16,8 +17,6 @@ function main() {
   runner.add(new unit.core.TestObjectTools());
   runner.add(new unit.core.TestHasLazyProps());
   runner.add(new unit.core.TestHasAutoConstructor());
-
-  runner.add(new unit.debug.TestBoundary());
 
   runner.run();
 }

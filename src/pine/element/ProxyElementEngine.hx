@@ -1,9 +1,8 @@
 package pine.element;
 
-import pine.debug.Boundary;
+import pine.adaptor.Adaptor;
 import pine.core.PineElementException;
 import pine.core.PineException;
-import pine.adaptor.Adaptor;
 import pine.debug.Debug;
 import pine.diffing.Engine;
 import pine.element.ElementEngine;
@@ -12,6 +11,7 @@ import pine.hydration.Cursor;
 typedef ProxyElementEngineOptions<T:Component> = {
   public final ?findObject:(element:ElementOf<T>)->Dynamic;
   public final ?findAdaptor:(element:ElementOf<T>)->Adaptor;
+  public final ?handleError:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
 } 
 
 function useProxyElementEngine<T:Component>(render, ?options:ProxyElementEngineOptions<T>):CreateElementEngine {
@@ -19,7 +19,7 @@ function useProxyElementEngine<T:Component>(render, ?options:ProxyElementEngineO
   return element -> new ProxyElementEngine<T>(element, render, options);
 }
 
-function findChildObject(element:Element) {
+function findChildObject(element:Element):Dynamic {
   var object:Null<Dynamic> = null;
 
   element.visitChildren(element -> {
@@ -43,11 +43,19 @@ function findParentAdaptor(element:Element):Adaptor {
   return parent.adaptor;
 }
 
+function bubbleErrorsUp<T:Component>(element:ElementOf<T>, target:Element, e:Dynamic) {
+  switch element.getParent() {
+    case Some(parent): parent.engine.handleError(target, e);
+    case None: throw e;
+  }
+}
+
 class ProxyElementEngine<T:Component> implements ElementEngine {
   final element:ElementOf<T>;
   final render:(element:ElementOf<T>)->Component;
   final findObject:(element:ElementOf<T>)->Dynamic;
   final findAdaptor:(element:ElementOf<T>)->Adaptor;
+  final errorHandler:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
   
   var child:Null<Element> = null;
 
@@ -60,6 +68,9 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
     this.findAdaptor = options.findAdaptor != null
       ? options.findAdaptor
       : findParentAdaptor;
+    this.errorHandler = options.handleError != null
+      ? options.handleError
+      : bubbleErrorsUp;
   }
 
   public function init():Void {
@@ -109,6 +120,10 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
     return new AncestorQuery(element);
   }
 
+  public function handleError(target:Element, e:Dynamic) {
+    errorHandler(element, target, e);
+  }
+
   public function dispose() {
     visitChildren(child -> {
       child.dispose();
@@ -117,13 +132,8 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
   }
   
   function renderSafe(element:ElementOf<T>):Component {
-    try {
-      var component = render(element);
-      if (component == null) return new Fragment({ children: [] });
-      return component;
-    } catch (e) {
-      Boundary.from(element).catchException(e);
-      return new Fragment({ children: [] });
-    }
+    var component = render(element);
+    if (component == null) return new Fragment({ children: [] });
+    return component;
   }
 }

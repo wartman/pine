@@ -2,7 +2,9 @@ package pine.element;
 
 import pine.Component;
 import pine.core.Event;
+import pine.core.HasAutoConstructor;
 
+// @todo: we should dispose this thing
 class Events<T:Component> {
   public final beforeInit:Event2<ElementOf<T>, ElementInitMode> = new Event2();
   public final afterInit:Event2<ElementOf<T>, ElementInitMode> = new Event2();

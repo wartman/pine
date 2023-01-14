@@ -2,7 +2,6 @@ package pine.element;
 
 import pine.Component;
 import pine.core.Disposable;
-import pine.debug.Boundary;
 import pine.debug.Debug;
 import pine.element.ElementEngine;
 import pine.element.ProxyElementEngine.useProxyElementEngine;
@@ -23,10 +22,7 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
       }
       
       computation = new Computation(() -> {
-        var component = try render(element) catch (e) {
-          Boundary.from(element).catchException(e);
-          return (new Fragment({ children: [] }):Component);
-        }
+        var component = render(element);
 
         switch element.status {
           case Building if (wasCalledByElement):

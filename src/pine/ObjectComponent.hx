@@ -1,6 +1,5 @@
 package pine;
 
-import pine.debug.Boundary;
 import pine.core.PineException;
 import pine.adaptor.*;
 import pine.debug.Debug;
@@ -35,6 +34,7 @@ typedef ObjectElementEngineOptions<T:ObjectComponent> = {
   public final ?findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
   public final ?createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
   public final ?destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
+  public final ?handleError:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
 } 
 
 function useObjectElementEngine<T:ObjectComponent>(render, ?options):CreateElementEngine {
@@ -73,6 +73,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   final findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
   final createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
   final destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
+  final errorHandler:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
 
   var object:Null<Dynamic> = null;
   var children:Array<Element> = [];
@@ -95,6 +96,9 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     this.findAdaptor = options.findAdaptor == null
       ? findParentAdaptor
       : options.findAdaptor;
+    this.errorHandler = options.handleError != null
+      ? options.handleError
+      : bubbleErrorsUp;
   }
 
   public function init():Void {
@@ -109,23 +113,12 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   public function hydrate(cursor:Cursor):Void {
     var applicator = findApplicator(element);
 
-    try {
-      Debug.assert(object == null);
-      object = cursor.current();
-      Debug.assert(object != null);
-      applicator.update(object, element.component, null);
-    } catch (e:PineException) {
-      Boundary.from(element).catchException(e);
-      return;
-    } 
+    Debug.assert(object == null);
+    object = cursor.current();
+    Debug.assert(object != null);
+    applicator.update(object, element.component, null);
 
     var components = renderSafe();
-
-    if (Boundary.from(element).exceptionWasCaught()) {
-      // @todo: Think up a more robust way to cancel hydration.
-      cursor.next();
-      return;
-    }
 
     var children:Array<Element> = [];
     var previous:Null<Element> = null;
@@ -176,7 +169,12 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
 
     if (object != null) {
       var applicator = findApplicator(element);
-      applicator.move(object, oldSlot, newSlot, () -> findAncestorObject(element));
+      // @todo: I think this makes sense?
+      if (newSlot == null) {
+        applicator.remove(object, oldSlot);
+      } else {
+        applicator.move(object, oldSlot, newSlot, () -> findAncestorObject(element));
+      }
     }
   }
 
@@ -194,6 +192,10 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     return new AncestorQuery(element);
   }
 
+  public function handleError(target:Element, e:Dynamic) {
+    errorHandler(element, target, e);
+  }
+
   public function dispose() {
     for (child in children) child.dispose();
     children = [];
@@ -208,13 +210,8 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   function renderSafe() {
-    try {
-      var components = render(element);
-      if (components == null) return [];
-      return components.filter(e -> e != null);
-    } catch (e) {
-      Boundary.from(element).catchException(e);
-      return [];
-    }
+    var components = render(element);
+    if (components == null) return [];
+    return components.filter(e -> e != null);
   }
 }
