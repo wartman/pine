@@ -150,7 +150,6 @@ class FragmentEngine implements ElementEngine {
   function createMarker() {
     return element
       .getAdaptor()
-      .sure()
       .createPlaceholder()
       .createElement();
   }

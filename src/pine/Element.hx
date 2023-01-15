@@ -134,7 +134,7 @@ class Element
 
     status = Invalid;
 
-    getAdaptor().orThrow('No adaptor found').requestRebuild(this);
+    getAdaptor().requestRebuild(this);
   }
 
   /**
@@ -218,8 +218,11 @@ class Element
     adding, removing and updating the DOM based on the current state 
     of the app.
   **/
-  public function getAdaptor():Option<Adaptor> {
-    return adaptor == null ? None : Some(adaptor);
+  public function getAdaptor():Adaptor {
+    if (adaptor == null) {
+      adaptor = engine.getAdaptor();
+    }
+    return adaptor;
   }
 
   /**

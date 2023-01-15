@@ -92,7 +92,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   public function init():Void {
-    var adaptor = getAdaptor();
+    var adaptor = element.getAdaptor();
 
     Debug.assert(object == null);
     object = createObject(adaptor, element);
@@ -101,7 +101,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   public function hydrate(cursor:Cursor):Void {
-    var adaptor = getAdaptor();
+    var adaptor = element.getAdaptor();
     var type = element.component.getObjectType();
 
     Debug.assert(object == null);
@@ -132,7 +132,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   public function update():Void {
-    var adaptor = getAdaptor();
+    var adaptor = element.getAdaptor();
     var type = element.component.getObjectType();
 
     Debug.assert(object != null);
@@ -148,8 +148,6 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   public function getAdaptor():Adaptor {
-    var adaptor = element.adaptor;
-    if (adaptor != null) return adaptor;
     return findAdaptor(element);
   }
 
@@ -162,7 +160,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     element.slot = newSlot;
 
     if (object != null) {
-      var adaptor = getAdaptor();
+      var adaptor = element.getAdaptor();
       var type = element.component.getObjectType();
       // @todo: I think this makes sense?
       if (newSlot == null) {
@@ -196,7 +194,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     children = [];
 
     if (object != null) {
-      var adaptor = getAdaptor();
+      var adaptor = element.getAdaptor();
       destroyObject(adaptor, element, object);
     }
     

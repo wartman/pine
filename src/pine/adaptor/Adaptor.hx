@@ -7,11 +7,11 @@ using pine.core.OptionTools;
 
 abstract class Adaptor {
   public static function from(context:Context):Adaptor {
-    return maybeFrom(context).orThrow('No Adaptor was found');
+    return context.getAdaptor();
   }
 
   public static function maybeFrom(context:Context):Option<Adaptor> {
-    return context.getAdaptor();
+    return Some(context.getAdaptor());
   }
 
   var isScheduled:Bool = false;

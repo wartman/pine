@@ -36,7 +36,7 @@ interface Context extends DisposableHost {
   /**
     Get the current adaptor.
   **/
-  public function getAdaptor():Option<Adaptor>;
+  public function getAdaptor():Adaptor;
 
   /**
     Returns a query builder that lets you search *up* 

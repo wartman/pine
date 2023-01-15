@@ -125,12 +125,12 @@ class PortalElementEngine implements ElementEngine {
   }
 
   function createPlaceholderComponent() {
-    var adaptor = element.getAdaptor().orThrow('Adaptor expected');
+    var adaptor = element.getAdaptor();
     return adaptor.createPlaceholder();
   }
   
   function createRootComponent() {
-    var adaptor = element.getAdaptor().orThrow('Expected an adaptor');
+    var adaptor = element.getAdaptor();
     var component = element.component;
 
     previousComponent = component;

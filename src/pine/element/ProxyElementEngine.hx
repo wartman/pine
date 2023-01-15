@@ -34,11 +34,8 @@ function findChildObject(element:Element):Dynamic {
 
 function findParentAdaptor(element:Element):Adaptor {
   var parent = element.parent;
-  if (parent == null) {
-    Debug.error('Cannot resolve an adaptor as this element has no parent');
-  }
-  Debug.assert(parent.adaptor != null);
-  return parent.adaptor;
+  Debug.assert(parent != null, 'Cannot resolve an adaptor as this element has no parent');
+  return parent.getAdaptor();
 }
 
 function bubbleThrownObjectUp<T:Component>(element:ElementOf<T>, target:Element, e:Dynamic) {
@@ -91,8 +88,6 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
   }
 
   public function getAdaptor():Adaptor {
-    var adaptor = element.adaptor;
-    if (adaptor != null) return adaptor;
     return findAdaptor(element);
   }
 
