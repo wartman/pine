@@ -9,8 +9,8 @@ import pine.element.ElementEngine;
 import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
 
-function useBoundaryElementEngine(render, options):CreateElementEngine {
-  return element -> new BoundaryElementEngine(element, render, options);
+function useBoundaryElementEngine<T:Component>(render, options):CreateElementEngine {
+  return element -> new BoundaryElementEngine<T>(element, render, options);
 }
 
 typedef ThrownObject = {

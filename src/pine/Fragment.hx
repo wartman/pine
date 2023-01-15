@@ -48,7 +48,7 @@ class FragmentEngine implements ElementEngine {
     var previous:Null<Element> = slot != null ? slot.previous : null;
     
     marker = createMarker();
-    marker.mount(element, createSlot(0, previous));
+    marker.mount(element, createSlot(-1, previous));
     
     var previous = marker;
     var components = renderSafe();
@@ -68,7 +68,7 @@ class FragmentEngine implements ElementEngine {
     var previous:Null<Element> = slot != null ? slot.previous : null;
 
     marker = createMarker();
-    marker.mount(element, createSlot(0, previous));
+    marker.mount(element, createSlot(-1, previous));
     
     var previous = marker;
     var components = renderSafe();
@@ -108,7 +108,15 @@ class FragmentEngine implements ElementEngine {
 
   public function updateSlot(slot:Null<Slot>) {
     element.slot = slot;
-    if (marker != null) marker.updateSlot(slot);
+    if (marker != null && slot != null) {
+      // @todo: not sure if this is needed OR if it will work.
+      marker.updateSlot(createSlot(-1, slot.previous));
+      var previous = marker;
+      for (i => child in children) {
+        child.updateSlot(createSlot(i, previous));
+        previous = child;
+      }
+    }
   }
 
   public function visitChildren(visitor:(child:Element) -> Bool) {
