@@ -91,6 +91,8 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
   }
 
   public function getAdaptor():Adaptor {
+    var adaptor = element.adaptor;
+    if (adaptor != null) return adaptor;
     return findAdaptor(element);
   }
 
