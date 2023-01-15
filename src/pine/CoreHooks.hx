@@ -13,7 +13,9 @@ import pine.state.Observer;
 function createEffect<T:Component>(handle:(element:ElementOf<T>)->Void):Hook<T> {
   return beforeInit(element -> {
     var observer = new Observer(() -> handle(element));
-    element.addDisposable(observer);
+    element.watchLifecycle({
+      beforeDispose: _ -> observer.dispose()
+    });
   });
 }
 

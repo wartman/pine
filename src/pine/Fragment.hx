@@ -53,10 +53,9 @@ class FragmentEngine implements ElementEngine {
     var previous = marker;
     var components = renderSafe();
     var newChildren:Array<Element> = [];
-    for (i in 0...components.length) {
-      var component = components[i];
+    for (i => component in components) {
       var child = component.createElement();
-      child.mount(element, createSlot(i + 1, previous));
+      child.mount(element, createSlot(i, previous));
       newChildren.push(child);
       previous = child;
     }
@@ -74,10 +73,9 @@ class FragmentEngine implements ElementEngine {
     var previous = marker;
     var components = renderSafe();
     var newChildren:Array<Element> = [];
-    for (i in 0...components.length) {
-      var component = components[i];
+    for (i => component in components) {
       var child = component.createElement();
-      child.hydrate(cursor, element, element.createSlot(i + 1, previous));
+      child.hydrate(cursor, element, createSlot(i, previous));
       newChildren.push(child);
       previous = child;
     }
@@ -87,7 +85,7 @@ class FragmentEngine implements ElementEngine {
 
   public function update() {
     var currentSlot = element.slot;
-    if (currentSlot != null) getMarker().updateSlot(currentSlot);
+    if (currentSlot != null && marker != null) marker.updateSlot(currentSlot);
     children = diffChildren(element, children, renderSafe());
   }
 
@@ -96,27 +94,25 @@ class FragmentEngine implements ElementEngine {
   }
 
   public function getObject():Dynamic {
-    var object:Null<Dynamic> = null;
-    element.visitChildren(child -> {
-      object = child.getObject();
-      true;
-    });
-    Debug.assert(object != null);
-    return object;
+    if (children.length == 0) {
+      return getMarker().getObject();
+    }
+    return children[children.length - 1].getObject();
   }
 
   public function createSlot(localIndex:Int, previous:Null<Element>):Slot {
     var parentSlot = element.slot;
     var index = parentSlot == null ? 0 : parentSlot.index;
-    return new FragmentSlot(index, localIndex, previous);
+    return new FragmentSlot(index, localIndex + 1, previous);
   }
 
   public function updateSlot(slot:Null<Slot>) {
     element.slot = slot;
+    if (marker != null) marker.updateSlot(slot);
   }
 
   public function visitChildren(visitor:(child:Element) -> Bool) {
-    visitor(getMarker());
+    if (!visitor(getMarker())) return;
     for (child in children) if (!visitor(child)) break;
   }
 
