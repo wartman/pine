@@ -34,7 +34,7 @@ typedef ObjectElementEngineOptions<T:ObjectComponent> = {
   public final ?findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
   public final ?createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
   public final ?destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
-  public final ?handleError:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
+  public final ?handleThrownObject:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
 } 
 
 function useObjectElementEngine<T:ObjectComponent>(render, ?options):CreateElementEngine {
@@ -96,9 +96,9 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     this.findAdaptor = options.findAdaptor == null
       ? findParentAdaptor
       : options.findAdaptor;
-    this.errorHandler = options.handleError != null
-      ? options.handleError
-      : bubbleErrorsUp;
+    this.errorHandler = options.handleThrownObject != null
+      ? options.handleThrownObject
+      : bubbleThrownObjectUp;
   }
 
   public function init():Void {
@@ -192,7 +192,7 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     return new AncestorQuery(element);
   }
 
-  public function handleError(target:Element, e:Dynamic) {
+  public function handleThrownObject(target:Element, e:Dynamic) {
     errorHandler(element, target, e);
   }
 

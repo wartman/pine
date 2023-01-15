@@ -54,7 +54,7 @@ class Element
       
       events.afterInit.dispatch(this, Normal);
     } catch (e) {
-      catchError(e);
+      catchThrownObject(e);
     }
   }
 
@@ -77,7 +77,7 @@ class Element
     
       events.afterInit.dispatch(this, Hydrating(cursor));
     } catch (e) {
-      catchError(e);
+      catchThrownObject(e);
     }
   }
 
@@ -114,7 +114,7 @@ class Element
 
       events.afterUpdate.dispatch(this);
     } catch (e) {
-      catchError(e);
+      catchThrownObject(e);
     }
   }
 
@@ -156,7 +156,7 @@ class Element
       
       events.afterUpdate.dispatch(this);
     } catch (e) {
-      catchError(e);
+      catchThrownObject(e);
     }
   }
 
@@ -282,8 +282,8 @@ class Element
     }
   }
 
-  function catchError(e:Dynamic) {
+  function catchThrownObject(e:Dynamic) {
     status = Failed(e);
-    engine.handleError(this, e);
+    engine.handleThrownObject(this, e);
   }
 }

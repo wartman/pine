@@ -17,5 +17,5 @@ interface ElementEngine extends Disposable {
   public function visitChildren(visitor:(child:Element)->Bool):Void;
   public function createChildrenQuery():ChildrenQuery;
   public function createAncestorQuery():AncestorQuery;
-  public function handleError(target:Element, e:Dynamic):Void;
+  public function handleThrownObject(target:Element, e:Dynamic):Void;
 }

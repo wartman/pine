@@ -1,13 +1,12 @@
 package pine;
 
-import pine.element.ProxyElementEngine.bubbleErrorsUp;
 import pine.adaptor.Adaptor;
 import pine.core.HasComponentType;
 import pine.debug.Debug;
 import pine.diffing.Engine;
 import pine.diffing.Key;
 import pine.element.*;
-import pine.element.ProxyElementEngine.findParentAdaptor;
+import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
@@ -129,8 +128,8 @@ class FragmentEngine implements ElementEngine {
     return new AncestorQuery(element);
   }
 
-  public function handleError(target:Element, e:Dynamic) {
-    bubbleErrorsUp(element, target, e);
+  public function handleThrownObject(target:Element, e:Dynamic) {
+    bubbleThrownObjectUp(element, target, e);
   }
 
   public function dispose() {

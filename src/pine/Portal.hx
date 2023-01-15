@@ -108,8 +108,8 @@ class PortalElementEngine implements ElementEngine {
     return new AncestorQuery(element);
   }
 
-  public function handleError(target:Element, e:Dynamic) {
-    bubbleErrorsUp(element, target, e);
+  public function handleThrownObject(target:Element, e:Dynamic) {
+    bubbleThrownObjectUp(element, target, e);
   }
 
   public function dispose() {

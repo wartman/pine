@@ -3,6 +3,13 @@ package pine.core;
 import pine.debug.Debug;
 import haxe.ds.Option;
 
+function unwrap<T>(option:Option<T>):Null<T> {
+  return switch option {
+    case Some(value): value;
+    case None: null;
+  }
+}
+
 function sure<T>(option:Option<T>):T {
   return orThrow(option, 'Expected a value');
 }

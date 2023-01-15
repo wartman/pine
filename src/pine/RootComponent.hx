@@ -37,7 +37,6 @@ abstract class RootComponent extends ObjectComponent {
           createObject: (_, element) -> element.component.getRootObject(),
           destroyObject: (applicator, element, object) -> null,
           findAdaptor: element -> element.component.createAdaptor()
-          // todo: Think on how we can do a good error handler.
         }
       ),
       []
