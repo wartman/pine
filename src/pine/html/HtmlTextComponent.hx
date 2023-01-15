@@ -3,8 +3,6 @@ package pine.html;
 import pine.adaptor.ObjectType;
 import pine.core.HasComponentType;
 import pine.diffing.Key;
-import pine.element.*;
-import pine.element.object.*;
 
 using pine.core.OptionTools;
 

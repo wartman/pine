@@ -1,6 +1,7 @@
 package pine.adaptor;
 
 import haxe.ds.Option;
+import pine.element.Slot;
 
 using pine.core.OptionTools;
 
@@ -17,9 +18,13 @@ abstract class Adaptor {
   var invalidElements:Null<Array<Element>> = null;
 
   abstract public function getProcess():Process;
-  abstract public function getObjectApplicator(type:ObjectType):ObjectApplicator<Dynamic>;
   abstract public function createPlaceholder():Component;
   abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
+  abstract public function createObject(type:ObjectType, component:ObjectComponent):Dynamic;
+  abstract public function updateObject(type:ObjectType, object:Dynamic, component:ObjectComponent, previousComponent:Null<ObjectComponent>):Void;
+  abstract public function insertObject(type:ObjectType, object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic):Void;
+  abstract public function moveObject(type:ObjectType, object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic):Void;
+  abstract public function removeObject(type:ObjectType, object:Dynamic, slot:Null<Slot>):Void;
 
   public function requestRebuild(element:Element):Void {
     if (invalidElements == null) {

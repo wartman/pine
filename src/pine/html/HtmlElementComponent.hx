@@ -1,11 +1,7 @@
 package pine.html;
 
 import pine.adaptor.*;
-import pine.element.*;
 import pine.diffing.Key;
-#if debug
-import pine.debug.Debug;
-#end
 
 abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
   public final tag:String;
@@ -28,6 +24,7 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
   }
 
   function getObjectType():ObjectType {
+    if (isSvg) return ObjectElement('svg:' + tag);
     return ObjectElement(tag);
   }
 

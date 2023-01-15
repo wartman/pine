@@ -31,21 +31,13 @@ abstract class ObjectComponent extends Component {
 
 typedef ObjectElementEngineOptions<T:ObjectComponent> = {
   public final ?findAdaptor:(element:ElementOf<T>)->Adaptor;
-  public final ?findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
-  public final ?createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
-  public final ?destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
+  public final ?createObject:(adaptor:Adaptor, element:ElementOf<T>)->Dynamic;
+  public final ?destroyObject:(adaptor:Adaptor, element:ElementOf<T>, object:Dynamic)->Void;
   public final ?handleThrownObject:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
 } 
 
 function useObjectElementEngine<T:ObjectComponent>(render, ?options):CreateElementEngine {
   return element -> new ObjectElementEngine<T>(element, render, options);
-}
-
-function defaultFindApplicator<T:ObjectComponent>(element:ElementOf<T>) {
-  return element
-    .getAdaptor()
-    .orThrow('No Adaptor found')
-    .getObjectApplicator(element.component.getObjectType());
 }
 
 function findAncestorObject(element:Element) {
@@ -56,23 +48,24 @@ function findAncestorObject(element:Element) {
     .getObject();
 }
 
-function defaultCreateObject<T:ObjectComponent>(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>) {
-  var object = applicator.create(element.component);
-  applicator.insert(object, element.slot, () -> findAncestorObject(element));
+function defaultCreateObject<T:ObjectComponent>(adaptor:Adaptor, element:ElementOf<T>) {
+  var type = element.component.getObjectType();
+  var object = adaptor.createObject(type, element.component);
+  adaptor.insertObject(type, object, element.slot, () -> findAncestorObject(element));
   return object;
 }
 
-function defaultDestroyObject<T:ObjectComponent>(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic) {
-  applicator.remove(object, element.slot);
+function defaultDestroyObject<T:ObjectComponent>(adaptor:Adaptor, element:ElementOf<T>, object:Dynamic) {
+  var type = element.component.getObjectType();
+  adaptor.removeObject(type, object, element.slot);
 }
 
 class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   final element:ElementOf<T>;
   final render:(element:ElementOf<T>)->Null<Array<Component>>;
   final findAdaptor:(element:ElementOf<T>)->Adaptor;
-  final findApplicator:(element:ElementOf<T>)->ObjectApplicator<Dynamic>;
-  final createObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>)->Dynamic;
-  final destroyObject:(applicator:ObjectApplicator<Dynamic>, element:ElementOf<T>, object:Dynamic)->Void;
+  final createObject:(adaptor:Adaptor, element:ElementOf<T>)->Dynamic;
+  final destroyObject:(adaptor:Adaptor, element:ElementOf<T>, object:Dynamic)->Void;
   final errorHandler:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
 
   var object:Null<Dynamic> = null;
@@ -84,9 +77,6 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     
     this.element = element;
     this.render = render;
-    this.findApplicator = options.findApplicator == null 
-      ? defaultFindApplicator
-      : options.findApplicator;
     this.createObject = options.createObject == null
       ? defaultCreateObject
       : options.createObject;
@@ -102,21 +92,22 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   public function init():Void {
-    var applicator = findApplicator(element);
+    var adaptor = getAdaptor();
 
     Debug.assert(object == null);
-    object = createObject(applicator, element);
+    object = createObject(adaptor, element);
 
     update();
   }
 
   public function hydrate(cursor:Cursor):Void {
-    var applicator = findApplicator(element);
+    var adaptor = getAdaptor();
+    var type = element.component.getObjectType();
 
     Debug.assert(object == null);
     object = cursor.current();
     Debug.assert(object != null);
-    applicator.update(object, element.component, null);
+    adaptor.updateObject(type, object, element.component, null);
 
     var components = renderSafe();
 
@@ -141,10 +132,11 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
   }
 
   public function update():Void {
-    var applicator = findApplicator(element);
+    var adaptor = getAdaptor();
+    var type = element.component.getObjectType();
 
     Debug.assert(object != null);
-    applicator.update(object, element.component, previousComponent);
+    adaptor.updateObject(type, object, element.component, previousComponent);
     previousComponent = element.component;
     
     children = diffChildren(element, children, renderSafe());
@@ -168,12 +160,13 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     element.slot = newSlot;
 
     if (object != null) {
-      var applicator = findApplicator(element);
+      var adaptor = getAdaptor();
+      var type = element.component.getObjectType();
       // @todo: I think this makes sense?
       if (newSlot == null) {
-        applicator.remove(object, oldSlot);
+        adaptor.removeObject(type, object, oldSlot);
       } else {
-        applicator.move(object, oldSlot, newSlot, () -> findAncestorObject(element));
+        adaptor.moveObject(type, object, oldSlot, newSlot, () -> findAncestorObject(element));
       }
     }
   }
@@ -201,8 +194,8 @@ class ObjectElementEngine<T:ObjectComponent> implements ElementEngine {
     children = [];
 
     if (object != null) {
-      var applicator = findApplicator(element);
-      destroyObject(applicator, element, object);
+      var adaptor = getAdaptor();
+      destroyObject(adaptor, element, object);
     }
     
     object = null;
