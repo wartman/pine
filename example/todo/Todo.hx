@@ -5,7 +5,6 @@ import pine.*;
 import pine.CoreHooks;
 import pine.html.*;
 import pine.html.client.ClientRoot;
-import pine.debug.html.VisualErrorBoundary;
 import pine.state.*;
 import haxe.Json;
 
@@ -104,7 +103,7 @@ class TodoStore implements Record {
 
 class TodoApp extends AutoComponent {
   public function render(context:Context):Component {
-    var provider = new TodoProvider({
+    return new TodoProvider({
       create: TodoStore.load,
       dispose: store -> store.dispose(),
       render: store -> new Html<'div'>({
@@ -152,8 +151,6 @@ class TodoApp extends AutoComponent {
         ]
       })
     });
-
-    return new VisualErrorBoundary({ child: provider });
   }
 }
 

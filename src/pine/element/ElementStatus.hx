@@ -7,5 +7,4 @@ enum ElementStatus {
   Building;
   Disposing;
   Disposed;
-  Failed<T>(error:T);
 }

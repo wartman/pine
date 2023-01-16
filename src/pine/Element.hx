@@ -1,13 +1,12 @@
 package pine;
 
-import haxe.Exception;
 import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.*;
 import pine.debug.Debug;
 import pine.element.*;
-import pine.element.Events;
 import pine.element.ElementEngine;
+import pine.element.Events;
 import pine.element.Slot;
 import pine.hydration.Cursor;
 
@@ -45,17 +44,13 @@ class Element
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    try {
-      events.beforeInit.dispatch(this, Normal);
+    events.beforeInit.dispatch(this, Normal);
 
-      status = Building;
-      engine.init();
-      if (status != Invalid) status = Valid;
-      
-      events.afterInit.dispatch(this, Normal);
-    } catch (e) {
-      catchThrownObject(e);
-    }
+    status = Building;
+    engine.init();
+    if (status != Invalid) status = Valid;
+    
+    events.afterInit.dispatch(this, Normal);
   }
 
   /**
@@ -67,18 +62,14 @@ class Element
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
 
-    try {
-      events.beforeInit.dispatch(this, Hydrating(cursor));
+    events.beforeInit.dispatch(this, Hydrating(cursor));
 
-      status = Building;
-      engine.hydrate(cursor);
+    status = Building;
+    engine.hydrate(cursor);
 
-      if (status != Invalid) status = Valid;
-    
-      events.afterInit.dispatch(this, Hydrating(cursor));
-    } catch (e) {
-      catchThrownObject(e);
-    }
+    if (status != Invalid) status = Valid;
+  
+    events.afterInit.dispatch(this, Hydrating(cursor));
   }
 
   function init(parent:Null<Element>, slot:Null<Slot>) {
@@ -99,23 +90,14 @@ class Element
   public function update(incomingComponent:Component) {
     Debug.assert(status != Building);
     
-    switch status {
-      case Failed(_): return;
-      default:
-    }
-    
-    try {
-      events.beforeUpdate.dispatch(this, component, incomingComponent);
+    events.beforeUpdate.dispatch(this, component, incomingComponent);
 
-      status = Building;
-      this.component = incomingComponent;
-      engine.update();
-      if (status != Invalid) status = Valid;
+    status = Building;
+    this.component = incomingComponent;
+    engine.update();
+    if (status != Invalid) status = Valid;
 
-      events.afterUpdate.dispatch(this);
-    } catch (e) {
-      catchThrownObject(e);
-    }
+    events.afterUpdate.dispatch(this);
   }
 
   /**
@@ -128,7 +110,7 @@ class Element
     // Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
     
     switch status {
-      case Failed(_) | Invalid: return;
+      case Invalid: return;
       default:
     }
 
@@ -146,18 +128,14 @@ class Element
   public function rebuild() {
     Debug.assert(status != Building);
     if (status != Invalid) return;
-    
-    try {
-      events.beforeUpdate.dispatch(this, component, component);
+  
+    events.beforeUpdate.dispatch(this, component, component);
 
-      status = Building;
-      engine.update();
-      if (status != Invalid) status = Valid;
-      
-      events.afterUpdate.dispatch(this);
-    } catch (e) {
-      catchThrownObject(e);
-    }
+    status = Building;
+    engine.update();
+    if (status != Invalid) status = Valid;
+    
+    events.afterUpdate.dispatch(this);
   }
 
   /**
@@ -276,17 +254,5 @@ class Element
     status = Disposed;
     
     events.afterDispose.dispatch();
-  }
-
-  public function recover() {
-    switch status {
-      case Failed(_): status = Invalid;
-      default:
-    }
-  }
-
-  function catchThrownObject(e:Dynamic) {
-    status = Failed(e);
-    engine.handleThrownObject(this, e);
   }
 }

@@ -18,7 +18,7 @@ abstract class Adaptor {
   var invalidElements:Null<Array<Element>> = null;
 
   abstract public function getProcess():Process;
-  abstract public function createPlaceholder():Component;
+  abstract public function createPlaceholder():ObjectComponent;
   abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
   abstract public function createObject(type:ObjectType, component:ObjectComponent):Dynamic;
   abstract public function updateObject(type:ObjectType, object:Dynamic, component:ObjectComponent, previousComponent:Null<ObjectComponent>):Void;

@@ -3,15 +3,12 @@ package counter;
 import js.Browser;
 import pine.*;
 import pine.html.*;
-import pine.debug.html.VisualErrorBoundary;
 import pine.html.client.ClientRoot;
 
 function main() {
   ClientRoot.mount(
     Browser.document.getElementById('root'),
-    new VisualErrorBoundary({
-      child: new Counter({})
-    })
+    new Counter({})
   );
 }
 

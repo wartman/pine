@@ -18,7 +18,7 @@ class ClientAdaptor extends Adaptor {
     return process;
   }
 
-  public function createPlaceholder():Component {
+  public function createPlaceholder():ObjectComponent {
     return new HtmlTextComponent({ content: '' });
   }
 
