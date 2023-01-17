@@ -2,7 +2,6 @@ package pine.element;
 
 import pine.Component;
 import pine.core.Event;
-import pine.core.HasAutoConstructor;
 
 // @todo: we should dispose this thing
 class Events<T:Component> {

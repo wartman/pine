@@ -95,7 +95,6 @@ class ClientAdaptor extends Adaptor {
         }
 
         if (to.previous == null) {
-          trace('hm');
           var parent:js.html.Element = findParent();
           Debug.assert(parent != null);
           parent.prepend(el);
