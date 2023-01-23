@@ -16,7 +16,6 @@ class Counter extends AutoComponent {
   var count:Int = 0;
 
   function render(context:Context) {
-    // throw 'testing';
     return new Html<'div'>({
       children: [
         new Html<'div'>({

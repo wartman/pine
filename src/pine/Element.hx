@@ -232,8 +232,7 @@ class Element
   }
 
   /**
-    Dispose this element, removing it from the Element tree
-    and further disposing all of its managers.
+    Dispose this element, removing it from the Element tree.
 
     Note: you should almost *never* call this directly.
   **/
