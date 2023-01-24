@@ -1,5 +1,7 @@
 package pine;
 
+import pine.core.UniqueId;
+import pine.debug.Debug;
 import pine.core.Disposable;
 import pine.state.Observer;
 
@@ -23,6 +25,9 @@ class Hook<T:Component> implements Disposable {
   var states:Array<Null<Dynamic>> = [];
   var cleanups:Array<Null<(value:Null<Dynamic>)->Void>> = [];
   var index = 0;
+  #if debug
+  var inHook = false;
+  #end
 
   public function new(element) {
     this.element = element;
@@ -45,15 +50,28 @@ class Hook<T:Component> implements Disposable {
     var index = useIndex();
     var data:Null<R> = getState(index);
     
+    Debug.assert(inHook == false, 'Cannot nest hooks');
+
     // @todo: Find a way to throw an error if the user tries to use
     // this hook outside of the top of the render method.
 
     if (data == null) {
+      #if debug
+      var prevInHook = inHook;
+      inHook = true;
+      #end
       data = factory();
+      #if debug
+      inHook = prevInHook;
+      #end
       setState(index, data, cleanup);
     }
 
     return data;
+  }
+
+  public inline function useCleanup(cleanup:()->Void) {
+    useState(() -> index, _ -> cleanup());
   }
 
   public function useEffect(effect:()->Void) {
@@ -63,14 +81,11 @@ class Hook<T:Component> implements Disposable {
     ));
   }
 
-  public function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
-    useState(() -> {
-      var element = getElement();
-      return handler(element);
-    }, cancel -> cancel());
+  public inline function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
+    useState(() -> handler(element), cancel -> cancel());
   }
 
-  public function useInit(handler:()->Void) {
+  public inline function useInit(handler:()->Void) {
     useElement(element -> element.events.afterInit.add((_, _) -> handler()));
   }
 
