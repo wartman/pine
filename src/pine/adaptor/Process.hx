@@ -17,13 +17,13 @@ abstract class Process {
     }
   }
 
-  final effects:Array<() -> Void> = [];
+  final effects:List<() -> Void> = new List();
   var isStarted:Bool = false;
   
   public function new() {}
   
   function enqueue(effect:() -> Void):()->Void {
-    effects.push(effect);
+    effects.add(effect);
     return () -> effects.remove(effect);
   }
 
@@ -32,10 +32,13 @@ abstract class Process {
     if (!isStarted) {
       isStarted = true;
       nextFrame(() -> {
+        var effect = effects.first();
+        while (effect != null) {
+          effects.remove(effect);
+          effect();
+          effect = effects.first();
+        }
         isStarted = false;
-        var fx = effects.copy();
-        effects.resize(0);
-        for (effect in fx) effect();
       });
     }
     return cancel;
