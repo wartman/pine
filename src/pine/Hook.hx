@@ -1,13 +1,15 @@
 package pine;
 
 import pine.core.Disposable;
+import pine.state.Observer;
 
 private final hookRegistry:Map<Context, Hook<Dynamic>> = [];
+
+typedef HookHandler<T:Component> = (element:ElementOf<T>)->Void;
 
 // @todo: Instead of having a hookRegistry, we might just have a
 // hook instance on our Element. On the other hand, I think this works fine
 // and will only get used if needed.
-@:allow(pine)
 class Hook<T:Component> implements Disposable {
   public static function from<T:Component>(element:ElementOf<T>):Hook<T> {
     if (!hookRegistry.exists(element)) {
@@ -34,6 +36,53 @@ class Hook<T:Component> implements Disposable {
     events.beforeRevalidatedRender.add(() -> index = 0);
     events.beforeInit.add((element, _) -> reset(null, null));
     events.beforeUpdate.add((element, currentComponent, incomingComponent) -> reset(currentComponent, incomingComponent));
+  }
+  
+  public function useState<R>(
+    factory:()->R,
+    ?cleanup:(data:R)->Void
+  ):R {
+    var index = useIndex();
+    var data:Null<R> = getState(index);
+    
+    // @todo: Find a way to throw an error if the user tries to use
+    // this hook outside of the top of the render method.
+
+    if (data == null) {
+      data = factory();
+      setState(index, data, cleanup);
+    }
+
+    return data;
+  }
+
+  public function useEffect(effect:()->Void) {
+    Observer.untrack(() -> useState(
+      () -> new Observer(effect),
+      observer -> observer.dispose()
+    ));
+  }
+
+  public function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
+    useState(() -> {
+      var element = getElement();
+      return handler(element);
+    }, cancel -> cancel());
+  }
+
+  public function useInit(handler:()->Void) {
+    useElement(element -> element.events.afterInit.add((_, _) -> handler()));
+  }
+
+  public function useNext(handler:()->Void) {
+    useElement(element -> {
+      var events = element.events;
+      var links = [
+        events.afterUpdate.add((_) -> handler()),
+        events.afterInit.add((_, _) -> handler())
+      ];
+      return () -> for (cancel in links) cancel();
+    });
   }
 
   function useIndex() {

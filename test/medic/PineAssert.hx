@@ -4,7 +4,6 @@ import haxe.PosInfos;
 import pine.*;
 import pine.html.server.*;
 
-using pine.CoreHooks;
 using pine.adaptor.Process;
 
 // @todo: Some way to change the current Adaptor. 

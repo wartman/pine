@@ -8,7 +8,6 @@ import pine.state.*;
 import haxe.Json;
 
 using Reflect;
-using pine.CoreHooks;
 
 function main() {
   ClientRoot.mount(
