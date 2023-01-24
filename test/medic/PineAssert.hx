@@ -4,6 +4,7 @@ import haxe.PosInfos;
 import pine.*;
 import pine.html.server.*;
 
+using pine.CoreHooks;
 using pine.adaptor.Process;
 
 // @todo: Some way to change the current Adaptor. 
@@ -35,7 +36,7 @@ function renders(
 
 function rendersNext<T:Component>(
   component:T,
-  next:(element:Element, defer:(?next:()->Void)->Void)->Void,
+  next:(context:Context, defer:(?next:()->Void)->Void)->Void,
   ?p:PosInfos
 ) {
   var comp = new AssertWrapper({
@@ -45,29 +46,14 @@ function rendersNext<T:Component>(
   mount(comp);
 }
 
-@:hook(assertNext())
 class AssertWrapper extends AutoComponent {
-  public final next:(element:Element, defer:(?next:()->Void)->Void)->Void;
+  public final next:(context:Context, defer:(?next:()->Void)->Void)->Void;
   final child:Component;
 
   function render(context:Context) {
+    Hook.from(context).useNext(() -> next(context, (?next) -> {
+      if (next != null) Process.from(context).defer(next);
+    }));
     return child;
-  }
-}
-
-function assertNext():Hook<AssertWrapper> {
-  return element -> {
-    element.watchLifecycle({
-      afterInit: (element, _) -> {
-        element.component.next(element, (?next:()->Void) -> {
-          if (next != null) Process.from(element).defer(() -> next());
-        });
-      },
-      afterUpdate: element -> {
-        element.component.next(element, (?next:()->Void) -> {
-          if (next != null) Process.from(element).defer(() -> next());
-        });
-      }
-    });
   }
 }

@@ -22,6 +22,12 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
       }
       
       computation = new Computation(() -> {
+        if (!wasCalledByElement) {
+          // @todo: This is a bit hacky, but we need it to make sure
+          // our Hook is resetting its index
+          element.events.beforeRevalidatedRender.dispatch();
+        }
+
         var component = render(element);
 
         switch element.status {

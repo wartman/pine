@@ -29,17 +29,13 @@ abstract class RootComponent extends ObjectComponent {
   }
 
   override function createElement() {
-    return new Element(
-      this,
-      useObjectElementEngine(
-        (element:ElementOf<RootComponent>) -> element.component.render(),
-        {
-          createObject: (_, element) -> element.component.getRootObject(),
-          destroyObject: (applicator, element, object) -> null,
-          findAdaptor: element -> element.component.createAdaptor()
-        }
-      ),
-      []
-    );
+    return new Element(this, useObjectElementEngine(
+      (element:ElementOf<RootComponent>) -> element.component.render(),
+      {
+        createObject: (_, element) -> element.component.getRootObject(),
+        destroyObject: (applicator, element, object) -> null,
+        findAdaptor: element -> element.component.createAdaptor()
+      }
+    ));
   }
 }

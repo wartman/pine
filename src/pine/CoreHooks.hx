@@ -2,64 +2,51 @@ package pine;
 
 import pine.state.Observer;
 
-/**
-  Create an Observer that will be automatically disposed when
-  its Element is.
+function useState<T:Component, R>(
+  hook:Hook<T>,
+  factory:()->R,
+  ?cleanup:(data:R)->Void
+):R {
+  var index = hook.useIndex();
+  var data:Null<R> = hook.getState(index);
   
-  Note: This is named similarly to React's `useEffect` as it provides
-  similar functionality. Note that it WILL NOT update for every render.
-  It only changes when an observed Signal does.
-**/
-function createEffect<T:Component>(handle:(element:ElementOf<T>)->Void):Hook<T> {
-  return beforeInit(element -> {
-    var observer = new Observer(() -> handle(element));
-    element.watchLifecycle({
-      beforeDispose: _ -> observer.dispose()
-    });
-  });
+  // @todo: Find a way to throw an error if the user tries to use
+  // this hook outside of the top of the render method.
+
+  if (data == null) {
+    data = factory();
+    hook.setState(index, data, cleanup);
+  }
+
+  return data;
 }
 
-/**
-  A hook that will run *before* an Element has been initialized.
-
-  Note that this will also fire during hydration.
-**/
-function beforeInit<T:Component>(handler):Hook<T> {
-  return element -> element.watchLifecycle({
-    beforeInit: (element, _) -> handler(element)
-  });
+function useEffect<T:Component>(hook:Hook<T>, effect:()->Void) {
+  Observer.untrack(() -> useState(
+    hook,
+    () -> new Observer(effect),
+    observer -> observer.dispose()
+  ));
 }
 
-/**
-  A hook that will run *after* an Element has been successfully
-  initialized.
-
-  Note that this will also fire during hydration.
-**/
-function afterInit<T:Component>(handler):Hook<T> {
-  return element -> element.watchLifecycle({
-    afterInit: (element, _) -> handler(element)
-  });
+function useElement<T:Component>(hook:Hook<T>, handler:(element:ElementOf<T>)->(()->Void)) {
+  useState(hook, () -> {
+    var element = hook.getElement();
+    return handler(element);
+  }, cancel -> cancel());
 }
 
-/**
-  A hook that will run *before* an Element is initialized and *before*
-  it is updated.
-**/
-function beforeChange<T:Component>(handler:(element:ElementOf<T>)->Void):Hook<T> {
-  return element -> element.watchLifecycle({
-    beforeInit: (element, _) -> handler(element),
-    beforeUpdate: (element, _, _) -> handler(element) 
-  });
+function useInit<T:Component>(hook:Hook<T>, handler:()->Void) {
+  useElement(hook, element -> element.events.afterInit.add((_, _) -> handler()));
 }
 
-/**
-  A hook that *only* runs when the Element is updated. This means that
-  this hook will *not* run on initialization: use `beforeChange` for that
-  behavior. 
-**/
-function beforeUpdate<T:Component>(handler):Hook<T> {
-  return element -> element.watchLifecycle({
-    beforeUpdate: handler
+function useNext<T:Component>(hook:Hook<T>, handler:()->Void) {
+  useElement(hook, element -> {
+    var events = element.events;
+    var links = [
+      events.afterUpdate.add((_) -> handler()),
+      events.afterInit.add((_, _) -> handler())
+    ];
+    return () -> for (cancel in links) cancel();
   });
 }

@@ -25,8 +25,7 @@ final class Fragment extends Component implements HasComponentType {
   function createElement() {
     return new Element(
       this, 
-      element -> new FragmentEngine(element, (element) -> element.component.children),
-      []  
+      element -> new FragmentEngine(element, (element) -> element.component.children)
     );
   }
 }

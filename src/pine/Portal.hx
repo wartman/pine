@@ -25,7 +25,7 @@ final class Portal extends Component implements HasComponentType {
   }
 
   function createElement() {
-    return new Element(this, element -> new PortalElementEngine(element), []);
+    return new Element(this, element -> new PortalElementEngine(element));
   }
 }
 

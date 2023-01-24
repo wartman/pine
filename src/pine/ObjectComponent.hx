@@ -23,8 +23,7 @@ abstract class ObjectComponent extends Component {
       this,
       useObjectElementEngine(
         (element:ElementOf<ObjectComponent>) -> element.component.render()
-      ),
-      []
+      )
     );
   }
 }

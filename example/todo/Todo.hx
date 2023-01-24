@@ -2,13 +2,13 @@ package todo;
 
 import js.Browser;
 import pine.*;
-import pine.CoreHooks;
 import pine.html.*;
 import pine.html.client.ClientRoot;
 import pine.state.*;
 import haxe.Json;
 
 using Reflect;
+using pine.CoreHooks;
 
 function main() {
   ClientRoot.mount(
@@ -298,12 +298,6 @@ class TodoItem extends AutoComponent {
   }
 }
 
-@:hook(createEffect((element:ElementOf<TodoInput>) -> {
-  if (element.component.isEditing) {
-    var el:js.html.InputElement = cast element.getObject();
-    el.focus();
-  }
-}))
 class TodoInput extends AutoComponent {
   final className:String;
   final clearOnComplete:Bool;
@@ -313,6 +307,14 @@ class TodoInput extends AutoComponent {
   var value:String;
 
   function render(context:Context):Component {
+    Hook.from(context).useEffect(() -> {
+      if (isEditing) {
+        trace('editing');
+        var el:js.html.InputElement = cast context.getObject();
+        el.focus();
+      }
+    });
+
     return new Html<'input'>({
       className: className,
       placeholder: 'What needs doing?',

@@ -22,7 +22,6 @@ class Element
   public final events:Events<Dynamic> = new Events();
   public final disposables:DisposableManager = new DisposableManager();
   public final engine:ElementEngine;
-  public final hooks:HookCollection<Dynamic>;
 
   var component:Component;
   var status:ElementStatus = Pending;
@@ -30,9 +29,8 @@ class Element
   var parent:Null<Element> = null;
   var adaptor:Null<Adaptor> = null;
 
-  public function new(component, createEngine:CreateElementEngine, hooks) {
+  public function new(component, createEngine:CreateElementEngine) {
     this.component = component;
-    this.hooks = hooks;
     this.engine = createEngine(this); // Must come last.
   }
 
@@ -78,8 +76,6 @@ class Element
     this.parent = parent;
     this.slot = slot;
     this.adaptor = engine.getAdaptor();
-
-    hooks.init(this);
   }
 
   /**

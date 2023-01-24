@@ -30,45 +30,43 @@ abstract class ProviderComponent<T> extends Component {
   }
 
   public function createElement() {
-    return new Element(
+    var element:ElementOf<ProviderComponent<T>> = new Element(
       this,
       useProxyElementEngine((element:ElementOf<ProviderComponent<T>>) -> {
         var value = element.component.value;
         Debug.assert(value != null);
         return element.component.render(value);
-      }),
-      new HookCollection([
-        (element:ElementOf<ProviderComponent<T>>) -> {
-          element.watchLifecycle({
-            beforeInit: (element, _) -> {
-              var component = element.component;
-              component.value = component.create();
-            },
-      
-            beforeUpdate: (
-              element:ElementOf<ProviderComponent<T>>,
-              currentComponent:ProviderComponent<T>,
-              incomingComponent:ProviderComponent<T>
-            ) -> {
-              var curValue = currentComponent.getValue();
-              if (curValue != null) {
-                currentComponent.dispose(curValue);
-                currentComponent.value = null;
-              }
-              incomingComponent.value = incomingComponent.create();
-            },
-      
-            beforeDispose: element -> {
-              var component = element.component;
-              var value = component.getValue();
-              if (value != null) {
-                component.dispose(value);
-                component.value = null;
-              }
-            }
-          });
-        }
-      ])
+      })
     );
+
+    element.watchLifecycle({
+      beforeInit: (element, _) -> {
+        var component = element.component;
+        component.value = component.create();
+      },
+
+      beforeUpdate: (
+        element:ElementOf<ProviderComponent<T>>,
+        currentComponent:ProviderComponent<T>,
+        incomingComponent:ProviderComponent<T>
+      ) -> {
+        var curValue = currentComponent.getValue();
+        if (curValue != null) {
+          currentComponent.dispose(curValue);
+          currentComponent.value = null;
+        }
+        incomingComponent.value = incomingComponent.create();
+      },
+
+      beforeDispose: element -> {
+        var component = element.component;
+        var value = component.getValue();
+        if (value != null) {
+          component.dispose(value);
+          component.value = null;
+        }
+      }
+    });
+    return element;
   }
 }

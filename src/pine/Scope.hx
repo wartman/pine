@@ -23,8 +23,7 @@ final class Scope extends Component implements HasComponentType {
   public function createElement() {
     return new Element(
       this,
-      useTrackedProxyEngine((element:ElementOf<Scope>) -> element.component.render(element)),
-      []
+      useTrackedProxyEngine((element:ElementOf<Scope>) -> element.component.render(element))
     );
   }
 }

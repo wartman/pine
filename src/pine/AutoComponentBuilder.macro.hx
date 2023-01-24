@@ -14,7 +14,6 @@ function build() {
   var fields = getBuildFieldsSafe();
   var builder = new ClassBuilder(fields);
   var properties = new PropertyBuilder(fields);
-  var hooks = new HookBuilder(fields);
   var tracked = new TrackedPropertyBuilder(fields, {
     trackedName: 'trackedObject',
     trackerIsNullable: true,
@@ -55,8 +54,7 @@ function build() {
               component.trackedObject = trackedObject;
               component.trackedObject.replace(component.trackedObjectProps);
             }
-          }),
-          ${hooks.getHookCollection()}
+          })
         );
       }
     });
@@ -72,8 +70,7 @@ function build() {
       public function createElement() {
         return new pine.Element(
           this,
-          pine.element.TrackedElementEngine.useTrackedProxyEngine((element:pine.ElementOf<AutoComponent>) -> element.component.render(element)),
-          ${hooks.getHookCollection()}
+          pine.element.TrackedElementEngine.useTrackedProxyEngine((element:pine.ElementOf<AutoComponent>) -> element.component.render(element))
         );
       }
     });
