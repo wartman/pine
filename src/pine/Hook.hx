@@ -7,8 +7,6 @@ import pine.state.Signal;
 
 private final hookRegistry:Map<Context, Hook<Dynamic>> = [];
 
-typedef HookHandler<T:Component> = (element:ElementOf<T>)->Void;
-
 typedef HookEntry<T> = { value:T, ?cleanup:(value:T)->Void }; 
 
 class Hook<T:Component> implements Disposable {
@@ -131,6 +129,24 @@ class Hook<T:Component> implements Disposable {
       ];
       return () -> for (cancel in links) cancel();
     });
+  }
+
+  /**
+    Use a callback that will be run once every UPDATE, and NOT on Init.
+  **/
+  public function useUpdate(handler:()->Void) {
+    useElement(element -> element.events.afterUpdate.add((_) -> handler()));
+  }
+
+  /**
+    Use a cleanup method that will be run when the element is disposed.
+  **/
+  public function useCleanup(cleanup:()->Void) {
+    // note: We can't use the `dispose` events on the Element here 
+    // as the Hook will be disposed first. There's no good way around
+    // this: we need to the hook to dispose on `Element.beforeDispose` 
+    // or we run the risk of an effect running on a disposed Element.
+    useData(() -> cleanup, cleanup -> cleanup());
   }
 
   function useIndex() {

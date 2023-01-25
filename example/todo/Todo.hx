@@ -311,6 +311,8 @@ class TodoInput extends AutoComponent {
         var el:js.html.InputElement = cast context.getObject();
         el.focus();
       }
+      // @todo: Return focus on dispose?
+      () -> null;
     });
 
     return new Html<'input'>({
