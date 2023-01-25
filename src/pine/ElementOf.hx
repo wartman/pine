@@ -33,6 +33,7 @@ abstract ElementOf<T:Component>(Element)
     this = element;
   }
 
+  @:deprecated
   public inline function watchLifecycle(lifecycle:Lifecycle<T>) {
     this.events.addLifecycle(cast lifecycle);
   }

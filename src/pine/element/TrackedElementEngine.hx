@@ -21,6 +21,8 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
         return computation.peek();
       }
       
+      // @todo: This current implementation will call `render` more than
+      // once if the component is invalidated.
       computation = new Computation(() -> {
         if (!wasCalledByElement) {
           // @todo: This is a bit hacky, but we need it to make sure
@@ -50,13 +52,11 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
       computation.peek();
     });
 
-    element.watchLifecycle({
-      beforeDispose: _ -> {
-        if (computation != null) {
-          computation.dispose();
-          computation = null;
-        }
-      }
+    element.events.beforeDispose.add(_ -> {
+      if (computation != null) {
+        computation.dispose();
+        computation = null;
+      }      
     });
     
     return factory(element);
@@ -76,21 +76,19 @@ function useSyncedTrackedProxyEngine<T:Component, O:Disposable>(
     var factory = useTrackedProxyEngine(render);
     var tracked:Null<O> = null;
 
-    element.watchLifecycle({
-      beforeInit: (element, _) -> {
-        Debug.assert(tracked == null);
-        tracked = options.init(element.component);
-      },
-      beforeUpdate: (element, currentComponent, incomingComponent) -> {
-        if (currentComponent == incomingComponent) return;
-        Debug.assert(tracked != null);
-        options.bind(incomingComponent, tracked);
-      },
-      beforeDispose: _ -> {
-        if (tracked != null) {
-          tracked.dispose();
-          tracked = null;
-        }
+    element.events.beforeInit.add((element, _) -> {
+      Debug.assert(tracked == null);
+      tracked = options.init(element.component);
+    });
+    element.events.beforeUpdate.add((element, currentComponent, incomingComponent) -> {
+      if (currentComponent == incomingComponent) return;
+      Debug.assert(tracked != null);
+      options.bind(incomingComponent, tracked);
+    });
+    element.events.beforeDispose.add(_ -> {
+      if (tracked != null) {
+        tracked.dispose();
+        tracked = null;
       }
     });
 

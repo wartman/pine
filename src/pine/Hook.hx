@@ -1,17 +1,16 @@
 package pine;
 
-import pine.core.UniqueId;
-import pine.debug.Debug;
 import pine.core.Disposable;
+import pine.debug.Debug;
 import pine.state.Observer;
+import pine.state.Signal;
 
 private final hookRegistry:Map<Context, Hook<Dynamic>> = [];
 
 typedef HookHandler<T:Component> = (element:ElementOf<T>)->Void;
 
-// @todo: Instead of having a hookRegistry, we might just have a
-// hook instance on our Element. On the other hand, I think this works fine
-// and will only get used if needed.
+typedef HookEntry<T> = { value:T, ?cleanup:(value:T)->Void }; 
+
 class Hook<T:Component> implements Disposable {
   public static function from<T:Component>(element:ElementOf<T>):Hook<T> {
     if (!hookRegistry.exists(element)) {
@@ -22,9 +21,8 @@ class Hook<T:Component> implements Disposable {
   }
 
   final element:ElementOf<T>;
-  var states:Array<Null<Dynamic>> = [];
-  var cleanups:Array<Null<(value:Null<Dynamic>)->Void>> = [];
   var index = 0;
+  var entries:Array<Null<HookEntry<Dynamic>>> = [];
   #if debug
   var inHook = false;
   #end
@@ -38,63 +36,98 @@ class Hook<T:Component> implements Disposable {
       hookRegistry.remove(element);
       dispose();
     });
-    events.beforeRevalidatedRender.add(() -> index = 0);
-    events.beforeInit.add((element, _) -> reset(null, null));
-    events.beforeUpdate.add((element, currentComponent, incomingComponent) -> reset(currentComponent, incomingComponent));
+    events.beforeRevalidatedRender.add(() -> reset());
+    events.beforeInit.add((_, _) -> reset());
+    events.beforeUpdate.add((_, _, _) -> reset());
   }
-  
-  public function useState<R>(
-    factory:()->R,
-    ?cleanup:(data:R)->Void
-  ):R {
+
+  /**
+    Use a constant value that does not change for this context.
+  **/
+  public function useData<R>(factory:()->R, ?cleanup:(data:R)->Void):R {
     var index = useIndex();
-    var data:Null<R> = getState(index);
-    
-    Debug.assert(inHook == false, 'Cannot nest hooks');
+    var entry:Null<HookEntry<R>> = getEntry(index);
 
-    // @todo: Find a way to throw an error if the user tries to use
-    // this hook outside of the top of the render method.
-
-    if (data == null) {
-      #if debug
-      var prevInHook = inHook;
-      inHook = true;
-      #end
-      data = factory();
-      #if debug
-      inHook = prevInHook;
-      #end
-      setState(index, data, cleanup);
+    if (entry == null) {
+      var value = runFactory(factory);
+      setEntry(index, value, cleanup);
+      return value;
     }
 
-    return data;
+    return entry.value;
   }
 
-  public inline function useCleanup(cleanup:()->Void) {
-    useState(() -> index, _ -> cleanup());
+  /**
+    Use a signal scoped to this context.
+  **/
+  public function useSignal<R>(factory:()->R):Signal<R> {
+    var index = useIndex();
+    var entry:Null<HookEntry<Signal<R>>> = getEntry(index);
+
+    return if (entry == null) {
+      var signal = new Signal(runFactory(factory));
+      setEntry(index, signal, signal -> {
+        if (signal != null) signal.dispose();
+      });
+      signal;
+    } else {
+      var signal = entry.value;
+      signal.set(runFactory(factory));
+      signal;
+    }
   }
 
-  public function useEffect(effect:()->Void) {
-    Observer.untrack(() -> useState(
-      () -> new Observer(effect),
-      observer -> observer.dispose()
-    ));
+  /**
+    Use an effect.
+
+    Note that this does not work quite like it does in react: the 
+    effect is an Observer that updates when its signals change,
+    NOT when its component is re-rendered.
+
+    @todo: Determine if this is the behavior we want.
+  **/
+  public function useEffect(effect:()->(()->Void)) {
+    var index = useIndex();
+    var entry:Null<HookEntry<Observer>> = getEntry(index);
+
+    if (entry == null) {
+      var cleanup:Null<()->Void> = null;
+      setEntry(index, runFactory(() -> new Observer(() -> {
+        // @todo: do we want to run this cleanup here?
+        if (cleanup != null) cleanup();
+        cleanup = effect();
+      })), observer -> {
+        observer.dispose();
+        if (cleanup != null) cleanup();
+      });
+    }
   }
 
-  public inline function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
-    useState(() -> handler(element), cancel -> cancel());
+  /**
+    Use a callback that has a reference to the current Element. The callback
+    will only be run once.
+  **/
+  public function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
+    useData(() -> handler(element), cancel -> cancel());
   }
 
-  public inline function useInit(handler:()->Void) {
+  /**
+    Use a callback that will be run once, after the Element is 
+    initialized.
+  **/
+  public function useInit(handler:()->Void) {
     useElement(element -> element.events.afterInit.add((_, _) -> handler()));
   }
 
+  /**
+    Use a callback that will be run once after the Element is initialized
+    *and* after every update.
+  **/
   public function useNext(handler:()->Void) {
     useElement(element -> {
-      var events = element.events;
       var links = [
-        events.afterUpdate.add((_) -> handler()),
-        events.afterInit.add((_, _) -> handler())
+        element.events.afterInit.add((_, _) -> handler()),
+        element.events.afterUpdate.add((_) -> handler())
       ];
       return () -> for (cancel in links) cancel();
     });
@@ -102,50 +135,52 @@ class Hook<T:Component> implements Disposable {
 
   function useIndex() {
     var i = index++;
-    if (states.length == i) {
-      states[i] = null;
-      cleanups[i] = null;
+    if (entries.length == i) {
+      entries[i] = null;
     }
     return i;
   }
 
-  function getState(index:Int):Null<Dynamic> {
-    return states[index];
+  function getEntry<R>(index:Int):Null<HookEntry<R>> {
+    return entries[index];
   }
 
-  function setState<R>(index:Int, data:R, ?cleanup:(value:R)->Void) {
-    states[index] = data;
-    cleanups[index] = cleanup;
+  function setEntry<R>(index:Int, value:R, ?cleanup:(value:R)->Void) {
+    var prev = entries[index];
+    // @todo: is this what we want:
+    if (prev != null && prev.cleanup != null) prev.cleanup(prev.value);
+    entries[index] = { value: value, cleanup: cleanup };
   }
 
   function getElement():ElementOf<T> {
     return element;
   }
 
-	public function dispose() {
-    cleanupState();
-  }
-
-  function reset(currentComponent:Null<T>, incomingComponent:Null<T>) {
-    if (index == 0) return;
-
-    index = 0;
-    // @todo: This shouldn't always happen! We should be able to configure this.
-    if (currentComponent != null && currentComponent != incomingComponent) {
-      cleanupState();
-    }
-  }
-
-  function cleanupState() {
-    var cleanupMethods = cleanups.copy();
-    var cleanupState = states.copy();
+  public function dispose() {
+    var entriesToCleanup = entries.copy();
     
-    states = [];
-    cleanups = [];
+    entries = [];
 
-    for (index => state in cleanupState) {
-      var cleanup = cleanupMethods[index];
-      if (cleanup != null) cleanup(state);
+    for (entry in entriesToCleanup) {
+      if (entry != null && entry.cleanup != null) entry.cleanup(entry.value);
     }
+  }
+
+  function reset() {
+    if (index == 0) return;
+    index = 0;
+  }
+
+  inline function runFactory<R>(factory:()->R):R {
+    #if debug
+    Debug.assert(inHook == false, 'Cannot nest hooks');
+    var prevInHook = inHook;
+    inHook = true;
+    #end
+    var value = factory();
+    #if debug
+    inHook = prevInHook;
+    #end
+    return value;
   }
 }

@@ -3,6 +3,7 @@ package pine.element;
 import pine.element.ElementInitMode;
 import pine.hydration.Cursor;
 
+@:deprecated('Use events directly')
 typedef Lifecycle<T:Component> = {
   public final ?beforeInit:(element:ElementOf<T>, mode:ElementInitMode)->Void;
   public final ?afterInit:(element:ElementOf<T>, mode:ElementInitMode)->Void;

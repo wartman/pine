@@ -16,6 +16,7 @@ class Events<T:Component> {
 
   public function new() {}
 
+  @:deprecated
   public function addLifecycle(lifecycle:Lifecycle<T>) {
     if (lifecycle.beforeInit != null) beforeInit.add(lifecycle.beforeInit);
     if (lifecycle.afterInit != null) afterInit.add(lifecycle.afterInit);
