@@ -2,7 +2,6 @@ package pine;
 
 import pine.element.Events;
 import pine.element.ElementStatus;
-import pine.element.Lifecycle;
 
 /**
   A simple wrapper over `Element` that makes it more convenient
@@ -31,11 +30,6 @@ abstract ElementOf<T:Component>(Element)
 
   public inline function new(element) {
     this = element;
-  }
-
-  @:deprecated
-  public inline function watchLifecycle(lifecycle:Lifecycle<T>) {
-    this.events.addLifecycle(cast lifecycle);
   }
 
   public inline function onReady(listener:(element:ElementOf<T>)->Void) {

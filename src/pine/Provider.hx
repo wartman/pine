@@ -39,34 +39,31 @@ abstract class ProviderComponent<T> extends Component {
       })
     );
 
-    element.watchLifecycle({
-      beforeInit: (element, _) -> {
-        var component = element.component;
-        component.value = component.create();
-      },
-
-      beforeUpdate: (
-        element:ElementOf<ProviderComponent<T>>,
-        currentComponent:ProviderComponent<T>,
-        incomingComponent:ProviderComponent<T>
-      ) -> {
-        var curValue = currentComponent.getValue();
-        if (curValue != null) {
-          currentComponent.dispose(curValue);
-          currentComponent.value = null;
-        }
-        incomingComponent.value = incomingComponent.create();
-      },
-
-      beforeDispose: element -> {
-        var component = element.component;
-        var value = component.getValue();
-        if (value != null) {
-          component.dispose(value);
-          component.value = null;
-        }
+    element.events.beforeInit.add((element, _) -> {
+      var component = element.component;
+      component.value = component.create();
+    });
+    element.events.beforeUpdate.add((
+      element:ElementOf<ProviderComponent<T>>,
+      currentComponent:ProviderComponent<T>,
+      incomingComponent:ProviderComponent<T>
+    ) -> {
+      var curValue = currentComponent.getValue();
+      if (curValue != null) {
+        currentComponent.dispose(curValue);
+        currentComponent.value = null;
+      }
+      incomingComponent.value = incomingComponent.create();
+    });
+    element.events.beforeDispose.add(element -> {
+      var component = element.component;
+      var value = component.getValue();
+      if (value != null) {
+        component.dispose(value);
+        component.value = null;
       }
     });
+
     return element;
   }
 }

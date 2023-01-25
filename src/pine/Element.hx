@@ -249,5 +249,7 @@ class Element
     status = Disposed;
     
     events.afterDispose.dispatch();
+
+    events.dispose();
   }
 }
