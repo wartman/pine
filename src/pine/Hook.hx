@@ -1,5 +1,6 @@
 package pine;
 
+import pine.state.Computation;
 import pine.core.Disposable;
 import pine.debug.Debug;
 import pine.state.Observer;
@@ -42,7 +43,7 @@ class Hook<T:Component> implements Disposable {
   /**
     Use a constant value that does not change for this context.
   **/
-  public function useData<R>(factory:()->R, ?cleanup:(data:R)->Void):R {
+  public function useMemo<R>(factory:()->R, ?cleanup:(data:R)->Void):R {
     var index = useIndex();
     var entry:Null<HookEntry<R>> = getEntry(index);
 
@@ -76,25 +77,54 @@ class Hook<T:Component> implements Disposable {
   }
 
   /**
+    Use a value that is updated any time one of its signals changes.
+
+    Note: think of `useComputed` like a mutable variable, and `useMemo`
+    as a constant. This should help you figure out which you should use.
+  **/
+  public function useComputed<R>(factory:()->R):Computation<R> {
+    var factoryIndex = useIndex();
+    var index = useIndex();
+    var entry:Null<HookEntry<Computation<R>>> = getEntry(index);
+
+    setEntry(factoryIndex, factory);
+
+    return if (entry == null) {
+      var computation = new Computation(() -> {
+        var entry = getEntry(factoryIndex);
+        return entry == null ? factory() : entry.value();
+      });
+      setEntry(index, computation, computation -> computation.dispose());
+      return computation;
+    } else {
+      entry.value;
+    }
+  }
+
+  /**
     Use an effect.
 
     Note that this does not work quite like it does in react: the 
     effect is an Observer that updates when its signals change,
-    NOT when its component is re-rendered.
+    *not* when its component is re-rendered.
 
-    @todo: Determine if this is the behavior we want.
+    @todo: Ideally this should run after the component is finished
+    rendering, not immediately.
   **/
   public function useEffect(effect:()->(()->Void)) {
+    var effectIndex = useIndex();
     var index = useIndex();
     var entry:Null<HookEntry<Observer>> = getEntry(index);
 
+    setEntry(effectIndex, effect);
+
     if (entry == null) {
       var cleanup:Null<()->Void> = null;
-      setEntry(index, runFactory(() -> new Observer(() -> {
-        // @todo: do we want to run this cleanup here?
-        if (cleanup != null) cleanup();
-        cleanup = effect();
-      })), observer -> {
+      setEntry(index, new Observer(() -> {
+        var entry = getEntry(effectIndex);
+        var currentEffect:()->(()->Void) = entry == null ? effect : entry.value;
+        cleanup = runFactory(currentEffect);
+      }), observer -> {
         observer.dispose();
         if (cleanup != null) cleanup();
       });
@@ -103,10 +133,11 @@ class Hook<T:Component> implements Disposable {
 
   /**
     Use a callback that has a reference to the current Element. The callback
-    will only be run once.
+    will only be run once, meaning that this is primarily intended as a way
+    to use an Element's events.
   **/
   public function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
-    useData(() -> handler(element), cancel -> cancel());
+    useMemo(() -> handler(element), cancel -> cancel());
   }
 
   /**
@@ -146,7 +177,7 @@ class Hook<T:Component> implements Disposable {
     // as the Hook will be disposed first. There's no good way around
     // this: we need to the hook to dispose on `Element.beforeDispose` 
     // or we run the risk of an effect running on a disposed Element.
-    useData(() -> cleanup, cleanup -> cleanup());
+    useMemo(() -> cleanup, cleanup -> cleanup());
   }
 
   function useIndex() {
@@ -163,7 +194,7 @@ class Hook<T:Component> implements Disposable {
 
   function setEntry<R>(index:Int, value:R, ?cleanup:(value:R)->Void) {
     var prev = entries[index];
-    // @todo: is this what we want:
+    // @todo: think about if the following line makes sense:
     if (prev != null && prev.cleanup != null) prev.cleanup(prev.value);
     entries[index] = { value: value, cleanup: cleanup };
   }
