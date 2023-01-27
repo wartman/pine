@@ -32,27 +32,3 @@ function renders(
   var actual = mount(component);
   Assert.equals(actual.getObject().toString(), expected, p);
 }
-
-function rendersNext<T:Component>(
-  component:T,
-  next:(context:Context, defer:(?next:()->Void)->Void)->Void,
-  ?p:PosInfos
-) {
-  var comp = new AssertWrapper({
-    next: next,
-    child: component
-  });
-  mount(comp);
-}
-
-class AssertWrapper extends AutoComponent {
-  public final next:(context:Context, defer:(?next:()->Void)->Void)->Void;
-  final child:Component;
-
-  function render(context:Context) {
-    Hook.from(context).useNext(() -> next(context, (?next) -> {
-      if (next != null) Process.from(context).defer(next);
-    }));
-    return child;
-  }
-}

@@ -231,13 +231,58 @@ function main() {
 }
 ```
 
-Providers
----------
+Providers and Context
+---------------------
 
-> Todo
+> todo: Cover providers and the standard `from`/`maybeFrom` API Pine uses.
 
+Hooks
+-----
 
-Lifecycles and Hooks
---------------------
+For the most part, everything you need to do in a UI should be covered by the reactivity described above. You will probably run into edge cases however, situations where you need to synchronize state outside a Pine ui or otherwise cause side effects. For those situations, Pine has a React-inspired `Hook` api you can use.
 
-> Todo
+### useEffect
+
+One difference Pine hooks have from React is that they require you to get an instance from the current Context. For example:
+
+```haxe
+class HelloWorld extends AutoComponent {
+  var greeting:String;
+  var location:String;
+
+  public function render(context:Context) {
+    Hook.from(context).useEffect(() -> {
+      trace('$greeting $location');
+    });
+    return new Html<'div'>({ children: '$greeting $location' });
+  }
+}
+```
+
+Note that, unlike React, we don't need to use a dependency array here. This is because, internally, `useEffect` uses an `Observer`. In the above example, `useEffect` will *only* be triggered if `var greeting` or `var location` change. This may lead to some potentially unexpected behavior: for example, the below example will only ever trigger `useEffect` once, even if the `HelloWorld` component is re-rendered, as no signals are provided to the effect:
+
+```haxe
+class HelloWorld extends AutoComponent {
+  final greeting:String;
+  final location:String;
+
+  public function render(context:Context) {
+    Hook.from(context).useEffect(() -> {
+      trace('$greeting $location');
+    });
+    return new Html<'div'>({ children: '$greeting $location' });
+  }
+}
+```
+
+> Remember: only `var` fields are converted into signals in `AutoComponent`s.
+
+In addition, `useEffect` is run immediately, *not* after rendering is completed. This means that it could be invoked before the Element has been mounted, meaning relying on APIs like `context.getObject()` are dangerous. `useEffect` should be a way to sync external APIs with Pine's state (or for things like logging), not lifecycle hooks.
+
+For that, well, Pine has lifecycle hooks. 
+
+### useInit, useUpdate, useNext, and useCleanup
+
+These are fairly self-explanatory. `useInit` will be run *once* after the first time the Element is rendered. `useUpdate` will be run every time the Element is updated, but *not* when it's initialized. The `useNext` hook will be run for both updates *and* when the element is initialized. `useCleanup` adds a hook that will be run when the Element is disposed.
+
+> todo: Cover the other hooks: `useMemo`, `useSignal`, `useComputed` and `useElement`.
