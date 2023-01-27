@@ -59,12 +59,12 @@ class Hook<T:Component> implements Disposable {
   /**
     Use a signal scoped to this context.
   **/
-  public function useSignal<R>(factory:()->R):Signal<R> {
+  public function useSignal<R>(factory:()->R, ?comparator):Signal<R> {
     var index = useIndex();
     var entry:Null<HookEntry<Signal<R>>> = getEntry(index);
 
     return if (entry == null) {
-      var signal = new Signal(runFactory(factory));
+      var signal = new Signal(runFactory(factory), comparator);
       setEntry(index, signal, signal -> {
         if (signal != null) signal.dispose();
       });
@@ -82,7 +82,7 @@ class Hook<T:Component> implements Disposable {
     Note: think of `useComputed` like a mutable variable, and `useMemo`
     as a constant. This should help you figure out which you should use.
   **/
-  public function useComputed<R>(factory:()->R):Computation<R> {
+  public function useComputed<R>(factory:()->R, ?comparator):Computation<R> {
     var factoryIndex = useIndex();
     var index = useIndex();
     var entry:Null<HookEntry<Computation<R>>> = getEntry(index);
@@ -92,8 +92,9 @@ class Hook<T:Component> implements Disposable {
     return if (entry == null) {
       var computation = new Computation(() -> {
         var entry = getEntry(factoryIndex);
-        return entry == null ? factory() : entry.value();
-      });
+        var currentFactory:()->R = entry == null ? factory : entry.value;
+        return runFactory(currentFactory);
+      }, comparator);
       setEntry(index, computation, computation -> computation.dispose());
       return computation;
     } else {

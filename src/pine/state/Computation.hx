@@ -3,6 +3,7 @@ package pine.state;
 import pine.debug.Debug;
 import pine.state.Engine;
 
+// @todo: This class probably needs a rethink.
 class Computation<T> extends Signal<T> {
   final observer:Observer;
 
@@ -10,9 +11,20 @@ class Computation<T> extends Signal<T> {
     super(null, comparator);
     var first = true;
     this.observer = new Observer(() -> {
-      value = handler();
-      if (!first) notify();
-      first = false;
+      var newValue = handler();
+
+      if (first) {
+        this.value = newValue;
+        first = false;
+        return;
+      }
+      
+      if (!this.comparator(this.value, newValue)) {
+        return;
+      }
+
+      this.value = newValue;
+      notify();
     });
   }
 
