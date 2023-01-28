@@ -11,6 +11,10 @@ import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
 
+// @todo: This is still broken :/. Sometimes elements get ordered
+// incorrectly on re-renders.
+//
+// Probably something going on with `updateSlot`?
 final class Fragment extends Component implements HasComponentType {
   public final children:Array<Component>;
 

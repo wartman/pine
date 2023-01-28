@@ -6,8 +6,6 @@ import pine.html.server.*;
 
 using pine.adaptor.Process;
 
-// @todo: Some way to change the current Adaptor. 
-
 function mount(component:Component) {
   var object = new HtmlElementObject('#document', {});
   var root = ServerRoot.mount(object, component);
@@ -31,4 +29,16 @@ function renders(
 ):Void {
   var actual = mount(component);
   Assert.equals(actual.getObject().toString(), expected, p);
+}
+
+function rendersAsync(
+  component:Component,
+  next:(root:Element)->Void
+) {
+  var root = mount(component);
+  root.getAdaptor().afterRebuild(() -> next(root));  
+}
+
+function toString(element:Element):String {
+  return (element.getObject():HtmlElementObject).toString();
 }
