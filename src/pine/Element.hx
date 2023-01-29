@@ -37,7 +37,7 @@ class Element
   /**
     Mount this element using whatever adaptor you've decided to use.
 
-    This will initialize the element and all its managers.
+    This will also initialize the element.
   **/
   public function mount(parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
@@ -52,10 +52,11 @@ class Element
   }
 
   /**
-    Hydrate an existing target.
+    Hydrate an existing target. 
     
-    This will initialize the element and all its managers. Note that
-    you should NOT run `mount` and `initialize` on the same Element.
+    This will also initialize the element, so you should 
+    *not* (and do not need to) run `mount` and `hydrate` 
+    on the same Element.
   **/
   public function hydrate(cursor:Cursor, parent:Null<Element>, newSlot:Null<Slot>) {
     init(parent, newSlot);
@@ -103,7 +104,6 @@ class Element
     Debug.assert(status != Pending, 'Attempted to invalidate an Element before it was mounted');
     Debug.assert(status != Disposing, 'Attempted to invalidate an Element while it was disposing');
     Debug.assert(status != Disposed, 'Attempted to invalidate an Element after it was disposed');
-    // Debug.assert(status != Building, 'Attempted to invalidate an Element while it was building');
     
     switch status {
       case Invalid: return;
@@ -123,6 +123,7 @@ class Element
   **/
   public function rebuild() {
     Debug.assert(status != Building);
+
     if (status != Invalid) return;
   
     events.beforeUpdate.dispatch(this, component, component);

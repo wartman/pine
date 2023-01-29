@@ -1,7 +1,7 @@
 {
   "name": "pine",
   "classPath": "src",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Isomorphic UI for haxe",
   "license": "MIT",
   "releasenote": "Pre-alpha",
