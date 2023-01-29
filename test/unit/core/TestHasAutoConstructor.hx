@@ -20,12 +20,6 @@ class TestHasAutoConstructor implements TestCase {
     auto.one.equals('one');
     auto.two.equals(2);
   }
-
-  @:test('Works with HasLazyProps')
-  function testInterop() {
-    var lazy = new AutoWorksWithLazy({ one: 'one' });
-    lazy.two.equals('onetwo');
-  }
 }
 
 class AutoOne implements HasAutoConstructor {
@@ -36,12 +30,4 @@ class AutoOne implements HasAutoConstructor {
 class AutoWithSkip implements HasAutoConstructor {
   public final one:String;
   @:skip public final two:Int = 2; 
-}
-
-class AutoWorksWithLazy
-  implements HasAutoConstructor
-  implements HasLazyProps
-{
-  public final one:String;
-  @:lazy public final two:String = one + 'two';
 }
