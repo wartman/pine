@@ -1,5 +1,6 @@
 package pine.html;
 
+@:deprecated('Use pine.Child')
 @:forward
 abstract HtmlChild(Component) from Component to Component {
   @:from

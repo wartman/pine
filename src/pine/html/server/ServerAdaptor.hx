@@ -15,7 +15,7 @@ class ServerAdaptor extends Adaptor {
   }
 
   public function createPlaceholder():ObjectComponent {
-    return new HtmlTextComponent({ content: '' });
+    return new Text('');
   }
 
   public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {

@@ -64,7 +64,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool) {
   var attrs = switch tag.kind {
     case TagNormal:
       var attrs = macro:$props & pine.html.HtmlEvents & {
-        ?children:pine.html.HtmlChildren, 
+        ?children:pine.Children, 
         ?key:pine.diffing.Key
       };
       builder.add(macro class {

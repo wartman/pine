@@ -6,6 +6,7 @@ import pine.diffing.Key;
 
 using pine.core.OptionTools;
 
+@:deprecated('Use pine.Text')
 final class HtmlTextComponent extends ObjectComponent implements HasComponentType {
   public final content:String;
 

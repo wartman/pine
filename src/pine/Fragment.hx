@@ -19,7 +19,7 @@ final class Fragment extends Component implements HasComponentType {
   public final children:Array<Component>;
 
   public function new(props:{
-    children:Array<Component>,
+    children:Children,
     ?key:Key
   }) {
     super(props.key);

@@ -20,7 +20,7 @@ class TestFragment implements TestCase {
   @:test('Fragments work')
   function testSimple() {
     var fragment = new Fragment({
-      children: [ ('a':HtmlChild), ('b':HtmlChild), ('c':HtmlChild), ('d':HtmlChild) ]
+      children: [ new Text('a'), new Text('b'), new Text('c'), new Text('d') ]
     });
     fragment.renders('abcd');
   }
@@ -39,14 +39,14 @@ class TestFragment implements TestCase {
 
     new Html<'div'>({
       children: [
-        ('a':HtmlChild),
+        new Text('a'),
         new Fragment({
           children: [
-            ('frag:b':HtmlChild),
-            ('frag:c':HtmlChild)
+            new Text('frag:b'),
+            new Text('frag:c')
           ]
         }),
-        ('d':HtmlChild)
+        new Text('d')
       ]
     }).hydrates(doc);
   }
@@ -56,45 +56,45 @@ class TestFragment implements TestCase {
   function testOrdering(done) {
     var fragment = new Fragment({
       children: [ 
-        ('a':HtmlChild),
-        ('b':HtmlChild),
+        new Text('a'),
+        new Text('b'),
         new Fragment({
           children: [
-            ('c':HtmlChild), 
-            ('d':HtmlChild)
+            new Text('c'), 
+            new Text('d')
           ]
         }),
-        ('e':HtmlChild),
+        new Text('e'),
       ]
     });
     fragment.rendersAsync(root -> {
       root.toString().equals('abcde');
       root.queryChildren().findOfType(Fragment).sure().update(new Fragment({
         children: [
-          ('a':HtmlChild),
-          ('c':HtmlChild),
+          new Text('a'),
+          new Text('c'),
           new Fragment({
             children: [
-              ('d':HtmlChild),
-              ('b':HtmlChild), 
+              new Text('d'),
+              new Text('b'), 
             ]
           }),
-          ('e':HtmlChild),
+          new Text('e'),
         ]
       }));
       root.getAdaptor().afterRebuild(() -> {
         root.toString().equals('acdbe');
         root.queryChildren().findOfType(Fragment).sure().update(new Fragment({
           children: [
-            ('a':HtmlChild),
+            new Text('a'),
             new Fragment({
               children: [
-                ('d':HtmlChild),
-                ('b':HtmlChild), 
+                new Text('d'),
+                new Text('b'), 
               ]
             }),
-            ('c':HtmlChild),
-            ('e':HtmlChild),
+            new Text('c'),
+            new Text('e'),
           ]
         }));
         root.getAdaptor().afterRebuild(() -> {

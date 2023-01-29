@@ -1,5 +1,6 @@
 package pine.html;
 
+@:deprecated('Use pine.Children')
 @:forward(iterator)
 abstract HtmlChildren(Array<HtmlChild>) from Array<HtmlChild> to Array<HtmlChild> {
   @:from
