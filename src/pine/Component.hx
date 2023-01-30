@@ -3,7 +3,6 @@ package pine;
 import pine.core.*;
 import pine.diffing.*;
 
-@:allow(pine)
 abstract class Component {
   public final key:Null<Key>;
 

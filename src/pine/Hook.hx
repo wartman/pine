@@ -12,11 +12,13 @@ typedef HookEntry<T> = { value:T, ?cleanup:(value:T)->Void };
 
 class Hook<T:Component> implements Disposable {
   public static function from<T:Component>(element:ElementOf<T>):Hook<T> {
-    if (!hookRegistry.exists(element)) {
-      var hook = new Hook(element);
+    var hook:Hook<T> = cast hookRegistry.get(element);
+    if (hook == null) {
+      hook = new Hook(element);
       hookRegistry.set(element, hook);
+      return hook;
     }
-    return cast hookRegistry.get(element);
+    return hook;
   }
 
   final element:ElementOf<T>;
@@ -24,6 +26,7 @@ class Hook<T:Component> implements Disposable {
   var entries:Array<Null<HookEntry<Dynamic>>> = [];
   #if debug
   var inHook = false;
+  var expectedCount = 0;
   #end
 
   public function new(element) {
@@ -38,6 +41,21 @@ class Hook<T:Component> implements Disposable {
     events.beforeRevalidatedRender.add(() -> reset());
     events.beforeInit.add((_, _) -> reset());
     events.beforeUpdate.add((_, _, _) -> reset());
+    
+    #if debug
+    events.afterInit.add((_, _) -> {
+      expectedCount = index;
+    });
+    events.afterUpdate.add((_) -> {
+      Debug.assert(
+        index == expectedCount, 
+        'The current component should use $expectedCount hooks, but'
+        + ' $index hooks were used. Make sure hooks are not used inside'
+        + ' conditionals (like if statements), loops or function calls.'
+        + ' They should only be used at the top of a render method.'
+      );
+    });
+    #end
   }
 
   /**

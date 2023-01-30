@@ -1,6 +1,5 @@
 package pine;
 
-import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.DisposableHost;
 import pine.element.*;
