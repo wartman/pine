@@ -10,7 +10,6 @@ typedef EventListener = (e:Event) -> Void;
 // From https://github.com/haxetink/tink_domspec/blob/master/src/tink/domspec/Events.hx
 typedef HtmlEvents = {
   @:optional final onwheel:EventListener;
-
   @:optional final oncopy:EventListener;
   @:optional final oncut:EventListener;
   @:optional final onpaste:EventListener;

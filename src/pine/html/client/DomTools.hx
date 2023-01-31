@@ -6,6 +6,9 @@ using StringTools;
 
 inline extern final svgNamespace = 'http://www.w3.org/2000/svg';
 
+// @todo: We should investigate if there's a better way to
+// do this. I'm especially unsure about directly setting
+// functions for event handlers.
 function updateNodeAttribute(el:Element, name:String, oldValue:Null<Dynamic>, newValue:Null<Dynamic>):Void {
   var isSvg = el.namespaceURI == svgNamespace;
   switch name {
@@ -20,7 +23,8 @@ function updateNodeAttribute(el:Element, name:String, oldValue:Null<Dynamic>, ne
       js.Syntax.code('{0}[{1}] = {2}', el, name, newValue);
     default:
       name = getHtmlName(name);
-      if (name.charAt(0) == 'o' && name.charAt(1) == 'n') {
+      // @todo: Setting events this way feels questionable.
+      if (name.startsWith('on')) {
         var name = name.toLowerCase();
         if (newValue == null) {
           Reflect.setField(el, name, cast null);
@@ -37,6 +41,7 @@ function updateNodeAttribute(el:Element, name:String, oldValue:Null<Dynamic>, ne
   }
 }
 
+// @todo: Figure out how to use the @:html attributes for this instead.
 private function getHtmlName(name:String) {
   if (name.startsWith('aria')) {
     return 'aria-' + name.substr(4).toLowerCase();

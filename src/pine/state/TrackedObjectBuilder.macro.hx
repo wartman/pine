@@ -81,6 +81,8 @@ private function buildTrackedObject(type:Type, ?params:Array<String>):ComplexTyp
               var signal = '__signal_$name';
               var setter = 'set_$name';
               var getter = 'get_$name';
+              var signalAccessor = '${name}Signal';
+              var getSignalAccessor = 'get_$signalAccessor';
               var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
 
               inits.push(macro this.$signal = new pine.state.Signal($init));
@@ -94,6 +96,10 @@ private function buildTrackedObject(type:Type, ?params:Array<String>):ComplexTyp
                 inline function $getter():$t return this.$signal.get();
 
                 inline function $setter(value):$t return this.$signal.set(value);
+
+                public var $signalAccessor(get, never):pine.state.Signal<$t>;
+
+                public inline function $getSignalAccessor() return this.$signal;
               });
           }
         default:

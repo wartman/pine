@@ -5,6 +5,8 @@ import pine.*;
 import pine.html.*;
 import pine.html.client.ClientRoot;
 
+using pine.core.OptionTools;
+
 function main() {
   ClientRoot.mount(
     Browser.document.getElementById('root'),
@@ -16,6 +18,9 @@ class Counter extends AutoComponent {
   var count:Int = 0;
 
   function render(context:Context) {
+    // We can access the actual tracked signals like so:
+    trace('Updated with: ${signals.countSignal.peek()}');
+
     return new Html<'div'>({
       children: [
         new Html<'div'>({

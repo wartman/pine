@@ -85,7 +85,7 @@ function diffChildren(
   // If we still have old children, go through the array and check
   // if any have keys. If they don't, remove them.
   if (hasOldChildren) {
-    oldKeyedChildren = Key.createMap();
+    oldKeyedChildren = new KeyMap();
     while (oldHead <= oldTail) {
       var oldChild = oldChildren[oldHead];
       if (oldChild != null) {

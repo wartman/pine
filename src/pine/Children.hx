@@ -14,4 +14,8 @@ abstract Children(Array<Child>)
   public inline static function ofString(content:String):Children {
     return [ new Text(content) ];
   }
+
+  @:to public inline function toArray():Array<Component> {
+    return this;
+  }
 }

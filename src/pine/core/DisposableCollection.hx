@@ -1,6 +1,6 @@
 package pine.core;
 
-final class DisposableManager implements Disposable implements DisposableHost {
+final class DisposableCollection implements Disposable implements DisposableHost {
   final disposables:List<Disposable> = new List();
 
   public function new() {}

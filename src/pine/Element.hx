@@ -20,7 +20,7 @@ class Element
   implements DisposableHost
 {
   public final events:Events<Dynamic> = new Events();
-  public final disposables:DisposableManager = new DisposableManager();
+  public final disposables:DisposableCollection = new DisposableCollection();
   public final engine:ElementEngine;
 
   var component:Component;

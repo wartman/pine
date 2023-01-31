@@ -10,12 +10,13 @@ using haxe.macro.Tools;
 using pine.macro.MacroTools;
 
 function build() {
+  var trackedName = 'signals';
   var cls = Context.getLocalClass().get();
   var fields = getBuildFieldsSafe();
   var builder = new ClassBuilder(fields);
   var properties = new PropertyBuilder(fields);
   var tracked = new TrackedPropertyBuilder(fields, {
-    trackedName: 'trackedObject',
+    trackedName: trackedName,
     trackerIsNullable: true,
     params: cls.params.map(param -> param.name)
   });
@@ -30,7 +31,7 @@ function build() {
     var initProps:ComplexType = TAnonymous(properties.getProps().concat(trackedInitProps));
 
     builder.add(macro class {
-      var trackedObject:Null<$trackedType> = null;
+      var $trackedName:Null<$trackedType> = null;
       final trackedObjectProps:$trackedObjectProps;
 
       public function new(props:$initProps) {
@@ -46,13 +47,13 @@ function build() {
           pine.element.TrackedElementEngine.useSyncedTrackedProxyEngine((element:pine.ElementOf<$ct>) -> element.component.render(element), {
             init: (component:$ct) -> {
               var trackedObjectProps = component.trackedObjectProps;
-              var trackedObject = ${tracked.instantiateTrackedObject('trackedObjectProps')};
-              component.trackedObject = trackedObject;
-              return trackedObject;
+              var $trackedName = ${tracked.instantiateTrackedObject('trackedObjectProps')};
+              component.$trackedName = $i{trackedName};
+              return $i{trackedName};
             },
-            bind: (component:$ct, trackedObject:$trackedType) -> {
-              component.trackedObject = trackedObject;
-              component.trackedObject.replace(component.trackedObjectProps);
+            bind: (component:$ct, $trackedName:$trackedType) -> {
+              component.$trackedName = $i{trackedName};
+              component.$trackedName.replace(component.trackedObjectProps);
             }
           })
         );
