@@ -10,6 +10,7 @@ import pine.state.*;
 function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Component):CreateElementEngine {
   return (element:ElementOf<T>) -> {
     var computation:Null<Computation<Component>> = null;
+    var cachedResult:Null<Component> = null;
     var wasCalledByElement:Bool = false;  
     var factory = useProxyElementEngine(element -> {
       Debug.assert(element.status == Building);
@@ -20,20 +21,12 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
         wasCalledByElement = false;
         return computation.peek();
       }
-      
-      // @todo: This current implementation will call `render` more than
-      // once if the component is invalidated.
+
       computation = new Computation(() -> {
-        if (!wasCalledByElement) {
-          // @todo: This is a bit hacky, but we need it to make sure
-          // our Hook is resetting its index
-          element.events.beforeRevalidatedRender.dispatch();
-        }
-
-        var component = render(element);
-
         switch element.status {
           case Building if (wasCalledByElement):
+            cachedResult = render(element);
+            if (cachedResult == null) cachedResult = new Fragment({ children: [] });
           case Disposing | Disposed:
             Debug.warn(
               'A pine.Signal was changed when an element was not Disposed or Disposing.'
@@ -44,8 +37,10 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
           default:
             element.invalidate(); 
         }
-
-        return component;
+        
+        // @todo: better error message here.
+        Debug.assert(cachedResult != null, 'Tracked element was not rendered correctly');
+        return cachedResult;
       });
 
       wasCalledByElement = false;
@@ -53,6 +48,7 @@ function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Compo
     });
 
     element.events.beforeDispose.add(_ -> {
+      cachedResult = null;
       if (computation != null) {
         computation.dispose();
         computation = null;

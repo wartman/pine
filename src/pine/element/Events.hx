@@ -12,7 +12,6 @@ class Events<T:Component> implements Disposable {
   public final slotUpdated:Event3<ElementOf<T>, Null<Slot>, Null<Slot>> = new Event3();
   public final beforeDispose:Event1<ElementOf<T>> = new Event1();
   public final afterDispose:Event0 = new Event0();
-  public final beforeRevalidatedRender:Event0 = new Event0();
 
   public function new() {}
   
@@ -24,6 +23,5 @@ class Events<T:Component> implements Disposable {
     slotUpdated.clear();
     beforeDispose.clear();
     afterDispose.clear();
-    beforeRevalidatedRender.clear();
   }
 }

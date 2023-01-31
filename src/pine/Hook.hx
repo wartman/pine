@@ -38,7 +38,6 @@ class Hook<T:Component> implements Disposable {
       hookRegistry.remove(element);
       dispose();
     });
-    events.beforeRevalidatedRender.add(() -> reset());
     events.beforeInit.add((_, _) -> reset());
     events.beforeUpdate.add((_, _, _) -> reset());
     
