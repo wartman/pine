@@ -120,16 +120,21 @@ class Hook<T:Component> implements Disposable {
   }
 
   /**
-    Use an effect.
+    Use an observer.
 
-    Note that this does not work quite like it does in react: the 
-    effect is an Observer that updates when its signals change,
-    *not* when its component is re-rendered.
+    This is somewhat similar to `useEffect` in React, but it 
+    does not work in quite the same way. It updates when its 
+    signals change, *not* when its component is re-rendered.
+    In addition, it will be run immediately when created.
 
-    @todo: Ideally this should run after the component is finished
-    rendering, not immediately.
+    The observer expects a cleanup method to be returned, 
+    which will be run once when the Element is disposed.
+
+    @todo: A more react-like `useEffect` could be added later.
+    The `useNext` hook may be closer to the desired behavior,
+    although it will run *every* render. 
   **/
-  public function useEffect(effect:()->(()->Void)) {
+  public function useObserver(effect:()->(()->Void)) {
     var effectIndex = useIndex();
     var index = useIndex();
     var entry:Null<HookEntry<Observer>> = getEntry(index);
@@ -147,6 +152,18 @@ class Hook<T:Component> implements Disposable {
         if (cleanup != null) cleanup();
       });
     }
+  }
+
+  /**
+    Create a Ref that will persist between renders.
+
+    Use `init` to create the initial render. Note that this will
+    be ignored after the first time it is called.
+  **/
+  public function useRef<T>(?init:()->T):{ current:Null<T> } {
+    return useMemo(() -> { 
+      current: init == null ? null : init() 
+    }, ref -> ref.current = null);
   }
 
   /**
