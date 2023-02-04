@@ -10,6 +10,8 @@ private final hookRegistry:Map<Context, Hook<Dynamic>> = [];
 
 typedef HookEntry<T> = { value:T, ?cleanup:(value:T)->Void }; 
 
+typedef Cleanup = Null<()->Void>; 
+
 class Hook<T:Component> implements Disposable {
   public static function from<T:Component>(element:ElementOf<T>):Hook<T> {
     var hook:Hook<T> = cast hookRegistry.get(element);
@@ -82,9 +84,7 @@ class Hook<T:Component> implements Disposable {
 
     return if (entry == null) {
       var signal = new Signal(runFactory(factory), comparator);
-      setEntry(index, signal, signal -> {
-        if (signal != null) signal.dispose();
-      });
+      setEntry(index, signal, signal -> if (signal != null) signal.dispose());
       signal;
     } else {
       var signal = entry.value;
@@ -134,7 +134,7 @@ class Hook<T:Component> implements Disposable {
     The `useNext` hook may be closer to the desired behavior,
     although it will run *every* render. 
   **/
-  public function useObserver(effect:()->(()->Void)) {
+  public function useObserver(effect:()->Cleanup) {
     var effectIndex = useIndex();
     var index = useIndex();
     var entry:Null<HookEntry<Observer>> = getEntry(index);
@@ -142,10 +142,10 @@ class Hook<T:Component> implements Disposable {
     setEntry(effectIndex, effect);
 
     if (entry == null) {
-      var cleanup:Null<()->Void> = null;
+      var cleanup:Cleanup = null;
       setEntry(index, new Observer(() -> {
         var entry = getEntry(effectIndex);
-        var currentEffect:()->(()->Void) = entry == null ? effect : entry.value;
+        var currentEffect:()->Cleanup = entry == null ? effect : entry.value;
         cleanup = runFactory(currentEffect);
       }), observer -> {
         observer.dispose();
@@ -161,7 +161,7 @@ class Hook<T:Component> implements Disposable {
     be ignored after the first time it is called.
   **/
   public function useRef<T>(?init:()->T):{ current:Null<T> } {
-    return useMemo(() -> { 
+    return useMemo(() -> {
       current: init == null ? null : init() 
     }, ref -> ref.current = null);
   }
@@ -171,37 +171,55 @@ class Hook<T:Component> implements Disposable {
     will only be run once, meaning that this is primarily intended as a way
     to use an Element's events.
   **/
-  public function useElement(handler:(element:ElementOf<T>)->(()->Void)) {
-    useMemo(() -> handler(element), cancel -> cancel());
+  public function useElement(handler:(element:ElementOf<T>)->Cleanup) {
+    useMemo(() -> handler(element), cleanup -> if (cleanup != null) cleanup());
   }
 
   /**
     Use a callback that will be run once, after the Element is 
     initialized.
   **/
-  public function useInit(handler:()->Void) {
-    useElement(element -> element.events.afterInit.add((_, _) -> handler()));
-  }
-
-  /**
-    Use a callback that will be run once after the Element is initialized
-    *and* after every update.
-  **/
-  public function useNext(handler:()->Void) {
+  public function useInit(handler:()->Cleanup) {
     useElement(element -> {
-      var links = [
-        element.events.afterInit.add((_, _) -> handler()),
-        element.events.afterUpdate.add((_) -> handler())
-      ];
-      return () -> for (cancel in links) cancel();
+      var cleanup:Cleanup = null;
+      var cancel = element.events.afterInit.add((_, _) -> cleanup = handler());
+      return () -> {
+        cancel();
+        if (cleanup != null) cleanup();
+      }
     });
   }
 
   /**
     Use a callback that will be run once every UPDATE, and NOT on Init.
   **/
-  public function useUpdate(handler:()->Void) {
-    useElement(element -> element.events.afterUpdate.add((_) -> handler()));
+  public function useUpdate(handler:()->Cleanup) {
+    useElement(element -> {
+      var cleanup:Cleanup = null;
+      var cancel = element.events.afterUpdate.add((_) -> cleanup = handler());
+      return () -> {
+        cancel();
+        if (cleanup != null) cleanup();
+      }
+    });
+  }
+
+  /**
+    Use a callback that will be run once after the Element is initialized
+    *and* after every update.
+  **/
+  public function useNext(handler:()->Cleanup) {
+    useElement(element -> {
+      var cleanup:Null<()->Void> = null;
+      var links = [
+        element.events.afterInit.add((_, _) -> cleanup = handler()),
+        element.events.afterUpdate.add((_) -> cleanup = handler())
+      ];
+      return () -> {
+        for (cancel in links) cancel();
+        if (cleanup != null) cleanup();
+      }
+    });
   }
 
   /**
