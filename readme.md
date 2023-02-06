@@ -283,7 +283,7 @@ class HelloWorld extends AutoComponent {
 
 `useEffect` will only be run *after* an element has finished rendering *and* one of its dependencies has changed. You can use the similar `useObserver` hook to *immediately* run any time one of its dependencies changes without waiting for the component to re-render.
 
-A good rule of thumb is to use `useEffect` if you need to do something with `context` (or otherwise want to be sure that you're waiting until rendering is done) and use `useObserver` if you're just syncing some external data.
+A good rule of thumb is to use `useEffect` if you need to do something with `context` (or want to be sure that you're waiting until rendering is done) and use `useObserver` if you're just syncing some external data.
 
 ### useInit, useUpdate, useNext, and useCleanup
 

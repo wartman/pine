@@ -28,6 +28,20 @@ class LazyComputation<T> extends Signal<T> {
     });
   }
 
+  #if !pine.allow_peek_on_lazy_computation
+  override function peek():T {
+    Debug.assert(
+      !isInvalid,
+      'Attempted to use `peek()` on a LazyComputation that is invalid.'
+      + ' Note that LazyComputations are only updated when `get()` is called,'
+      + ' so the value returned from peek may be stale. You are strongly'
+      + ' encouraged not to peek LazyComputations. If you really need'
+      + ' this behavior, consider using a normal Computation.'
+    );
+    return super.peek();
+  }
+  #end
+
   override function get():T {
     if (isInvalid && !isRevalidating) {
       isInvalid = false;

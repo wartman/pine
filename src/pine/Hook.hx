@@ -171,15 +171,10 @@ class Hook<T:Component> implements Disposable {
   }
 
   /**
-    Create a Ref that will persist between renders.
-
-    Use `init` to create the initial render. Note that this will
-    be ignored after the first time it is called.
+    Create an object that will persist between renders.
   **/
-  public function useRef<T>(?init:()->T):{ current:Null<T> } {
-    return useMemo(() -> {
-      current: init == null ? null : init() 
-    }, ref -> ref.current = null);
+  public function useRef<T>():{ current:Null<T> } {
+    return useMemo(() -> { current: null }, ref -> ref.current = null);
   }
 
   /**
