@@ -7,11 +7,13 @@ import pine.element.ElementEngine;
 import pine.element.ProxyElementEngine.useProxyElementEngine;
 import pine.state.*;
 
+// @todo: Consider how using `LazyComputation` (or changing Computation to
+// always be lazy) could simplify this function.
 function useTrackedProxyEngine<T:Component>(render:(element:ElementOf<T>)->Component):CreateElementEngine {
   return (element:ElementOf<T>) -> {
     var computation:Null<Computation<Component>> = null;
     var cachedResult:Null<Component> = null;
-    var wasCalledByElement:Bool = false;  
+    var wasCalledByElement:Bool = false;
     var factory = useProxyElementEngine(element -> {
       Debug.assert(element.status == Building);
       wasCalledByElement = true;

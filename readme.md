@@ -253,6 +253,9 @@ class HelloWorld extends AutoComponent {
   public function render(context:Context) {
     Hook.from(context).useEffect(() -> {
       trace('$greeting $location');
+      // We can return an optional cleanup method which will be run
+      // once when this Element is disposed.
+      return () -> trace('cleanup!');
     });
     return new Html<'div'>({ children: '$greeting $location' });
   }
@@ -269,6 +272,7 @@ class HelloWorld extends AutoComponent {
   public function render(context:Context) {
     Hook.from(context).useEffect(() -> {
       trace('$greeting $location');
+      return null;
     });
     return new Html<'div'>({ children: '$greeting $location' });
   }
@@ -277,12 +281,12 @@ class HelloWorld extends AutoComponent {
 
 > Remember: only `var` fields are converted into signals in `AutoComponent`s.
 
-In addition, `useEffect` is run immediately, *not* after rendering is completed. This means that it could be invoked before the Element has been mounted, meaning relying on APIs like `context.getObject()` are dangerous. `useEffect` should be a way to sync external APIs with Pine's state (or for things like logging), not lifecycle hooks.
+`useEffect` will only be run *after* an element has finished rendering *and* one of its dependencies has changed. You can use the similar `useObserver` hook to *immediately* run any time one of its dependencies changes without waiting for the component to re-render.
 
-For that, well, Pine has lifecycle hooks. 
+A good rule of thumb is to use `useEffect` if you need to do something with `context` (or otherwise want to be sure that you're waiting until rendering is done) and use `useObserver` if you're just syncing some external data.
 
 ### useInit, useUpdate, useNext, and useCleanup
 
 These are fairly self-explanatory. `useInit` will be run *once* after the first time the Element is rendered. `useUpdate` will be run every time the Element is updated, but *not* when it's initialized. The `useNext` hook will be run for both updates *and* when the element is initialized. `useCleanup` adds a hook that will be run when the Element is disposed.
 
-> todo: Cover the other hooks: `useMemo`, `useSignal`, `useComputed` and `useElement`.
+> todo: Cover the other hooks: `useMemo`, `useSignal`, `useObserver`, `useComputed` and `useElement`.

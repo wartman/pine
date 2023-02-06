@@ -11,6 +11,11 @@ abstract Children(Array<Child>)
   }
 
   @:from
+  public inline static function ofChild(child:Child):Children {
+    return [ child ];
+  }
+
+  @:from
   public inline static function ofString(content:String):Children {
     return [ new Text(content) ];
   }

@@ -1,5 +1,6 @@
 package pine;
 
+import pine.state.LazyComputation;
 import pine.state.Computation;
 import pine.core.Disposable;
 import pine.debug.Debug;
@@ -50,8 +51,8 @@ class Hook<T:Component> implements Disposable {
     events.afterUpdate.add((_) -> {
       Debug.assert(
         index == expectedCount, 
-        'The current component should use $expectedCount hooks, but'
-        + ' $index hooks were used. Make sure hooks are not used inside'
+        'The current component (${@:nullSafety(Off) Type.getClassName(Type.getClass(element.component))})'
+        + ' should use $expectedCount hooks, but $index hooks were used. Make sure hooks are not used inside'
         + ' conditionals (like if statements), loops or function calls.'
         + ' They should only be used at the top of a render method.'
       );
@@ -100,16 +101,15 @@ class Hook<T:Component> implements Disposable {
     as a constant. This should help you figure out which you should use.
   **/
   public function useComputed<R>(factory:()->R, ?comparator):Computation<R> {
-    var factoryIndex = useIndex();
+    var factoryRef = useRef();
     var index = useIndex();
     var entry:Null<HookEntry<Computation<R>>> = getEntry(index);
 
-    setEntry(factoryIndex, factory);
-
+    factoryRef.current = factory;
+    
     return if (entry == null) {
       var computation = new Computation(() -> {
-        var entry = getEntry(factoryIndex);
-        var currentFactory:()->R = entry == null ? factory : entry.value;
+        var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
         return runFactory(currentFactory);
       }, comparator);
       setEntry(index, computation, computation -> computation.dispose());
@@ -122,36 +122,52 @@ class Hook<T:Component> implements Disposable {
   /**
     Use an observer.
 
-    This is somewhat similar to `useEffect` in React, but it 
-    does not work in quite the same way. It updates when its 
-    signals change, *not* when its component is re-rendered.
-    In addition, it will be run immediately when created.
-
     The observer expects a cleanup method to be returned, 
     which will be run once when the Element is disposed.
-
-    @todo: A more react-like `useEffect` could be added later.
-    The `useNext` hook may be closer to the desired behavior,
-    although it will run *every* render. 
   **/
-  public function useObserver(effect:()->Cleanup) {
-    var effectIndex = useIndex();
+  public function useObserver(factory:()->Cleanup) {
+    var factoryRef = useRef();
     var index = useIndex();
     var entry:Null<HookEntry<Observer>> = getEntry(index);
 
-    setEntry(effectIndex, effect);
+    factoryRef.current = factory;
 
     if (entry == null) {
       var cleanup:Cleanup = null;
       setEntry(index, new Observer(() -> {
-        var entry = getEntry(effectIndex);
-        var currentEffect:()->Cleanup = entry == null ? effect : entry.value;
-        cleanup = runFactory(currentEffect);
+        var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
+        cleanup = runFactory(currentFactory);
       }), observer -> {
         observer.dispose();
         if (cleanup != null) cleanup();
       });
     }
+  }
+
+  /**
+    Similar to `useObserver`, with the change that it will only be run when
+    the component has finished rendering *and* one of its dependencies has 
+    changed.
+  **/
+  public function useEffect(factory:()->Cleanup) {
+    var factoryRef = useRef();
+    var index = useIndex();
+    var entry:Null<HookEntry<LazyComputation<Cleanup>>> = getEntry(index);
+
+    factoryRef.current = factory;
+
+    var computation = if (entry == null) {
+      new LazyComputation(() -> {
+        var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
+        return runFactory(currentFactory);
+      });
+    } else entry.value;
+
+    useNext(() -> {
+      var cleanup:Cleanup = null;
+      Observer.untrack(() -> cleanup = computation.get());
+      return cleanup;
+    });
   }
 
   /**

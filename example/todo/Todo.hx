@@ -306,13 +306,13 @@ class TodoInput extends AutoComponent {
   var value:String;
 
   function render(context:Context):Component {
-    Hook.from(context).useObserver(() -> {
+    Hook.from(context).useEffect(() -> {
       if (isEditing) {
         var el:js.html.InputElement = cast context.getObject();
         el.focus();
       }
-      // @todo: Return focus on dispose?
-      () -> null;
+      // @todo: Return focus on cleanup?
+      return null;
     });
 
     return new Html<'input'>({
