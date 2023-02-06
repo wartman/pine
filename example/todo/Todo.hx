@@ -307,6 +307,7 @@ class TodoInput extends AutoComponent {
 
   function render(context:Context):Component {
     Hook.from(context).useEffect(() -> {
+      trace('Status: $isEditing');
       if (isEditing) {
         var el:js.html.InputElement = cast context.getObject();
         el.focus();

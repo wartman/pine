@@ -151,19 +151,16 @@ class Hook<T:Component> implements Disposable {
   **/
   public function useEffect(factory:()->Cleanup) {
     var factoryRef = useRef();
-    var index = useIndex();
-    var entry:Null<HookEntry<LazyComputation<Cleanup>>> = getEntry(index);
 
     factoryRef.current = factory;
 
-    var computation = if (entry == null) {
-      new LazyComputation(() -> {
-        var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
-        return runFactory(currentFactory);
-      });
-    } else entry.value;
+    var computation = useMemo(() -> new LazyComputation(() -> {
+      var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
+      return runFactory(currentFactory);
+    }), computation -> computation.dispose());
 
     useNext(() -> {
+      trace('next');
       var cleanup:Cleanup = null;
       Observer.untrack(() -> cleanup = computation.get());
       return cleanup;

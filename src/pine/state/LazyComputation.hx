@@ -16,15 +16,14 @@ class LazyComputation<T> extends Signal<T> {
     this.observer = new Observer(() -> {
       if (isInvalid) return;
 
-      this.value = handler();
-      
       if (!isRevalidating) {
         isInvalid = true;
-        isRevalidating = false;
+        notify();
         return;
       }
 
-      notify();
+      this.value = handler();
+      isRevalidating = false;
     });
   }
 
