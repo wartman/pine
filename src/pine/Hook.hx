@@ -160,7 +160,6 @@ class Hook<T:Component> implements Disposable {
     }), computation -> computation.dispose());
 
     useNext(() -> {
-      trace('next');
       var cleanup:Cleanup = null;
       Observer.untrack(() -> cleanup = computation.get());
       return cleanup;
