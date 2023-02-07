@@ -102,21 +102,11 @@ class Hook<T:Component> implements Disposable {
   **/
   public function useComputed<R>(factory:()->R, ?comparator):Computation<R> {
     var factoryRef = useRef();
-    var index = useIndex();
-    var entry:Null<HookEntry<Computation<R>>> = getEntry(index);
-
     factoryRef.current = factory;
-    
-    return if (entry == null) {
-      var computation = new Computation(() -> {
-        var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
-        return runFactory(currentFactory);
-      }, comparator);
-      setEntry(index, computation, computation -> computation.dispose());
-      return computation;
-    } else {
-      entry.value;
-    }
+    return useMemo(() -> new Computation(() -> {
+      var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
+      return runFactory(currentFactory);
+    }), computation -> computation.dispose());
   }
 
   /**
@@ -126,6 +116,27 @@ class Hook<T:Component> implements Disposable {
     which will be run once when the Element is disposed.
   **/
   public function useObserver(factory:()->Cleanup) {
+    // // Note: Not using this yet as the checks for `runFactory` need
+    // // some further thought. However we should switch to this
+    // // simpler useMemo implementation soon.
+    // var factoryRef = useRef();
+    // factoryRef.current = factory;
+    // useMemo(() -> {
+    //   var cleanup:Cleanup = null;
+    //   var observer = new Observer(() -> {
+    //     var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
+    //     if (cleanup != null) cleanup();
+    //     cleanup = currentFactory();
+    //   });
+    //   return () -> {
+    //     observer.dispose();
+    //     if (cleanup != null) {
+    //       cleanup();
+    //       cleanup = null;
+    //     }
+    //   }
+    // }, cleanup -> cleanup());
+
     var factoryRef = useRef();
     var index = useIndex();
     var entry:Null<HookEntry<Observer>> = getEntry(index);
@@ -136,10 +147,14 @@ class Hook<T:Component> implements Disposable {
       var cleanup:Cleanup = null;
       setEntry(index, new Observer(() -> {
         var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
+        if (cleanup != null) cleanup();
         cleanup = runFactory(currentFactory);
       }), observer -> {
         observer.dispose();
-        if (cleanup != null) cleanup();
+        if (cleanup != null) {
+          cleanup();
+          cleanup = null;
+        }
       });
     }
   }
@@ -156,7 +171,7 @@ class Hook<T:Component> implements Disposable {
 
     var computation = useMemo(() -> new LazyComputation(() -> {
       var currentFactory = factoryRef.current == null ? factory : factoryRef.current;
-      return runFactory(currentFactory);
+      return currentFactory();
     }), computation -> computation.dispose());
 
     useNext(() -> {
@@ -192,7 +207,10 @@ class Hook<T:Component> implements Disposable {
       var cancel = element.events.afterInit.add((_, _) -> cleanup = handler());
       return () -> {
         cancel();
-        if (cleanup != null) cleanup();
+        if (cleanup != null) {
+          cleanup();
+          cleanup = null;
+        }
       }
     });
   }
@@ -203,10 +221,16 @@ class Hook<T:Component> implements Disposable {
   public function useUpdate(handler:()->Cleanup) {
     useElement(element -> {
       var cleanup:Cleanup = null;
-      var cancel = element.events.afterUpdate.add((_) -> cleanup = handler());
+      var cancel = element.events.afterUpdate.add((_) -> {
+        if (cleanup != null) cleanup();
+        cleanup = handler();
+      });
       return () -> {
         cancel();
-        if (cleanup != null) cleanup();
+        if (cleanup != null) {
+          cleanup();
+          cleanup = null;
+        }
       }
     });
   }
@@ -217,14 +241,22 @@ class Hook<T:Component> implements Disposable {
   **/
   public function useNext(handler:()->Cleanup) {
     useElement(element -> {
-      var cleanup:Null<()->Void> = null;
+      var cleanup:Cleanup = null;
+      var run = () -> {
+        if (cleanup != null) cleanup();
+        cleanup = handler();
+      }
       var links = [
-        element.events.afterInit.add((_, _) -> cleanup = handler()),
-        element.events.afterUpdate.add((_) -> cleanup = handler())
+        element.events.afterInit.add((_, _) -> run()),
+        element.events.afterUpdate.add((_) -> run())
       ];
+      
       return () -> {
         for (cancel in links) cancel();
-        if (cleanup != null) cleanup();
+        if (cleanup != null) {
+          cleanup();
+          cleanup = null;
+        }
       }
     });
   }
