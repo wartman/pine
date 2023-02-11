@@ -1,5 +1,6 @@
 package todo;
 
+import pine.hook.EffectHook;
 import js.Browser;
 import pine.*;
 import pine.html.*;
@@ -302,11 +303,11 @@ class TodoInput extends AutoComponent {
   final clearOnComplete:Bool;
   final onSubmit:(data:String) -> Void;
   final onCancel:() -> Void;
-  public var isEditing:Bool = false;
+  var isEditing:Bool = false;
   var value:String;
 
   function render(context:Context):Component {
-    Hook.from(context).useEffect(() -> {
+    Hooks.useEffect(context, () -> {
       if (isEditing) {
         var el:js.html.InputElement = cast context.getObject();
         el.focus();

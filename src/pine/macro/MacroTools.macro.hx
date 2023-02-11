@@ -1,6 +1,5 @@
 package pine.macro;
 
-
 import haxe.ds.Option;
 import haxe.macro.Context;
 import haxe.macro.Expr;

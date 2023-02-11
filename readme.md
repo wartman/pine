@@ -239,11 +239,11 @@ Providers and Context
 Hooks
 -----
 
-For the most part, everything you need to do in a UI should be covered by the reactivity described above. You will probably run into edge cases however, situations where you need to synchronize state outside a Pine ui or otherwise cause side effects. For those situations, Pine has a React-inspired `Hook` api you can use.
+For the most part, everything you need to do in a UI should be covered by the reactivity described above. You will probably run into edge cases however, situations where you need to synchronize state outside a Pine ui or otherwise cause side effects. For those situations, Pine has a React-inspired `Hooks` api you can use.
 
 ### useEffect
 
-One difference Pine hooks have from React is that they require you to get an instance from the current Context. For example:
+One difference Pine hooks have from React is that they require you to pass in the current Context. For example:
 
 ```haxe
 class HelloWorld extends AutoComponent {
@@ -251,7 +251,7 @@ class HelloWorld extends AutoComponent {
   var location:String;
 
   public function render(context:Context) {
-    Hook.from(context).useEffect(() -> {
+    Hooks.useEffect(context, () -> {
       trace('$greeting $location');
       // We can return an optional cleanup method which will be run
       // once when this Element is disposed.
@@ -270,7 +270,7 @@ class HelloWorld extends AutoComponent {
   final location:String;
 
   public function render(context:Context) {
-    Hook.from(context).useEffect(() -> {
+    Hooks.useEffect(context, () -> {
       trace('$greeting $location');
       return null;
     });

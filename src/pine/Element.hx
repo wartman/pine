@@ -1,5 +1,6 @@
 package pine;
 
+import pine.hook.HookContext;
 import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.*;
@@ -28,6 +29,7 @@ class Element
   var slot:Null<Slot> = null;
   var parent:Null<Element> = null;
   var adaptor:Null<Adaptor> = null;
+  var hooks:Option<HookContext<Component>> = None;
 
   public function new(component, createEngine:CreateElementEngine) {
     this.component = component;
@@ -198,6 +200,24 @@ class Element
       adaptor = engine.getAdaptor();
     }
     return adaptor;
+  }
+
+  /**
+    Get this component's Hooks.
+
+    Note that this will lazily initialize a new HookContext if none
+    is present, so don't use this method unless you actually intend to 
+    use hooks on this Element.
+  **/
+  public function getHooks() {
+    return switch hooks {
+      case Some(hooks): 
+        hooks;
+      case None:
+        var hooks = new HookContext(this);
+        this.hooks = Some(hooks);
+        hooks;
+    }
   }
 
   /**
