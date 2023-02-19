@@ -1,6 +1,5 @@
 package pine;
 
-import pine.hook.HookContext;
 import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.*;
@@ -9,6 +8,7 @@ import pine.element.*;
 import pine.element.ElementEngine;
 import pine.element.Events;
 import pine.element.Slot;
+import pine.hook.HookContext;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
@@ -255,7 +255,7 @@ class Element
   **/
   public function dispose() {
     Debug.assert(status != Building, 'Attempted to dispose an element while it was building');
-    Debug.assert(status != Disposing, 'Attempted to dispose an element this is already Disposing');
+    Debug.assert(status != Disposing, 'Attempted to dispose an element that is already disposing');
     Debug.assert(status != Disposed, 'Attempted to dispose an element that was already disposed');
 
     status = Disposing;
