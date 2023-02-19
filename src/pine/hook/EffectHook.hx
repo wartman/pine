@@ -2,23 +2,37 @@ package pine.hook;
 
 import pine.state.*;
 
-class EffectHook implements HookState<()->Null<()->Void>> {
+typedef EffectHookHandler = ()->Null<()->Void>; 
+
+class EffectHook implements Hook {
+  public final handler:EffectHookHandler;
+
+  public function new(handler) {
+    this.handler = handler;
+  }
+
+  public function createHookState(context:Context):HookState<Dynamic> {
+    return new EffectHookState(context, this);
+  }
+}
+
+class EffectHookState implements HookState<EffectHook> {
   final computed:LazyComputation<Null<()->Void>>;
   final element:ElementOf<Component>;
-  var handler:()->Null<()->Void>;
+  var hook:EffectHook;
   var cleanup:Null<()->Void> = null;
 
-  public function new(element, handler) {
-    this.handler = handler;
+  public function new(element, hook) {
+    this.hook = hook;
     this.element = element;
-    this.computed = new LazyComputation(() -> this.handler());
+    this.computed = new LazyComputation(() -> this.hook.handler());
 
     element.events.afterInit.add((_, _) -> resolve());
     element.events.afterUpdate.add(_ -> resolve());
   }
 
-  public function update(handler:()->Null<() -> Void>) {
-    this.handler = handler;
+  public function update(hook:EffectHook) {
+    this.hook = hook;
   }
   
   public function dispose() {

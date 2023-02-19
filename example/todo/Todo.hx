@@ -1,5 +1,6 @@
 package todo;
 
+import pine.hook.HookContext;
 import pine.hook.EffectHook;
 import js.Browser;
 import pine.*;
@@ -315,6 +316,15 @@ class TodoInput extends AutoComponent {
       // @todo: Return focus on cleanup?
       return null;
     });
+
+    HookContext.from(context).use(new EffectHook(() -> {
+      if (isEditing) {
+        var el:js.html.InputElement = cast context.getObject();
+        el.focus();
+      }
+      // @todo: Return focus on cleanup?
+      return null;
+    }));
 
     return new Html<'input'>({
       className: className,

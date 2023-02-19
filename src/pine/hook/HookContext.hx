@@ -30,18 +30,15 @@ class HookContext<T:Component> implements Disposable {
     element.events.beforeDispose.add(_ -> dispose());
   }
 
-  public function use<T:HookState<R>, R>(
-    value:R,
-    createState:(value:R)->T
-  ):T {
+  public function use<T:Hook, R:HookState<T>>(hook:T):R {
     return switch status {
       case Init:
-        var state = createState(value);
+        var state = hook.createHookState(element);
         list.add(state);
-        state;
+        cast state;
       case Update(iterator) if (iterator.hasNext()):
         var state = iterator.next();
-        state.update(value);
+        state.update(hook);
         return cast state;
       case Update(_):
         Debug.error(

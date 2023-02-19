@@ -1,12 +1,14 @@
 package pine;
 
+import pine.hook.SignalHook.SignalHookState;
+import pine.hook.MemoHook.MemoHookState;
 import pine.hook.*;
 
 function useMemo<T>(context:Context, createValue, ?cleanup) {
-  return HookContext
+  var state:MemoHookState<T> = HookContext
     .from(context)
-    .use(createValue, createValue -> new MemoHook<T>(createValue, cleanup))
-    .getValue();
+    .use(new MemoHook<T>({ create: createValue, cleanup: cleanup }));
+  return state.getValue();
 }
 
 function useRef<T>(context:Context):{ current:Null<T> } {
@@ -14,18 +16,18 @@ function useRef<T>(context:Context):{ current:Null<T> } {
 }
 
 function useSignal<T>(context:Context, createValue) {
-  return HookContext
+  var signal:SignalHookState<T> = HookContext
     .from(context)
-    .use(createValue, createValue -> new SignalHook<T>(createValue))
-    .getSignal();
+    .use(new SignalHook<T>(createValue));
+  return signal.getSignal();
 }
 
 function useObserver(context:Context, handler) {
-  HookContext.from(context).use(handler, handler -> new ObserverHook(handler));
+  HookContext.from(context).use(new ObserverHook(handler));
 }
 
 function useEffect(context:Context, handler:()->Null<()->Void>) {
-  HookContext.from(context).use(handler, handler -> new EffectHook(context, handler));
+  HookContext.from(context).use(new EffectHook(handler));
 }
 
 function useCleanup(context:Context, cleanup:()->Void) {

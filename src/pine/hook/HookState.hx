@@ -2,6 +2,6 @@ package pine.hook;
 
 import pine.core.Disposable;
 
-interface HookState<T> extends Disposable {
-  public function update(value:T):Void;
+interface HookState<T:Hook> extends Disposable {
+  public function update(hook:T):Void;
 }
