@@ -29,7 +29,7 @@ class Element
   var slot:Null<Slot> = null;
   var parent:Null<Element> = null;
   var adaptor:Null<Adaptor> = null;
-  var hooks:Option<HookContext<Component>> = None;
+  var hooks:Null<HookContext<Dynamic>> = null;
 
   public function new(component, createEngine:CreateElementEngine) {
     this.component = component;
@@ -209,15 +209,9 @@ class Element
     is present, so don't use this method unless you actually intend to 
     use hooks on this Element.
   **/
-  public function getHooks() {
-    return switch hooks {
-      case Some(hooks): 
-        hooks;
-      case None:
-        var hooks = new HookContext(this);
-        this.hooks = Some(hooks);
-        hooks;
-    }
+  public function getHooks():HookContext<Dynamic> {
+    if (hooks == null) hooks = new HookContext(this);
+    return hooks;
   }
 
   /**
@@ -259,6 +253,11 @@ class Element
     Debug.assert(status != Disposed, 'Attempted to dispose an element that was already disposed');
 
     status = Disposing;
+
+    if (hooks != null) {
+      hooks.dispose();
+      hooks = null;
+    }
 
     events.beforeDispose.dispatch(this);
     

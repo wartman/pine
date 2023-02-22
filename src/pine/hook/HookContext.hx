@@ -27,7 +27,6 @@ class HookContext<T:Component> implements Disposable {
     element.events.beforeUpdate.add((_, _, _) -> setStatus(Update(list.iterator())));
     element.events.afterInit.add((_, _) -> cleanup());
     element.events.afterUpdate.add((_) -> cleanup());
-    element.events.beforeDispose.add(_ -> dispose());
   }
 
   public function use<T:Hook, R:HookState<T>>(hook:T):R {
