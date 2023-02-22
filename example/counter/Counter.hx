@@ -24,7 +24,7 @@ class Counter extends AutoComponent {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ new Text('Current count:'), Text.ofInt(count) ]
+          children: [ 'Current count:', count ]
         }),
         new Html<'button'>({
           onclick: _ -> if (count > 0) count--,

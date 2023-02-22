@@ -32,12 +32,12 @@ import pine.*;
 import pine.html.*;
 
 class Counter extends AutoComponent {
-  var count:Int;
+  var count:Int = 0;
 
   function render(context:Context) {
     return new Html<'button'>({
       onclick: _ -> count += 1,
-      children: 'You pressed me ${count} times'
+      children: [ 'You pressed me ', count, ' times' ]
     });
   }
 }
