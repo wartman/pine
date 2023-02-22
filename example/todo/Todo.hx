@@ -1,7 +1,5 @@
 package todo;
 
-import pine.hook.HookContext;
-import pine.hook.EffectHook;
 import js.Browser;
 import pine.*;
 import pine.html.*;
@@ -308,25 +306,7 @@ class TodoInput extends AutoComponent {
   var value:String;
 
   function render(context:Context):Component {
-    // Hooks.useEffect(context, () -> {
-    //   if (isEditing) {
-    //     var el:js.html.InputElement = cast context.getObject();
-    //     el.focus();
-    //   }
-    //   // @todo: Return focus on cleanup?
-    //   return null;
-    // });
-
-    HookContext.from(context).use(new EffectHook(() -> {
-      if (isEditing) {
-        var el:js.html.InputElement = cast context.getObject();
-        el.focus();
-      }
-      // @todo: Return focus on cleanup?
-      return null;
-    }));
-
-    return new Html<'input'>({
+    var input = new Html<'input'>({
       className: className,
       placeholder: 'What needs doing?',
       autofocus: true,
@@ -356,6 +336,18 @@ class TodoInput extends AutoComponent {
           }
         }
       }
+    });
+
+    return new Effect({
+      effect: () -> {
+        if (isEditing) {
+          var el:js.html.InputElement = cast context.getObject();
+          el.focus();
+        }
+        // @todo: Return focus on cleanup?
+        return null;
+      },
+      child: input
     });
   }
 }

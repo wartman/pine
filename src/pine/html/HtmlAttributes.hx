@@ -200,6 +200,7 @@ typedef SelectAttr = GlobalAttr & {
   @:optional var autofocus:Bool;
   @:optional var disabled:Bool;
   @:optional var multiple:Bool;
+  @:optional var value:String;
   @:optional var name:String;
   @:optional var required:Bool;
   @:optional var size:Int;

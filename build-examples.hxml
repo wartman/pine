@@ -26,3 +26,9 @@
 -main counter.GlobalCounter
 
 -js dist/assets/global-counter.js
+
+--next
+
+-main chat.ChatApp
+
+-js dist/assets/chat-app.js

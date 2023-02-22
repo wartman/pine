@@ -27,6 +27,10 @@ class LazyComputation<T> extends Signal<T> {
     });
   }
 
+  public function wasInvalidated() {
+    return isInvalid;
+  }
+
   #if !pine.allow_peek_on_lazy_computation
   override function peek():T {
     Debug.assert(

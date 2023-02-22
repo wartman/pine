@@ -48,11 +48,14 @@ abstract class ProviderComponent<T> extends Component {
       currentComponent:ProviderComponent<T>,
       incomingComponent:ProviderComponent<T>
     ) -> {
+      if (currentComponent == incomingComponent) return;
+
       var curValue = currentComponent.getValue();
       if (curValue != null) {
         currentComponent.dispose(curValue);
         currentComponent.value = null;
       }
+      
       incomingComponent.value = incomingComponent.create();
     });
     element.events.beforeDispose.add(element -> {

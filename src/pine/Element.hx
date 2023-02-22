@@ -8,7 +8,6 @@ import pine.element.*;
 import pine.element.ElementEngine;
 import pine.element.Events;
 import pine.element.Slot;
-import pine.hook.HookContext;
 import pine.hydration.Cursor;
 
 using pine.core.OptionTools;
@@ -29,7 +28,6 @@ class Element
   var slot:Null<Slot> = null;
   var parent:Null<Element> = null;
   var adaptor:Null<Adaptor> = null;
-  var hooks:Null<HookContext<Dynamic>> = null;
 
   public function new(component, createEngine:CreateElementEngine) {
     this.component = component;
@@ -203,18 +201,6 @@ class Element
   }
 
   /**
-    Get this component's Hooks.
-
-    Note that this will lazily initialize a new HookContext if none
-    is present, so don't use this method unless you actually intend to 
-    use hooks on this Element.
-  **/
-  public function getHooks():HookContext<Dynamic> {
-    if (hooks == null) hooks = new HookContext(this);
-    return hooks;
-  }
-
-  /**
     Get this Element's parent, if any.
   **/
   public function getParent():Option<Element> {
@@ -253,11 +239,6 @@ class Element
     Debug.assert(status != Disposed, 'Attempted to dispose an element that was already disposed');
 
     status = Disposing;
-
-    if (hooks != null) {
-      hooks.dispose();
-      hooks = null;
-    }
 
     events.beforeDispose.dispatch(this);
     

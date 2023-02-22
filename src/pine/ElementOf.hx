@@ -3,6 +3,8 @@ package pine;
 import pine.element.Events;
 import pine.element.ElementStatus;
 
+typedef Cleanup = Null<()->Void>; 
+
 /**
   A simple wrapper over `Element` that makes it more convenient
   to get at the current, properly typed Component.
@@ -32,7 +34,41 @@ abstract ElementOf<T:Component>(Element)
     this = element;
   }
 
-  public inline function onReady(listener:(element:ElementOf<T>)->Void) {
-    this.events.afterInit.add(cast listener);
+  public function onInit(listener:()->Cleanup) {
+    var cleanup:Cleanup = null;
+    this.events.afterInit.add((_, _) -> {
+      cleanup = listener();
+    });
+    this.events.beforeDispose.add(_ -> {
+      if (cleanup != null) {
+        cleanup();
+        cleanup = null;
+      }
+    });
+  }
+
+  public function onUpdate(listener:()->Cleanup, ?options:{
+    ?skipInit:Bool,
+    ?onlyCleanupWhenDisposing:Bool
+  }) {
+    var cleanup:Cleanup = null;
+    var alwaysCleanup = options == null || options.onlyCleanupWhenDisposing != true;
+    if (options == null || options.skipInit != true) this.events.afterInit.add((_, _) -> {
+      cleanup = listener();
+    });
+    this.events.afterUpdate.add((_) -> {
+      if (cleanup != null && alwaysCleanup) cleanup();
+      cleanup = listener();
+    });
+    this.events.beforeDispose.add(_ -> {
+      if (cleanup != null) {
+        cleanup();
+        cleanup = null;
+      }
+    });
+  }
+
+  public function onDispose(dispose:()->Void) {
+    this.events.beforeDispose.add(_ -> dispose());
   }
 }

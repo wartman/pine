@@ -47,7 +47,7 @@ function bubbleThrownObjectUp<T:Component>(element:ElementOf<T>, target:Element,
 
 class ProxyElementEngine<T:Component> implements ElementEngine {
   final element:ElementOf<T>;
-  final render:(element:ElementOf<T>)->Component;
+  final render:(element:ElementOf<T>)->Null<Component>;
   final findObject:(element:ElementOf<T>)->Dynamic;
   final findAdaptor:(element:ElementOf<T>)->Adaptor;
   final errorHandler:(element:ElementOf<T>, target:Element, e:Dynamic)->Void;
