@@ -4,6 +4,9 @@ import pine.*;
 import pine.html.*;
 import pine.html.client.*;
 
+// Implements this example from React:
+// https://beta.reactjs.org/reference/react/useEffect
+
 function main() {
   ClientRoot.mount(
     js.Browser.document.getElementById('root'),
