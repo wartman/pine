@@ -37,7 +37,7 @@ final class TextComponent extends ObjectComponent implements HasComponentType {
     return content;
   }
 
-  public function render():Null<Array<Component>> {
+  public function getChildren():Null<Array<Component>> {
     return null;
   }
 }

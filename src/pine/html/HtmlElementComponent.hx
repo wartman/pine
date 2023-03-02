@@ -32,7 +32,7 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     return attrs;
   }
 
-  public function render() {
+  public function getChildren() {
     return children;
   }
 }

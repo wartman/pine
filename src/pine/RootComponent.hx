@@ -24,12 +24,12 @@ abstract class RootComponent extends ObjectComponent {
 
   abstract public function createAdaptor():Adaptor;
 
-  public function render() {
+  public function getChildren() {
     return [ child ];
   }
 
   override function createElement() {
-    return new Element(this, useObjectElementEngine((element:ElementOf<RootComponent>) -> element.component.render(), {
+    return new Element(this, useObjectElementEngine((element:ElementOf<RootComponent>) -> element.component.getChildren(), {
       createObject: (_, element) -> element.component.getRootObject(),
       destroyObject: (applicator, element, object) -> null,
       findAdaptor: element -> element.component.createAdaptor()

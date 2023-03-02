@@ -16,13 +16,13 @@ abstract class ObjectComponent extends Component {
 
   abstract public function getObjectData():Dynamic;
 
-  abstract public function render():Null<Array<Component>>;
+  abstract public function getChildren():Null<Array<Component>>;
 
   public function createElement() {
     return new Element(
       this,
       useObjectElementEngine(
-        (element:ElementOf<ObjectComponent>) -> element.component.render()
+        (element:ElementOf<ObjectComponent>) -> element.component.getChildren()
       )
     );
   }

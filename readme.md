@@ -3,7 +3,10 @@ Pine
 
 A UI framework for haxe.
 
-> Documentation is in progress.
+> WARNING: This project is changing constantly right now. It
+> is not ready for use in anything remotely serious. 
+
+> Note: Documentation is in progress.
 
 Getting Started
 ---------------
