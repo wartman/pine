@@ -1,10 +1,7 @@
 package pine;
 
 @:forward(iterator)
-abstract Children(Array<Child>) 
-  from Array<Child> 
-  to Array<Child>
-{
+abstract Children(Array<Child>) from Array<Child> to Array<Child> {
   @:from
   public inline static function ofComponent(child:Component):Children {
     return [ child ];

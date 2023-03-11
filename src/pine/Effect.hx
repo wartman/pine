@@ -3,6 +3,13 @@ package pine;
 import pine.diffing.Key;
 import pine.state.LazyComputation;
 
+/**
+  Runs an effect after a component updates. The effect will only
+  be run when its observed signals are invalidated.
+
+  IMPORTANT: Effects are only run when their containing component
+  is updated. Use an Observer to react to Signals changing.
+**/
 class Effect extends AutoComponent {
   public final effect:()->Null<()->Void>;
   public final child:Child;

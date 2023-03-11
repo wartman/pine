@@ -70,7 +70,7 @@ class Counter extends AutoComponent {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ ('Current count:':HtmlChild), (count:HtmlChild) ]
+          children: [ new Text('Current count:'), new Text(count) ]
         }),
         new Html<'button'>({
           onclick: _ -> if (count > 0) count--,
@@ -149,7 +149,7 @@ class Counter extends AutoComponent {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ ('Current count:':HtmlChild), (count.get():HtmlChild) ]
+          children: [ new Text('Current count:'), new Text(count.get()) ]
         }),
         new Html<'button'>({
           onclick: _ -> if (count.peek() > 0) count.set(count.peek() - 1),
