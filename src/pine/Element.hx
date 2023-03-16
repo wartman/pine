@@ -1,6 +1,5 @@
 package pine;
 
-import haxe.ds.Option;
 import pine.adaptor.Adaptor;
 import pine.core.*;
 import pine.debug.Debug;
@@ -10,7 +9,7 @@ import pine.element.Events;
 import pine.element.Slot;
 import pine.hydration.Cursor;
 
-using pine.core.OptionTools;
+using Kit;
 
 @:allow(pine)
 @:allow(pine.debug)
@@ -203,7 +202,7 @@ class Element
   /**
     Get this Element's parent, if any.
   **/
-  public function getParent():Option<Element> {
+  public function getParent():Maybe<Element> {
     return parent == null ? None : Some(parent);
   }
 

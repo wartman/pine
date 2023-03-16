@@ -1,9 +1,9 @@
 package pine.macro;
 
-import haxe.ds.Option;
 import haxe.macro.Expr;
 import pine.macro.MacroTools;
 
+using Kit;
 using Lambda;
 
 class ClassBuilder {
@@ -46,7 +46,7 @@ class ClassBuilder {
     return fields.concat(newFields);
   }
 
-  public function findField(name:String):Option<Field> {
+  public function findField(name:String):Maybe<Field> {
     return switch fields.find(f -> f.name == name) {
       case null: None;
       case field: Some(field);

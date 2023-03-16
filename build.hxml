@@ -3,6 +3,7 @@
 -cp example
 
 -lib medic
+-lib kit
 -lib nuke
 
 -D js-es=6

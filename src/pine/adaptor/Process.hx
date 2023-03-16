@@ -1,20 +1,15 @@
 package pine.adaptor;
 
-import haxe.ds.Option;
-
-using pine.core.OptionTools;
+using Kit;
 
 // @todo: Replace this with a more robust scheduler?
 abstract class Process {
   public static function from(context:Context):Process {
-    return maybeFrom(context).orThrow('No Process found');
+    return maybeFrom(context).orThrow('No process found');
   }
 
-  public static function maybeFrom(context:Context):Option<Process> {
-    return switch Adaptor.maybeFrom(context) {
-      case Some(adaptor): Some(adaptor.getProcess());
-      case None: None;
-    }
+  public static function maybeFrom(context:Context):Maybe<Process> {
+    return Adaptor.maybeFrom(context).map(adaptor -> Some(adaptor.getProcess()));
   }
 
   final effects:List<() -> Void> = new List();

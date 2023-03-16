@@ -9,7 +9,7 @@ import pine.element.*;
 import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
 
-using pine.core.OptionTools;
+using Kit;
 
 final class Fragment extends Component implements HasComponentType {
   public final children:Array<Component>;

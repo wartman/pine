@@ -8,8 +8,6 @@ import pine.element.ElementEngine;
 import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
 
-using pine.core.OptionTools;
-
 final class Portal extends Component implements HasComponentType {
   public final target:Dynamic;
   public final child:Component;
@@ -51,8 +49,7 @@ class PortalElementEngine implements ElementEngine {
     placeholder = createPlaceholderComponent().createElement();
     placeholder.mount(element, element.slot);
 
-    var portalCursor = cursor.clone();
-    portalCursor.move(element.component.target);
+    var portalCursor = getAdaptor().createCursor(element.component.target);
     
     portalRoot = createRootComponent().createElement();
     portalRoot.hydrate(portalCursor, element, null);

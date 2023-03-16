@@ -2,6 +2,8 @@ package pine.debug;
 
 // @todo: Consider freeing these functions from their
 // static class.
+//
+// @todo: Replace with kit.Assert
 class Debug {
   static public macro function assert(expr:haxe.macro.Expr.ExprOf<Bool>, ?message:haxe.macro.Expr.ExprOf<String>) {
     if (haxe.macro.Context.defined('debug')) {

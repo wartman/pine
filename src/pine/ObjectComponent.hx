@@ -9,7 +9,7 @@ import pine.element.ElementEngine;
 import pine.element.ProxyElementEngine;
 import pine.hydration.Cursor;
 
-using pine.core.OptionTools;
+using Kit;
 
 abstract class ObjectComponent extends Component {
   abstract public function getObjectType():ObjectType;

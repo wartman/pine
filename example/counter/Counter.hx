@@ -5,8 +5,6 @@ import pine.*;
 import pine.html.*;
 import pine.html.client.ClientRoot;
 
-using pine.core.OptionTools;
-
 function main() {
   ClientRoot.mount(
     Browser.document.getElementById('root'),

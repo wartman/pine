@@ -3,7 +3,9 @@ package pine.html.server;
 import pine.adaptor.*;
 import pine.debug.Debug;
 import pine.element.Slot;
+import pine.hydration.Cursor;
 import pine.object.Object;
+import pine.object.ObjectCursor;
 
 class ServerAdaptor extends Adaptor {
   final process = new ServerProcess();
@@ -16,6 +18,10 @@ class ServerAdaptor extends Adaptor {
 
   public function createPlaceholder():ObjectComponent {
     return new Text('');
+  }
+  
+  public function createCursor(object:Dynamic):Cursor {
+    return new ObjectCursor(object);
   }
 
   public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {

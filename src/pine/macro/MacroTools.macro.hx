@@ -1,9 +1,9 @@
 package pine.macro;
 
-import haxe.ds.Option;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
+using Kit;
 using StringTools;
 using haxe.macro.Tools;
 using pine.core.Hash;
@@ -71,7 +71,7 @@ function makeField(name:String, type:ComplexType, optional:Bool):Field {
 
 // Workaround for https://github.com/HaxeFoundation/haxe/issues/9853
 // Stolen from https://github.com/haxetink/tink_macro/blob/6f4e6b9227494caddebda5659e0a36d00da9ca52/src/tink/MacroApi.hx#L70
-private function getCompletion() {
+private function getCompletion():Maybe<{ file:String, content:String, pos:Int }> {
   var sysArgs = Sys.args();
   return switch sysArgs.indexOf('--display') {
     case -1: None;

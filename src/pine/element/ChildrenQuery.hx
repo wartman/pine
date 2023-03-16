@@ -1,6 +1,6 @@
 package pine.element;
 
-import haxe.ds.Option;
+using Kit;
 
 final class ChildrenQuery {
   final element:Element;
@@ -25,7 +25,7 @@ final class ChildrenQuery {
     return results;
   }
 
-  public function find(match:(child:Element) -> Bool, recursive:Bool = false):Option<Element> {
+  public function find(match:(child:Element) -> Bool, recursive:Bool = false):Maybe<Element> {
     var result:Null<Element> = null;
 
     element.visitChildren(child -> {
@@ -57,7 +57,7 @@ final class ChildrenQuery {
     return filter(child -> Std.isOfType(child.component, kind), recursive);
   }
 
-  public function findOfType<T:Component>(kind:Class<T>, recursive:Bool = false):Option<ElementOf<T>> {
+  public function findOfType<T:Component>(kind:Class<T>, recursive:Bool = false):Maybe<ElementOf<T>> {
     return find(child -> Std.isOfType(child.component, kind), recursive);
   }
 }

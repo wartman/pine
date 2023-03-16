@@ -56,7 +56,7 @@ function buildProvider(type:Type) {
       }
     }
 
-    public static function maybeFrom(context:pine.Context):haxe.ds.Option<$ct> {
+    public static function maybeFrom(context:pine.Context):kit.Maybe<$ct> {
       return switch context.queryAncestors().find(parent -> parent.getComponent().getComponentType() == componentType) {
         case Some(element):
           var value = (element.getComponent():pine.Provider.ProviderComponent<$ct>).getValue();

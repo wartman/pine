@@ -6,7 +6,6 @@ import pine.html.server.*;
 
 using Medic;
 using medic.PineAssert;
-using pine.core.OptionTools;
 
 class TestFragment implements TestCase {
   public function new() {}
@@ -69,7 +68,7 @@ class TestFragment implements TestCase {
     });
     fragment.rendersAsync(root -> {
       root.toString().equals('abcde');
-      root.queryChildren().findOfType(Fragment).sure().update(new Fragment({
+      root.queryChildren().findOfType(Fragment).orThrow().update(new Fragment({
         children: [
           new Text('a'),
           new Text('c'),
@@ -84,7 +83,7 @@ class TestFragment implements TestCase {
       }));
       root.getAdaptor().afterRebuild(() -> {
         root.toString().equals('acdbe');
-        root.queryChildren().findOfType(Fragment).sure().update(new Fragment({
+        root.queryChildren().findOfType(Fragment).orThrow().update(new Fragment({
           children: [
             new Text('a'),
             new Fragment({

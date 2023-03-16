@@ -4,6 +4,7 @@ import js.Browser;
 import pine.adaptor.*;
 import pine.debug.Debug;
 import pine.element.Slot;
+import pine.hydration.Cursor;
 
 using StringTools;
 using pine.core.ObjectTools;
@@ -16,6 +17,10 @@ class ClientAdaptor extends Adaptor {
 
   public function getProcess():Process {
     return process;
+  }
+
+  public function createCursor(object:Dynamic):Cursor {
+    return new ClientCursor(object);
   }
 
   public function createPlaceholder():ObjectComponent {

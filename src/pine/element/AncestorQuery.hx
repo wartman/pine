@@ -1,6 +1,6 @@
 package pine.element;
 
-import haxe.ds.Option;
+using Kit;
 
 final class AncestorQuery {
   final element:Element;
@@ -9,7 +9,7 @@ final class AncestorQuery {
     this.element = element;
   }
 
-  public function ofType<T:Component>(kind:Class<T>):Option<ElementOf<T>> {
+  public function ofType<T:Component>(kind:Class<T>):Maybe<ElementOf<T>> {
     return switch element.getParent() {
       case None if (Std.isOfType(element.component, kind)): 
         Some(element);
@@ -22,7 +22,7 @@ final class AncestorQuery {
     }
   }
 
-  public function find(match:(element:Element) -> Bool):Option<Element> {
+  public function find(match:(element:Element) -> Bool):Maybe<Element> {
     if (match(element)) return Some(element);
     return switch element.getParent() {
       case Some(parent) if (match(parent)): Some(parent);

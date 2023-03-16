@@ -1,16 +1,16 @@
 package pine.adaptor;
 
-import haxe.ds.Option;
 import pine.element.Slot;
+import pine.hydration.Cursor;
 
-using pine.core.OptionTools;
+using Kit;
 
 abstract class Adaptor {
   public static function from(context:Context):Adaptor {
     return context.getAdaptor();
   }
 
-  public static function maybeFrom(context:Context):Option<Adaptor> {
+  public static function maybeFrom(context:Context):Maybe<Adaptor> {
     return Some(context.getAdaptor());
   }
 
@@ -19,6 +19,7 @@ abstract class Adaptor {
   var afterRenderedCallbacks:Array<()->Void> = [];
 
   abstract public function getProcess():Process;
+  abstract public function createCursor(object:Dynamic):Cursor;
   abstract public function createPlaceholder():ObjectComponent;
   abstract public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent;
   abstract public function createObject(type:ObjectType, component:ObjectComponent):Dynamic;
