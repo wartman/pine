@@ -1,6 +1,8 @@
 import medic.DefaultReporter;
 import medic.Runner;
 
+// @todo: Replace Medic with Kit.Spec
+
 function main() {
   var runner = new Runner(new DefaultReporter({
     trackProgress: true,

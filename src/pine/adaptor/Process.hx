@@ -9,7 +9,7 @@ abstract class Process {
   }
 
   public static function maybeFrom(context:Context):Maybe<Process> {
-    return Adaptor.maybeFrom(context).map(adaptor -> Some(adaptor.getProcess()));
+    return Adaptor.maybeFrom(context).map(adaptor -> adaptor.getProcess());
   }
 
   final effects:List<() -> Void> = new List();
