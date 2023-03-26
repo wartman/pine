@@ -15,7 +15,7 @@ class Effect extends AutoComponent {
   public final child:Child;
 
   function render(context:Context) {
-    return new Proxy<Effect>({
+    return new Setup<Effect>({
       target: context,
       setup: element -> {
         var cleanup:Null<()->Void> = null;

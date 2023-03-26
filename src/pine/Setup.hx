@@ -6,10 +6,10 @@ import pine.element.ProxyElementEngine;
 
 /**
   A simple component designed to easily allow Element setup. The `setup`
-  callback will only be run once, right before the Proxy component is 
+  callback will only be run once, right before the Setup component is 
   initialized. See `pine.Effect` for an example of how this can be used.
 **/
-final class Proxy<T:Component> extends Component implements HasComponentType {
+final class Setup<T:Component> extends Component implements HasComponentType {
   public final target:ElementOf<T>;
   public final setup:(element:ElementOf<T>)->Void;
   public final child:Null<Child>;
@@ -27,7 +27,7 @@ final class Proxy<T:Component> extends Component implements HasComponentType {
   }
 
   public function createElement():Element {
-    var element:ElementOf<Proxy<T>> = new Element(this, useProxyElementEngine((element:ElementOf<Proxy<T>>) -> element.component.child));
+    var element:ElementOf<Setup<T>> = new Element(this, useProxyElementEngine((element:ElementOf<Setup<T>>) -> element.component.child));
     element.events.beforeInit.add((element, _) -> element.component.setup(element.component.target));
     return element;
   }
