@@ -26,13 +26,15 @@ class Effect extends AutoComponent {
           }
           return element.component.effect();
         });
-        inline function resolve() cleanup = computed.get();
         
-        element.events.afterInit.add((_, _) -> resolve());
-        element.events.afterUpdate.add(_ -> resolve());
+        element.events.afterInit.add((_, _) -> cleanup = computed.get());
+        element.events.afterUpdate.add(_ -> cleanup = computed.get());
         element.events.beforeDispose.add(_ -> {
           computed.dispose();
-          if (cleanup != null) cleanup();
+          if (cleanup != null) {
+            cleanup();
+            cleanup = null;
+          }
         });
       },
       child: child
