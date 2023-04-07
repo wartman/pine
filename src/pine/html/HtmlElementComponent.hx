@@ -19,7 +19,7 @@ abstract class HtmlElementComponent<Attrs:{}> extends ObjectComponent {
     super(props.key);
     tag = props.tag;
     attrs = props.attrs;
-    isSvg = props.isSvg == null ? false : props.isSvg;
+    isSvg = props.isSvg ?? false;
     children = props.children;
   }
 

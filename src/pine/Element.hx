@@ -193,9 +193,7 @@ class Element
     of the app.
   **/
   public function getAdaptor():Adaptor {
-    if (adaptor == null) {
-      adaptor = engine.getAdaptor();
-    }
+    adaptor ??= engine.getAdaptor();
     return adaptor;
   }
 
@@ -203,7 +201,7 @@ class Element
     Get this Element's parent, if any.
   **/
   public function getParent():Maybe<Element> {
-    return parent == null ? None : Some(parent);
+    return parent.toMaybe();
   }
 
   /**

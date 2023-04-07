@@ -34,11 +34,11 @@ class TrackedPropertyBuilder extends ClassBuilder {
 
   public function new(fields, ?options) {
     super(fields);
-    this.options = options == null ? {
+    this.options = options ?? ({
       trackedName: 'tracked',
       trackerIsNullable: false,
       params: []
-    } : options;
+    }:TrackedPropertyBuilderOptions);
     process();
   }
 

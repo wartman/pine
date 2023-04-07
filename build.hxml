@@ -9,11 +9,13 @@
 -D js-es=6
 -D debug
 -D analyzer-optimize
+-D message-reporting=pretty
 
 --dce full
 --macro nullSafety("pine")
 
--main Run
+# -main Run
+-main Run2
 -js dist/test/index.js
 
 -cmd node dist/test/index.js

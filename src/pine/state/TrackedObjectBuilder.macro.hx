@@ -44,99 +44,101 @@ private function buildTrackedObject(type:Type, ?params:Array<String>):ComplexTyp
     params: params.map(p -> TPType(TPath({ pack: [], name: p })))
   };
 
-  if (!path.typePathExists()) {
-    var builder = new ClassBuilder([]);
-    var inits:Array<Expr> = [];
-    var updates:Array<Expr> = [];
-    var dispose:Array<Expr> = [];
+  if (path.typePathExists()) return TPath(path);
 
-    hack_fixCompilerTypingOrder();
+  var builder = new ClassBuilder([]);
+  var inits:Array<Expr> = [];
+  var updates:Array<Expr> = [];
+  var dispose:Array<Expr> = [];
 
-    switch ct {
-      case TAnonymous(props):
-        for (prop in props) switch prop.kind {
-          case FVar(t, e): switch t {
-            case macro:Array<$t>:
-              var name = prop.name;
-              if (e == null) e = macro [];
-              var init = macro props.$name == null ? $e : props.$name;
-              inits.push(macro this.$name = new pine.state.TrackedArray($init));
-              updates.push(macro this.$name.replace(props.$name));
-              dispose.push(macro this.$name.dispose());
-              builder.add(macro class {
-                public final $name:pine.state.TrackedArray<$t>;
-              });
-            case macro:Map<$k, $v>:
-              var name = prop.name;
-              if (e == null) e = macro [];
-              var init = macro props.$name == null ? $e : props.$name;
-              inits.push(macro this.$name = new pine.state.TrackedMap($init));
-              updates.push(macro this.$name.replace(props.$name));
-              dispose.push(macro this.$name.dispose());
-              builder.add(macro class {
-                public final $name:pine.state.TrackedMap<$k, $v>;
-              });
-            default:
-              var name = prop.name;
-              var signal = '__signal_$name';
-              var setter = 'set_$name';
-              var getter = 'get_$name';
-              var signalAccessor = '${name}Signal';
-              var getSignalAccessor = 'get_$signalAccessor';
-              var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
+  // @todo: Look into the new Context apis and see if there
+  // is a better way to do this.
+  hack_fixCompilerTypingOrder();
 
-              inits.push(macro this.$signal = new pine.state.Signal($init));
-              updates.push(macro this.$signal.set(props.$name));
-              dispose.push(macro this.$signal.dispose());
-              builder.add(macro class {
-                final $signal:pine.state.Signal<$t>;
+  switch ct {
+    case TAnonymous(props):
+      for (prop in props) switch prop.kind {
+        case FVar(t, e) | FProp(_, _, t, e): switch t {
+          case macro:Array<$t>:
+            var name = prop.name;
+            if (e == null) e = macro [];
+            var init = macro props.$name ?? $e;
+            inits.push(macro this.$name = new pine.state.TrackedArray($init));
+            updates.push(macro this.$name.replace(props.$name));
+            dispose.push(macro this.$name.dispose());
+            builder.add(macro class {
+              public final $name:pine.state.TrackedArray<$t>;
+            });
+          case macro:Map<$k, $v>:
+            var name = prop.name;
+            if (e == null) e = macro [];
+            var init = macro props.$name ?? $e;
+            inits.push(macro this.$name = new pine.state.TrackedMap($init));
+            updates.push(macro this.$name.replace(props.$name));
+            dispose.push(macro this.$name.dispose());
+            builder.add(macro class {
+              public final $name:pine.state.TrackedMap<$k, $v>;
+            });
+          default:
+            var name = prop.name;
+            var signal = '__signal_$name';
+            var setter = 'set_$name';
+            var getter = 'get_$name';
+            var signalAccessor = '${name}Signal';
+            var getSignalAccessor = 'get_$signalAccessor';
+            var init = e == null ? macro props.$name : macro props.$name == null ? $e : props.$name;
 
-                public var $name(get, set):$t;
+            inits.push(macro this.$signal = new pine.state.Signal($init));
+            updates.push(macro this.$signal.set(props.$name));
+            dispose.push(macro this.$signal.dispose());
+            builder.add(macro class {
+              final $signal:pine.state.Signal<$t>;
 
-                inline function $getter():$t return this.$signal.get();
+              public var $name(get, set):$t;
 
-                inline function $setter(value):$t return this.$signal.set(value);
+              inline function $getter():$t return this.$signal.get();
 
-                public var $signalAccessor(get, never):pine.state.Signal<$t>;
+              inline function $setter(value):$t return this.$signal.set(value);
 
-                public inline function $getSignalAccessor() return this.$signal;
-              });
-          }
-        default:
-          Context.error('Only vars are allowed here', prop.pos);
-      }
+              public var $signalAccessor(get, never):pine.state.Signal<$t>;
+
+              public inline function $getSignalAccessor() return this.$signal;
+            });
+        }
       default:
-        Context.error('Expected an anonymous object', Context.currentPos());
+        Context.error('Only vars are allowed here', prop.pos);
+    }
+    default:
+      Context.error('Expected an anonymous object', Context.currentPos());
+  }
+
+  builder.add(macro class {
+    public function new(props) {
+      $b{inits}
     }
 
-    builder.add(macro class {
-      public function new(props) {
-        $b{inits}
-      }
+    public function dispose() {
+      $b{dispose}
+    }
 
-      public function dispose() {
-        $b{dispose}
-      }
+    public function replace(props) {
+      $b{updates};
+    }
+  });
 
-      public function replace(props) {
-        $b{updates};
+  Context.defineType({
+    pack: pack,
+    name: name,
+    pos: Context.currentPos(),
+    params: [ for (param in params) ({ name: param }:TypeParamDecl) ],
+    kind: TDClass(null, [
+      {
+        pack: [ 'pine', 'core' ],
+        name: 'Disposable'
       }
-    });
-
-    Context.defineType({
-      pack: pack,
-      name: name,
-      pos: Context.currentPos(),
-      params: [ for (param in params) ({ name: param }:TypeParamDecl) ],
-      kind: TDClass(null, [
-        {
-          pack: [ 'pine', 'core' ],
-          name: 'Disposable'
-        }
-      ], false, true, false),
-      fields: builder.export()
-    });
-  }
+    ], false, true, false),
+    fields: builder.export()
+  });
 
   return TPath(path);
 }

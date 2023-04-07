@@ -57,15 +57,9 @@ class ProxyElementEngine<T:Component> implements ElementEngine {
   public function new(element, render, options:ProxyElementEngineOptions<T>) {
     this.element = element;
     this.render = render;
-    this.findObject = options.findObject != null
-      ? options.findObject
-      : findChildObject;
-    this.findAdaptor = options.findAdaptor != null
-      ? options.findAdaptor
-      : findParentAdaptor;
-    this.errorHandler = options.handleThrownObject != null
-      ? options.handleThrownObject
-      : bubbleThrownObjectUp;
+    this.findObject = options.findObject ?? findChildObject;
+    this.findAdaptor = options.findAdaptor ?? findParentAdaptor;
+    this.errorHandler = options.handleThrownObject ?? bubbleThrownObjectUp;
   }
 
   public function init():Void {

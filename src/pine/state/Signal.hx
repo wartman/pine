@@ -11,7 +11,7 @@ class Signal<T> implements Disposable {
   
   public function new(value, ?comparator) {
     this.value = value;
-    this.comparator = comparator != null ? comparator : (a, b) -> a != b;
+    this.comparator = comparator ?? (a, b) -> a != b;
   }
 
   public function peek() {

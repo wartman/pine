@@ -60,7 +60,7 @@ function typePathToString(path:TypePath) {
 }
 
 function makeField(name:String, type:ComplexType, optional:Bool):Field {
-  var pos = (macro null).pos;
+  var pos = Context.currentPos();
   return {
     name: name,
     pos: pos,
