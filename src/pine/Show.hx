@@ -2,7 +2,7 @@ package pine;
 
 import pine.signal.Signal;
 
-class If extends ProxyComponent {
+class Show extends ProxyComponent {
   final condition:ReadonlySignal<Bool>;
   final then:()->Component;
   final otherwise:Null<()->Component>;

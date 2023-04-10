@@ -19,7 +19,7 @@
 
 # --next
 
-# -main counter.Counter2
+# -main counter.Counter
 
 # -js dist/assets/counter.js
 

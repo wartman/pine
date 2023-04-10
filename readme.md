@@ -126,7 +126,7 @@ Unlike frameworks like React, Pine uses *fine-grained* reactivity. A Component's
 import js.Browser;
 import pine.*;
 import pine.html.*;
-import pine.state.*;
+import pine.signal.*;
 import pine.html.client.Client;
 
 final count:Signal<Int> = new Signal(0);

@@ -2,19 +2,24 @@ package chat;
 
 import pine.*;
 import pine.html.*;
-import pine.html.client.*;
+import pine.html.client.Client;
 
 // Implements this example from React:
 // https://beta.reactjs.org/reference/react/useEffect
 
 function main() {
-  ClientRoot.mount(
+  mount(
     js.Browser.document.getElementById('root'),
-    new ChatApp({})
+    () -> new ChatApp({})
   );
 }
 
-function createConnection(serverUrl:String, roomId:String) {
+typedef Connection = {
+  connect:()->Void,
+  disconnect:()->Void
+} 
+
+function createConnection(serverUrl:String, roomId:String):Connection {
   // A real implementation would actually connect to the server
   return {
     connect: () -> {
@@ -30,30 +35,33 @@ class ChatRoom extends AutoComponent {
   var roomId:String;
   var serverUrl:String = 'https://localhost:1234';
 
-  function render(context:Context) {
-    var child = new Fragment({
-      children: [
-        new Html<'label'>({
-          children: [
-            new Text('Server URL: '),
-            new Html<'input'>({
-              value: serverUrl,
-              onchange: (e) -> serverUrl = (cast e.target:js.html.InputElement).value
-            })
-          ]
-        }),
-        new Text('Welcome to the $roomId room')
-      ]
+  function build() {
+    // @todo: We need a better `effect`.
+    var connection:Null<Connection> = null;
+    effect(() -> {
+      if (connection != null) connection.disconnect();
+      connection = createConnection(serverUrl(), roomId());
+      connection.connect();
+    });
+    addDisposable(() -> if (connection != null) {
+      connection.disconnect();
+      connection = null;
     });
 
-    return new Effect({
-      effect: () -> {
-        var connection = createConnection(serverUrl, roomId);
-        connection.connect();
-        return () -> connection.disconnect();
-      },
-      child: child
-    });
+    return new Fragment(([
+      new Html<'label'>({
+        children: [
+          new Text('Server URL: '),
+          new Html<'input'>({
+            value: serverUrl,
+            onchange: (e) -> serverUrl.set((cast e.target:js.html.InputElement).value)
+          })
+        ]
+      }),
+      new Text('Welcome to the '),
+      new Text(roomId),
+      new Text(' room')
+    ]:Children));
   }
 }
 
@@ -61,30 +69,30 @@ class ChatApp extends AutoComponent {
   var roomId:String = 'general';
   var show:Bool = false;
 
-  function render(context:Context) {
-    return new Fragment({
-      children: [
-        new Html<'label'>({
-          children: [
-            new Text('Choose the chat room: '),
-            new Html<'select'>({
-              value: roomId,
-              onchange: e -> roomId = (cast e.target:js.html.InputElement).value,
-              children: [
-                new Html<'option'>({ value: 'general', children: 'general' }),
-                new Html<'option'>({ value: 'travel', children: 'travel' }),
-                new Html<'option'>({ value: 'music', children: 'music' })
-              ]
-            })
-          ]
-        }),
-        new Html<'button'>({
-          onclick: e -> show = !show,
-          children: if (show) 'Close chat' else 'Open chat'
-        }),
-        if (show) new Html<'hr'>({}) else null,
-        if (show) new ChatRoom({ roomId: roomId }) else null
-      ]
-    });
+  function build() {
+    return new Fragment([
+      new Html<'label'>({
+        children: [
+          new Text('Choose the chat room: '),
+          new Html<'select'>({
+            value: roomId,
+            onchange: e -> roomId.set((cast e.target:js.html.InputElement).value),
+            children: [
+              new Html<'option'>({ value: 'general', children: 'general' }),
+              new Html<'option'>({ value: 'travel', children: 'travel' }),
+              new Html<'option'>({ value: 'music', children: 'music' })
+            ]
+          })
+        ]
+      }),
+      new Html<'button'>({
+        onclick: e -> show.update(showing -> !showing),
+        children: [
+          new Text(compute(() -> if (show()) 'Close chat' else 'Open chat'))
+        ]
+      }),
+      new Show(show, () -> new Html<'hr'>({})),
+      new Show(show, () -> new ChatRoom({ roomId: roomId }))
+    ]);
   }
 }

@@ -3,33 +3,33 @@ package counter;
 import js.Browser;
 import pine.*;
 import pine.html.*;
-import pine.html.client.ClientRoot;
+import pine.html.client.Client;
 
 function main() {
-  ClientRoot.mount(
+  mount(
     Browser.document.getElementById('root'),
-    new Counter({})
+    () -> new Counter({})
   );
 }
 
 class Counter extends AutoComponent {
   var count:Int = 0;
 
-  function render(context:Context) {
-    // We can access the actual tracked signals like so:
-    trace('Updated with: ${signals.countSignal.peek()}');
-
+  function build() {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ 'Current count:', count ]
+          children: [ 
+            'Current count:', 
+            new Text(compute(() -> Std.string(count())))
+          ]
         }),
         new Html<'button'>({
-          onclick: _ -> if (count > 0) count--,
+          onclick: _ -> if (count.peek() > 0) count.update(i -> i - 1),
           children: '-'
         }),
         new Html<'button'>({
-          onclick: _ -> count++,
+          onclick: _ -> count.update(i -> i + 1),
           children: '+'
         })
       ]

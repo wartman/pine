@@ -3,22 +3,22 @@ package counter;
 import js.Browser;
 import pine.*;
 import pine.html.*;
-import pine.state.*;
-import pine.html.client.ClientRoot;
+import pine.signal.*;
+import pine.html.client.Client;
 
 final count:Signal<Int> = new Signal(0);
 
 function main() {
   Observer.track(() -> trace(count.get()));
 
-  ClientRoot.mount(
+  mount(
     Browser.document.getElementById('root'),
-    new GlobalCounter({})
+    () -> new GlobalCounter({})
   );
 }
 
 class GlobalCounter extends AutoComponent {
-  function render(context:Context) {
+  function build() {
     return new Html<'div'>({
       children: [
         new Html<'div'>({

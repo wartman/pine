@@ -56,7 +56,7 @@ class TodoStore implements Record {
       fromJson(Json.parse(data));
     }
 
-    new Observer(() -> {
+    Observer.track(() -> {
       js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(store.toJson()));
     });
 
@@ -161,7 +161,8 @@ class TodoFooter extends AutoComponent {
       children: [
         new Html<'span'>({
           className: 'todo-count',
-          children: new Html<'strong'>({ children: [
+          children: new Html<'strong'>({ 
+            children: [
               new Text(compute(() -> switch todosLeft() {
                 case 1: '1 item left';
                 default: '${todosLeft()} items left';
