@@ -1,9 +1,9 @@
 package pine;
 
-import pine.adaptor.ObjectType;
-import pine.core.HasComponentType;
+import pine.signal.Signal;
+import pine.signal.Observer;
 
-abstract Text(TextComponent) to TextComponent to Component {
+abstract Text(TextComponent) to TextComponent to Component to Child {
   @:from public inline static function ofString(content:String) {
     return new Text(content);
   }
@@ -16,28 +16,27 @@ abstract Text(TextComponent) to TextComponent to Component {
     return new Text(content + '');
   }
 
-  public inline function new(content, ?key) {
-    this = new TextComponent(content, key);
+  public inline function new(content) {
+    this = new TextComponent(content);
   }
 }
 
-final class TextComponent extends ObjectComponent implements HasComponentType {
-  final content:String;
+class TextComponent extends ObjectComponent {
+  final content:ReadonlySignal<String>;
 
-  public function new(content, ?key) {
-    super(key);
+  public function new(content) {
     this.content = content;
   }
 
-  public function getObjectType():ObjectType {
-    return ObjectText;
+	function initializeObject() {
+    object = getAdaptor()?.createTextObject(content.peek());
+    adaptor?.insertObject(object, slot, findNearestObjectHostAncestor);
+    var observer = new Observer(() -> {
+      var text = content.get();
+      getAdaptor()?.updateTextObject(getObject(), text);
+    });
+    addDisposable(observer);
   }
 
-  public function getObjectData():Dynamic {
-    return content;
-  }
-
-  public function getChildren():Null<Array<Component>> {
-    return null;
-  }
+	public function visitChildren(visitor:(child:Component) -> Bool) {}
 }

@@ -1,7 +1,7 @@
 package pine.object;
 
-import pine.debug.Debug;
-import pine.hydration.Cursor;
+import kit.Assert;
+import pine.internal.Cursor;
 
 class ObjectCursor implements Cursor {
   var object:Null<Object>;
@@ -27,7 +27,7 @@ class ObjectCursor implements Cursor {
       return;
     }
 
-    Debug.alwaysAssert(object != null);
+    assert(object != null);
 
     var parent = object.parent;
     var index = parent.children.indexOf(object);

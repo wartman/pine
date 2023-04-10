@@ -1,29 +1,15 @@
 package pine;
 
-import pine.core.HasComponentType;
-import pine.diffing.Key;
-import pine.element.TrackedElementEngine;
-
-/**
-  The Scope component is designed to help isolate reactive parts 
-  of a component, allowing only small sections to update when a Signal
-  changes instead of causing an entire Component to re-render.
-**/
-final class Scope extends Component implements HasComponentType {
-  final render:(context:Context)->Component;
-
-  public function new(props:{
-    render:(context:Context)->Component,
-    ?key:Key
-  }) {
-    super(props.key);
-    this.render = props.render;
+class Scope extends ProxyComponent {
+  final buildWithContext:(context:Component)->Component;
+  
+  public function new(build) {
+    this.buildWithContext = build;
   }
 
-  public function createElement() {
-    return new Element(
-      this,
-      useTrackedProxyEngine((element:ElementOf<Scope>) -> element.component.render(element))
-    );
+  function build():Component {
+    // @todo: There's probably a better way to trigger rebuilds without
+    // having to return a Fragment.
+    return new Fragment(compute(() -> [ buildWithContext(this) ]));
   }
 }

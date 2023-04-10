@@ -1,6 +1,6 @@
 package pine.object;
 
-import pine.debug.Debug;
+import kit.Assert;
 
 /**
   A simple Object that can be used as the target for a
@@ -16,7 +16,7 @@ abstract class Object {
   public var children:Array<Object> = [];
 
   public function prepend(child:Object) {
-    Debug.assert(child != this);
+    assert(child != this);
 
     if (child.parent != null) child.remove();
 
@@ -25,7 +25,7 @@ abstract class Object {
   }
 
   public function append(child:Object) {
-    Debug.assert(child != this);
+    assert(child != this);
 
     if (child.parent != null) child.remove();
 
@@ -34,7 +34,7 @@ abstract class Object {
   }
 
   public function insert(pos:Int, child:Object) {
-    Debug.assert(child != this);
+    assert(child != this);
 
     if (child.parent != this && child.parent != null) child.remove();
 

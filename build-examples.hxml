@@ -13,7 +13,7 @@
 
 --each
 
--main todo.Todo2
+-main todo.Todo
 
 -js dist/assets/todo.js
 

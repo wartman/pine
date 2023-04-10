@@ -1,164 +1,77 @@
 package pine;
 
-import pine.adaptor.Adaptor;
-import pine.core.HasComponentType;
-import pine.debug.Debug;
-import pine.diffing.Engine;
-import pine.diffing.Key;
-import pine.element.*;
-import pine.element.ProxyElementEngine;
-import pine.hydration.Cursor;
+import kit.Assert;
+import pine.signal.Observer;
+import pine.signal.Signal;
+import pine.internal.Reconcile;
 
-using Kit;
+class Fragment extends Component {
+  var marker:Null<Component> = null;
+  final children:ReadonlySignal<Array<Component>>;
 
-final class Fragment extends Component implements HasComponentType {
-  public final children:Array<Component>;
-
-  public function new(props:{
-    children:Children,
-    ?key:Key
-  }) {
-    super(props.key);
-    this.children = props.children;
-  }
-
-  function createElement() {
-    return new Element(
-      this, 
-      element -> new FragmentEngine(element, (element) -> element.component.children)
-    );
-  }
-}
-
-class FragmentEngine implements ElementEngine {
-  final element:ElementOf<Fragment>;
-  final render:(element:ElementOf<Fragment>)->Array<Component>;
-
-  var children:Array<Element> = [];
-  var marker:Null<Element> = null;
-
-  public function new(element, render) {
-    this.element = element;
-    this.render = render;
-  }
-
-  public function init() {
-    var slot = element.slot;
-    var previous:Null<Element> = slot != null ? slot.previous : null;
-    
-    marker = createMarker();
-    marker.mount(element, createSlot(-1, previous));
-    
-    var previous = marker;
-    var components = renderSafe();
-    var newChildren:Array<Element> = [];
-    for (i => component in components) {
-      var child = component.createElement();
-      child.mount(element, createSlot(i, previous));
-      newChildren.push(child);
-      previous = child;
-    }
-
-    this.children = newChildren;
-  }
-
-  public function hydrate(cursor:Cursor) {
-    var slot = element.slot;
-    var previous:Null<Element> = slot != null ? slot.previous : null;
-
-    marker = createMarker();
-    marker.mount(element, createSlot(-1, previous));
-    
-    var previous = marker;
-    var components = renderSafe();
-    var newChildren:Array<Element> = [];
-    for (i => component in components) {
-      var child = component.createElement();
-      child.hydrate(cursor, element, createSlot(i, previous));
-      newChildren.push(child);
-      previous = child;
-    }
-
-    this.children = newChildren;
-  }
-
-  public function update() {
-    var currentSlot = element.slot;
-    if (currentSlot != null && marker != null) marker.updateSlot(currentSlot);
-    children = diffChildren(element, children, renderSafe());
-  }
-
-  public function getAdaptor():Adaptor {
-    return findParentAdaptor(element);
+  public function new(children) {
+    this.children = children;
   }
 
   public function getObject():Dynamic {
-    if (children.length == 0) {
-      return getMarker().getObject();
+    var currentChildren = children.peek();
+    var currentLen = currentChildren.length;
+    if (currentLen == 0) {
+      var obj = marker?.getObject();
+      if (obj == null) {
+        throw new PineException('No object found');
+      }
+      return obj;
     }
-    return children[children.length - 1].getObject();
+    return currentChildren[currentLen - 1].getObject();
   }
 
-  public function createSlot(localIndex:Int, previous:Null<Element>):Slot {
-    var parentSlot = element.slot;
-    var index = parentSlot == null ? 0 : parentSlot.index;
-    return new FragmentSlot(index, localIndex + 1, previous);
+  public function initialize() {
+    marker = new Placeholder();
+    marker.mount(this, new FragmentSlot(slot?.index ?? 0, -1, slot?.previous));
+    addDisposable(() -> {
+      marker?.dispose();
+      marker = null;
+    });
+
+    var prevChildren:Array<Component> = [];
+    var childrenObserver = new Observer(() -> {
+      assert(status != Building);
+      assert(status != Disposed);
+
+      if (status == Disposing) return;
+
+      status = Building;
+      prevChildren = reconcileChildren(this, prevChildren, children.get());
+      status = Valid;
+    });
+
+    addDisposable(childrenObserver);
+    addDisposable(() -> prevChildren.resize(0));
   }
 
-  public function updateSlot(slot:Null<Slot>) {
-    element.slot = slot;
-    if (marker != null && slot != null) {
-      // @todo: not sure if this is needed OR if it will work.
-      marker.updateSlot(createSlot(-1, slot.previous));
+  override function updateSlot(?newSlot:Slot) {
+    super.updateSlot(newSlot);
+    if (marker != null && newSlot != null) {
+      marker.updateSlot(new FragmentSlot(newSlot.index, -1, newSlot.previous));
       var previous = marker;
-      for (i => child in children) {
+      for (i => child in children.peek()) {
         child.updateSlot(createSlot(i, previous));
         previous = child;
       }
     }
   }
 
-  public function visitChildren(visitor:(child:Element) -> Bool) {
-    if (!visitor(getMarker())) return;
-    for (child in children) if (!visitor(child)) break;
+  override function createSlot(localIndex:Int, previous:Null<Component>):Slot {
+    var index = slot?.index ?? 0;
+    if (previous == null) previous = marker;
+    return new FragmentSlot(index, localIndex + 1, previous);
   }
 
-  public function createChildrenQuery():ChildrenQuery {
-    return new ChildrenQuery(element);
-  }
-
-  public function createAncestorQuery():AncestorQuery {
-    return new AncestorQuery(element);
-  }
-
-  public function handleThrownObject(target:Element, e:Dynamic) {
-    bubbleThrownObjectUp(element, target, e);
-  }
-
-  public function dispose() {
-    if (marker != null) {
-      marker.dispose();
-      marker = null;
+  public function visitChildren(visitor:(child:Component) -> Bool) {
+    for (child in children.peek()) {
+      if (!visitor(child)) break;
     }
-
-    for (child in children) child.dispose();
-    children = [];
-  }
-
-  function getMarker():Element {
-    Debug.assert(marker != null);
-    return marker;
-  }
-
-  function createMarker() {
-    return element
-      .getAdaptor()
-      .createPlaceholder()
-      .createElement();
-  }
-
-  function renderSafe() {
-    return render(element).filter(e -> e != null);
   }
 }
 

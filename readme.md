@@ -16,12 +16,12 @@ Here's an extremely simple app to show how Pine works:
 ```haxe
 import pine.*;
 import pine.html.*;
-import pine.html.client.ClientRoot;
+import pine.html.client.Client;
 
 function main() {
-  ClientRoot.mount(
+  mount(
     js.Browser.document.getElementById('root'),
-    new HelloWorld({ greeting: 'hello', location: 'world' })
+    () -> new HelloWorld({ greeting: 'hello', location: 'world' })
   );
 }
 
@@ -29,7 +29,7 @@ class HelloWorld extends AutoComponent {
   final greeting:String;
   final location:String;
 
-  function render(context:Context) {
+  function build() {
     return new Html<'div'>({
       children: '$greeting $location'
     });
@@ -54,30 +54,30 @@ Let's look at another example: a simple counter.
 import js.Browser;
 import pine.*;
 import pine.html.*;
-import pine.html.client.ClientRoot;
+import pine.html.client.Client;
 
 function main() {
-  ClientRoot.mount(
+  mount(
     Browser.document.getElementById('root'),
-    new Counter({})
+    () -> new Counter({})
   );
 }
 
 class Counter extends AutoComponent {
   var count:Int = 0;
 
-  function render(context:Context) {
+  function build() {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
           children: [ new Text('Current count:'), new Text(count) ]
         }),
         new Html<'button'>({
-          onclick: _ -> if (count > 0) count--,
+          onclick: _ -> count.update(i -> if (i > 0) i - 1 else 0),
           children: '-'
         }),
         new Html<'button'>({
-          onclick: _ -> count++,
+          onclick: _ -> count.update(i -> i + 1),
           children: '+'
         })
       ]
@@ -88,13 +88,13 @@ class Counter extends AutoComponent {
 
 And that's it! When we click on the `+` or `-` buttons, we'll see the count go up or down.
 
-Pine is doing a quite a bit here behind the scenes, however, and it all comes down to this line of code:
+Pine is doing a bit behind the scenes, and it all comes down to this line of code:
 
 ```haxe
 var count:Int = 0;
 ```
 
-In an `AutoComponent`, a `final` field is just added to the constructor -- nothing special happens. Mutable fields -- like `var count` here -- are different, and they're converted into a property with a getter and a setter that wrap a `pine.state.Signal<T>`.
+In an `AutoComponent`, a `final` field is just added to the constructor -- nothing special happens. Mutable fields -- like `var count` here -- are different, and they're converted into a `pine.signal.Signal<T>`.
 
 Reactivity
 ----------
@@ -102,12 +102,12 @@ Reactivity
 Let's pull back a bit and look at what Signals are. Here's a quick example:
 
 ```haxe
-import pine.state.Signal;
-import pine.state.Observer;
+import pine.signal.Signal;
+import pine.signal.Observer;
 
 function main() { 
   var location = new Signal('world');
-  var observer = new Observer(() -> trace('hello ' + location.get()));
+  var observer = new Observer(() -> trace('hello ' + location()));
   // Immediately traces 'hello world'
   
   location.set('earth');
@@ -118,39 +118,50 @@ function main() {
 }
 ```
 
-When we call `location.get()` inside the `Observer`, the Observer subscribes to it and will run its handler function every time the Signal changes.
+When we call `location()` (`location.get()` will also work) inside the `Observer`, the Observer subscribes to it and will run its handler function every time the Signal changes.
 
-This is basically how Pine is tracking changes in the AutoComponent. It's wrapping in the render method in an Observer, then wrapping each var field in the class with a Signal, and then requests a re-render if any of its subscribed Signals changes. 
-
-> It's actually a bit more complex than that, as Components are designed to change constantly and we need to do some things to ensure that we're not needlessly creating new Observers and Signals, but that's the general idea.
-
-This means that *any* Signal will be subscribed to if its used inside an AutoComponent. Feel free to define Signals anywhere, and your AutoComponent will react to any changes made to them.
+Unlike frameworks like React, Pine uses *fine-grained* reactivity. A Component's `build` method will only be run once instead of being run every time a value changes. Instead, Pine relies on Signals to directly update attributes and lists of children. For example: 
 
 ```haxe
 import js.Browser;
 import pine.*;
 import pine.html.*;
 import pine.state.*;
-import pine.html.client.ClientRoot;
+import pine.html.client.Client;
 
 final count:Signal<Int> = new Signal(0);
 
 function main() {
   Observer.track(() -> trace(count.get()));
 
-  ClientRoot.mount(
+  mount(
     Browser.document.getElementById('root'),
     new Counter({})
   );
 }
 
 class Counter extends AutoComponent {
-  function render(context:Context) {
+  function build() {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ new Text('Current count:'), new Text(count.get()) ]
+          children: [ 
+            new Text('Current count:'),
+            // If we pass the `count` signal directly to a `Text` component,
+            // it will update the DOM every time `count` changes.
+            new Text(count) 
+          ]
         }),
+        // The `For` component takes a `ReadonlySignal<Array<T>>` (which the
+        // `compute` function returns) and iterates over it to create Components.
+        //
+        // Note that it requires items to be objects to ensure they can be
+        // compared -- `For` will only create a new Component if it detects 
+        // a new value and will do its best to reuse existing ones.
+        new For(
+          compute(() -> [ for (i in 0...count()) { value: i } ]),
+          i -> new Text(Std.string(i.value))
+        ),
         new Html<'button'>({
           onclick: _ -> if (count.peek() > 0) count.set(count.peek() - 1),
           children: '-'
@@ -191,50 +202,4 @@ class Greeting implements Record {
 }
 ```
 
-Note that Arrays, Maps and anonymous objects get special treatment, again on both AutoComponents and on Records. They aren't simply wrapped in a Signal: instead, they're turned into a `TrackedArray`, `TrackedMap` or `TrackedObject` respectively.
-
-```haxe
-import pine.Record;
-
-class Items implements Record {
-  var names:Array<String>;
-  var locations:Map<String, String>;
-  var greeting:{ value:String };
-}
-```
-
-This is done to ensure reactivity and make sure using Signals feels as natural as possible.
-
-```haxe
-import pine.state.*;
-
-function main() {
-  // If we didn't use a tracked array, this is how you'd need
-  // to make a Signal<Array<String>> reactive:
-  var names = new Signal([ 'Bill', 'Alice' ]);
-  var obs = new Observer(() -> {
-    trace(names.get().join(' '));
-  });
-  // This won't work:
-  names.get().push('Fred');
-  // ...you'd have to do this:
-  names.set(names.peek().concat([ 'fred' ]));
-
-  // With a TrackedArray, this is much easier:
-  var names = new TrackedArray([ 'Bill', 'Alice' ]);
-  var obs = new Observer(() -> {
-    // We don't even need to call `get()` -- the TrackedArray
-    // does that for us. Just treat it like a normal Array!
-    trace(names.join(' '));
-  });
-  // And now this will be reactive:
-  names.push('Fred');
-
-  // The same idea applies to TrackedMaps and TrackedObjects.
-}
-```
-
-Providers and Context
----------------------
-
-> todo: Cover providers and the standard `from`/`maybeFrom` API Pine uses.
+> More to come.

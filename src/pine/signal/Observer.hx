@@ -1,11 +1,9 @@
 package pine.signal;
 
 import haxe.Exception;
-import pine.debug.Debug;
-import pine.core.UniqueId;
 import pine.signal.Graph;
 
-enum abstract ObserverStatus(Int) {
+enum abstract ObserverStatus(String) {
   final Pending;
   final Inactive;
   final Valid;
@@ -19,6 +17,14 @@ typedef DependencyLink = {
 } 
 
 class Observer implements ConsumerNode {
+  public static inline function track(handler) {
+    return new Observer(handler);
+  }
+
+  public static inline function untrack(handler) {
+    pine.signal.Graph.untrack(handler);
+  }
+
   public final id:UniqueId = new UniqueId();
   final handler:()->Void;
   final producers:Map<UniqueId, DependencyLink> = [];
@@ -37,7 +43,7 @@ class Observer implements ConsumerNode {
   public function invalidate() {
     switch status {
       case Validating:
-        Debug.error('Cycle detected');
+        throw 'Cycle detected';
       case Invalid | Inactive:
       case Valid | Pending:
         status = Invalid;
@@ -48,7 +54,7 @@ class Observer implements ConsumerNode {
   public function validate() {
     switch status {
       case Validating:
-        Debug.error('Cycle detected');
+        throw 'Cycle detected';
       case Inactive | Valid: 
         return;
       case Invalid if (!pollProducers()):

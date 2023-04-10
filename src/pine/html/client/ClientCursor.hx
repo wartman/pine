@@ -1,7 +1,7 @@
 package pine.html.client;
 
 import js.html.Node;
-import pine.hydration.Cursor;
+import pine.internal.Cursor;
 
 class ClientCursor implements Cursor {
   var node:Null<Node>;

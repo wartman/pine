@@ -1,4 +1,4 @@
 package pine.html;
 
-@:genericBuild(pine.html.TagComponentFactoryBuilder.buildGeneric('pine.html.HtmlTags'))
+@:genericBuild(pine.html.TagComponentBuilder.buildGeneric('pine.html.HtmlTags'))
 class Html<@:const Tag> {}

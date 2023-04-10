@@ -3,11 +3,10 @@ package pine;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
-import pine.macro.ClassBuilder;
-import pine.macro.MacroTools;
+import pine.internal.macro.ClassBuilder;
 
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.internal.macro.MacroTools;
 
 function buildGeneric() {
   return switch Context.getLocalType() {
@@ -19,7 +18,7 @@ function buildGeneric() {
       buildProvider((macro:Dynamic).toType());
     default:
       throw 'assert';
-  }
+  } 
 }
 
 function resolveProvider(el:Expr, kind:Expr) {
@@ -40,32 +39,29 @@ function buildProvider(type:Type) {
   var ct = type.toComplexType();
   var providerName = name + '_' + type.stringifyTypeForClassName();
   var providerPath:TypePath = { pack: pack, name: providerName, params: [] };
+  var providerCt:ComplexType = TPath(providerPath);
 
-  if (providerPath.typePathExists()) return TPath(providerPath);
+  if (providerPath.typePathExists()) return providerCt;
 
-  var fields = getBuildFieldsSafe();
-  var builder = new ClassBuilder(fields);
+  var builder = new ClassBuilder([]);
   
   builder.add(macro class {
-    public static function from(context:pine.Context):$ct {
-      return switch maybeFrom(context) {
-        case Some(value): value;
-        case None: throw new pine.core.PineException(
-          'No provider exists for the type ' + $v{typeName}
-        );
+    public static function from(component:pine.Component):$ct {
+      return switch maybeFrom(component) {
+        case Some(value): 
+          value;
+        case None: 
+          throw new pine.PineException('No provider exists for the type ' + $v{typeName});
       }
     }
 
-    public static function maybeFrom(context:pine.Context):kit.Maybe<$ct> {
-      return switch context.queryAncestors().find(parent -> parent.getComponent().getComponentType() == componentType) {
-        case Some(element):
-          var value = (element.getComponent():pine.Provider.ProviderComponent<$ct>).getValue();
-          if (value == null) return None;
-          Some(value);
-        case None: None;
-      }
+    public static function maybeFrom(component:pine.Component):kit.Maybe<$ct> {
+      return component
+        .findAncestor(parent -> parent is $providerCt)
+        .map((component:$providerCt) -> component.getValue());
     }
   });
+
 
   Context.defineType({
     pack: pack,
@@ -76,12 +72,10 @@ function buildProvider(type:Type) {
       name: 'Provider',
       sub: 'ProviderComponent',
       params: [TPType(ct)]
-    }, [
-      { pack: [ 'pine', 'core' ], name: 'HasComponentType' }
-    ], false, true, false),
+    }, null, false, true, false),
     meta: [],
     fields: builder.export()
   });
 
-  return TPath(providerPath);
+  return providerCt;
 }

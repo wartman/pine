@@ -1,123 +1,120 @@
 package pine.html.client;
 
 import js.Browser;
-import pine.adaptor.*;
-import pine.debug.Debug;
-import pine.element.Slot;
-import pine.hydration.Cursor;
+import js.html.Element;
+import kit.Assert;
+import pine.internal.Adaptor;
+import pine.internal.Cursor;
 
 using StringTools;
-using pine.core.ObjectTools;
-using pine.html.client.DomTools;
 
-class ClientAdaptor extends Adaptor {
-  final process = new ClientProcess();
+inline extern final svgNamespace = 'http://www.w3.org/2000/svg';
 
+class ClientAdaptor implements Adaptor {
   public function new() {}
 
-  public function getProcess():Process {
-    return process;
+  public function createElementObject(name:String, initialAttrs:{}):Dynamic {
+    return name.startsWith('svg:')
+      ? Browser.document.createElementNS(svgNamespace, name.substr(4)) 
+      : Browser.document.createElement(name);
+  }
+
+  public function createTextObject(value:String):Dynamic {
+    return Browser.document.createTextNode(value);
+  }
+
+  public function createPlaceholderObject():Dynamic {
+    return createTextObject('');
   }
 
   public function createCursor(object:Dynamic):Cursor {
     return new ClientCursor(object);
   }
 
-  public function createPlaceholder():ObjectComponent {
-    return new Text('');
+  public function updateTextObject(object:Dynamic, value:String) {
+    (object:js.html.Text).textContent = value;
   }
 
-  public function createPortalRoot(target:Dynamic, ?child:Component):RootComponent {
-    return new ClientRoot({ el: target, child: child });
-  }
-
-  public function createObject(type:ObjectType, component:ObjectComponent):Dynamic {
-    return switch type {
-      case ObjectRoot:
-        throw 'Cannot create a root object';
-      case ObjectText | ObjectPlaceholder:
-        return new js.html.Text(component.getObjectData());
-      case ObjectElement(tag):
-        var el = tag.startsWith('svg:')
-          ? Browser.document.createElementNS(DomTools.svgNamespace, tag.substr(4)) 
-          : Browser.document.createElement(tag);
-        updateObject(type, el, component, null);
-        return el;
-    }
-  }
-
-  public function updateObject(type:ObjectType, object:Dynamic, component:ObjectComponent, previousComponent:Null<ObjectComponent>) {
-    switch type {
-      case ObjectRoot | ObjectPlaceholder:
-        // noop
-      case ObjectText:
-        var text:js.html.Text = object;
-        if (previousComponent == null || component.getObjectData() != previousComponent.getObjectData()) {
-          var content:String = component.getObjectData();
-          text.textContent = content == null ? '' : content;
-        }
-      case ObjectElement(_):
-        var el:js.html.Element = object;
-        var newAttrs = component.getObjectData();
-        var oldAttrs = previousComponent != null ? previousComponent.getObjectData() : {};
-        oldAttrs.diff(newAttrs, (key, oldValue, newValue) -> {
-          el.updateNodeAttribute(key, oldValue, newValue);
-        });
-    }
-  }
-
-  public function insertObject(type:ObjectType, object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
-    switch type {
-      case ObjectRoot:
+  public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic) {
+    var el:Element = object;
+    var isSvg = el.namespaceURI == svgNamespace;
+    switch name {
+      case 'ref' | 'key':
+      // noop
+      case 'className':
+        updateObjectAttribute(el, 'class', value);
+      case 'xmlns' if (isSvg): // skip
+      case 'value' | 'selected' | 'checked' if (!isSvg):
+        js.Syntax.code('{0}[{1}] = {2}', el, name, value);
+      case _ if (!isSvg && js.Syntax.code('{0} in {1}', name, el)):
+        js.Syntax.code('{0}[{1}] = {2}', el, name, value);
       default:
-        var el:js.html.Element = object;
-        if (slot != null && slot.previous != null) {
-          var relative:js.html.Element = slot.previous.getObject();
-          relative.after(el);
-        } else {
-          var parent:js.html.Element = findParent();
-          Debug.assert(parent != null);
-          parent.prepend(el);
-        }
-    }
-  }
-
-  public function moveObject(type:ObjectType, object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
-    switch type {
-      case ObjectRoot:
-      default:
-        var el:js.html.Element = object;
-
-        if (to == null) {
-          if (from != null) {
-            removeObject(type, object, from);
+        name = getHtmlName(name);
+        // @todo: Setting events this way feels questionable.
+        if (name.startsWith('on')) {
+          var name = name.toLowerCase();
+          if (value == null) {
+            Reflect.setField(el, name, cast null);
+          } else {
+            Reflect.setField(el, name, value);
           }
-          return;
+        } else if (value == null || (Std.is(value, Bool) && value == false)) {
+          el.removeAttribute(name);
+        } else if (Std.is(value, Bool) && value == true) {
+          el.setAttribute(name, name);
+        } else {
+          el.setAttribute(name, value);
         }
-
-        if (from != null && !from.indexChanged(to)) {
-          return;
-        }
-
-        if (to.previous == null) {
-          var parent:js.html.Element = findParent();
-          Debug.assert(parent != null);
-          parent.prepend(el);
-          return;
-        }
-
-        var relative:js.html.Element = to.previous.getObject();
-        Debug.assert(relative != null);
-        relative.after(el);
     }
   }
 
-  public function removeObject(type:ObjectType, object:Dynamic, slot:Null<Slot>) {
-    switch type {
-      case ObjectRoot:
-      default:
-        var el:js.html.Element = object;
-        el.remove();
+  // @todo: Figure out how to use the @:html attributes for this instead.
+  function getHtmlName(name:String) {
+    if (name.startsWith('aria')) {
+      return 'aria-' + name.substr(4).toLowerCase();
     }
+    return name;
+  }
+
+  public function insertObject(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
+    var el:js.html.Element = object;
+    if (slot != null && slot.previous != null) {
+      var relative:js.html.Element = slot.previous.getObject();
+      relative.after(el);
+    } else {
+      var parent:js.html.Element = findParent();
+      assert(parent != null);
+      parent.prepend(el);
+    }
+  }
+
+  public function moveObject(object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
+    var el:js.html.Element = object;
+
+    if (to == null) {
+      if (from != null) {
+        removeObject(object, from);
+      }
+      return;
+    }
+
+    if (from != null && !from.indexChanged(to)) {
+      return;
+    }
+
+    if (to.previous == null) {
+      var parent:js.html.Element = findParent();
+      assert(parent != null);
+      parent.prepend(el);
+      return;
+    }
+
+    var relative:js.html.Element = to.previous.getObject();
+    assert(relative != null);
+    relative.after(el);
+  }
+
+  public function removeObject(object:Dynamic, slot:Null<Slot>) {
+    (object:Element).remove();
   }
 }

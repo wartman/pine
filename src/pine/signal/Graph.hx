@@ -1,7 +1,6 @@
 package pine.signal;
 
-import pine.core.UniqueId;
-import pine.core.Disposable;
+import pine.Disposable;
 
 using Kit;
 using Lambda;
@@ -63,6 +62,7 @@ function setCurrentConsumer(consumer:Maybe<ConsumerNode>) {
 
 function enqueueConsumer(node:ConsumerNode) {
   if (!pending.has(node)) pending.add(node);
+  validateConsumers(); // @todo: in the future, this should be scheduled.
 }
 
 function validateConsumers() {
@@ -71,4 +71,17 @@ function validateConsumers() {
     pending.remove(consumer);
     consumer.validate();
   }
+}
+
+function batch(compute:()->Void) {
+  depth++;
+  compute();
+  depth--;
+  validateConsumers();
+}
+
+function untrack(compute:()->Void) {
+  var prev = setCurrentConsumer(None);
+  batch(compute);
+  setCurrentConsumer(prev);
 }

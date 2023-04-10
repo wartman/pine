@@ -1,11 +1,52 @@
 package pine.signal;
 
-import pine.core.UniqueId;
+import pine.signal.Computation;
 import pine.signal.Graph;
 
 using Lambda;
 
-class Signal<T> implements ProducerNode {
+@:forward
+abstract ReadonlySignal<T>(ReadonlySignalObject<T>) from ReadonlySignalObject<T> from Computation<T> {
+  @:from public static function ofValue<T>(value:T):ReadonlySignal<T> {
+    return new ReadonlySignal(value);
+  }
+
+  @:from public static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
+    return signal;
+  }
+
+  public inline function new(value:T) {
+    this = new SignalObject(value);
+  }
+
+  @:op(a())
+  public inline function get():T {
+    return this.get();
+  }
+}
+
+typedef ReadonlySignalObject<T> = {
+  public function get():T;
+  public function peek():T;
+}
+
+@:forward
+abstract Signal<T>(SignalObject<T>) from SignalObject<T> to ReadonlySignal<T> {
+  @:from public static function ofValue<T>(value:T):Signal<T> {
+    return new Signal(value);
+  }
+
+  public inline function new(value:T) {
+    this = new SignalObject(value);
+  }
+
+  @:op(a())
+  public inline function get():T {
+    return this.get();
+  }
+}
+
+class SignalObject<T> implements ProducerNode {
   public final id = new UniqueId();
 	var version:NodeVersion = new NodeVersion();
   var value:T;
@@ -36,6 +77,14 @@ class Signal<T> implements ProducerNode {
         consumer.bindProducer(this);
         bindConsumer(consumer);
     }
+    return value;
+  }
+
+  public function update(updater:(value:T)->T) {
+    return set(updater(peek()));
+  }
+
+  public function peek() {
     return value;
   }
 

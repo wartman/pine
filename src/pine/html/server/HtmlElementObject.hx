@@ -3,8 +3,6 @@ package pine.html.server;
 import haxe.DynamicAccess;
 import pine.object.Object;
 
-using pine.core.ObjectTools;
-
 class HtmlElementObject extends Object {
   static final VOID_ELEMENTS = [
     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr',
@@ -18,14 +16,8 @@ class HtmlElementObject extends Object {
     this.attributes = attributes;
   }
 
-  public function updateAttributes(newAttrs:{}) {
-    attributes.diff(newAttrs, (key, oldValue, newValue) -> {
-      if (newValue == null) {
-        Reflect.deleteField(attributes, key);
-      } else {
-        Reflect.setField(attributes, key, newValue);
-      }
-    });
+  public function setAttribute(name:String, value:Dynamic) {
+    Reflect.setField(attributes, name, value);    
   }
 
   public function toString():String {
