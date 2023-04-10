@@ -22,6 +22,8 @@ class Computation<T> extends Observer implements ProducerNode {
   }
 
   public function get():T {
+    if (isInactive()) return value;
+
     switch getCurrentConsumer() {
       case None:
       case Some(consumer) if (consumer == this):

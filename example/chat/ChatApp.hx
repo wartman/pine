@@ -36,19 +36,13 @@ class ChatRoom extends AutoComponent {
   var serverUrl:String = 'https://localhost:1234';
 
   function build() {
-    // @todo: We need a better `effect`.
-    var connection:Null<Connection> = null;
     effect(() -> {
-      if (connection != null) connection.disconnect();
-      connection = createConnection(serverUrl(), roomId());
+      var connection = createConnection(serverUrl(), roomId());
       connection.connect();
-    });
-    addDisposable(() -> if (connection != null) {
-      connection.disconnect();
-      connection = null;
+      return () -> connection.disconnect();
     });
 
-    return new Fragment(([
+    return new Fragment([
       new Html<'label'>({
         children: [
           new Text('Server URL: '),
@@ -61,7 +55,7 @@ class ChatRoom extends AutoComponent {
       new Text('Welcome to the '),
       new Text(roomId),
       new Text(' room')
-    ]:Children));
+    ]);
   }
 }
 

@@ -57,6 +57,7 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
       component.effect(() -> {
         var value = signal.get();
         component.getAdaptor()?.updateObjectAttribute(component.getObject(), name, value);
+        null;
       });
     }
   }

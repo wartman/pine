@@ -2,7 +2,7 @@ package pine;
 
 import pine.signal.Signal;
 
-@:forward(iterator)
+@:forward
 abstract Children(ReadonlySignal<Array<Child>>) from ReadonlySignal<Array<Child>> to ReadonlySignal<Array<Child>> {
   @:from
   public inline static function ofArray(children:Array<Child>):Children {

@@ -2,12 +2,11 @@ package pine;
 
 import kit.Assert;
 import pine.signal.Observer;
-import pine.signal.Signal;
 import pine.internal.Reconcile;
 
 class Fragment extends Component {
   var marker:Null<Component> = null;
-  final children:ReadonlySignal<Array<Component>>;
+  final children:Children;
 
   public function new(children) {
     this.children = children;

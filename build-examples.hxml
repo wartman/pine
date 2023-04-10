@@ -13,9 +13,9 @@
 
 --each
 
--main todo.Todo
+# -main todo.Todo
 
--js dist/assets/todo.js
+# -js dist/assets/todo.js
 
 # --next
 
@@ -31,6 +31,6 @@
 
 # --next
 
-# -main chat.ChatApp
+-main chat.ChatApp
 
-# -js dist/assets/chat-app.js
+-js dist/assets/chat-app.js

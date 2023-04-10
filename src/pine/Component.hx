@@ -91,9 +91,19 @@ abstract class Component implements Disposable implements DisposableHost {
     return computed;
   }
 
-  inline function effect(handler:()->Void) {
-    var observer = new Observer(handler);
-    addDisposable(observer);
+  inline function effect(handler:()->Null<()->Void>) {
+    var cleanup:Null<()->Void> = null;
+    var observer = new Observer(() -> {
+      if (cleanup != null) cleanup();
+      cleanup = handler();
+    });
+    addDisposable(() -> {
+      observer.dispose();
+      if (cleanup != null) {
+        cleanup();
+        cleanup = null;
+      }
+    });
     return observer;
   }
 

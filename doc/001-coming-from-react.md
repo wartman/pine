@@ -3,7 +3,7 @@ Coming from React
 
 While Pine does not have hooks like React does, much of the functionality they provide are covered by other features.
 
-Hooks like `useState` and `useReducer` can mostly be replaced with `var` properties on AutoComponents, TackedObjects or Records.
+Hooks like `useState` and `useReducer` can mostly be replaced with `var` properties on AutoComponents and Records.
 
 Taking this example from the React website:
 
@@ -36,14 +36,12 @@ class Counter extends AutoComponent {
 
   function render(context:Context) {
     return new Html<'button'>({
-      onclick: _ -> count += 1,
-      children: [ 'You pressed me ', count, ' times' ]
+      onclick: _ -> count.set(i -> i + 1),
+      children: [ 'You pressed me ', new Text(count), ' times' ]
     });
   }
 }
 ```
-
-Other hooks like `useEffect` don't really have exact parallels in Pine, although most of their behavior can be covered by Observers. Pine *does* provide an `Effect` component, which allows you to do much the same thing `useEffect` does.
 
 Take this (rather long) example from the [React docs](https://beta.reactjs.org/reference/react/useEffect):
 
@@ -118,15 +116,21 @@ In Pine, this might look something like:
 ```haxe
 import pine.*;
 import pine.html.*;
+import pine.html.client.Client;
 
 function main() {
-  ClientRoot.mount(
+  mount(
     js.Browser.document.getElementById('root'),
-    new ChatApp({})
+    () -> new ChatApp({})
   );
 }
 
-function createConnection(serverUrl:String, roomId:String) {
+typedef Connection = {
+  connect:()->Void,
+  disconnect:()->Void
+} 
+
+function createConnection(serverUrl:String, roomId:String):Connection {
   // A real implementation would actually connect to the server
   return {
     connect: () -> {
@@ -142,29 +146,27 @@ class ChatRoom extends AutoComponent {
   var roomId:String;
   var serverUrl:String = 'https://localhost:1234';
 
-  function render(context:Context) {
-    var child = new Fragment({
-      children: [
-        new Html<'label'>({
-          children: [
-            new Text('Server URL: '),
-            new Html<'input'>({
-              value: serverUrl,
-              onchange: (e) -> serverUrl = (cast e.target:js.html.InputElement).value
-            })
-          ]
-        }),
-        new Text('Welcome to the $roomId room')
-      ]
+  function build() {
+    effect(() -> {
+      var connection = createConnection(serverUrl(), roomId());
+      connection.connect();
+      return () -> connection.disconnect();
     });
-    return new Effect({
-      effect: () -> {
-        var connection = createConnection(serverUrl, roomId);
-        connection.connect();
-        return () -> connection.disconnect();
-      },
-      child: child
-    });
+
+    return new Fragment([
+      new Html<'label'>({
+        children: [
+          new Text('Server URL: '),
+          new Html<'input'>({
+            value: serverUrl,
+            onchange: (e) -> serverUrl.set((cast e.target:js.html.InputElement).value)
+          })
+        ]
+      }),
+      new Text('Welcome to the '),
+      new Text(roomId),
+      new Text(' room')
+    ]);
   }
 }
 
@@ -172,36 +174,37 @@ class ChatApp extends AutoComponent {
   var roomId:String = 'general';
   var show:Bool = false;
 
-  function render(context:Context) {
-    return new Fragment({
-      children: [
-        new Html<'label'>({
-          children: [
-            new Text('Choose the chat room: '),
-            new Html<'select'>({
-              value: roomId,
-              onchange: e -> roomId = (cast e.target:js.html.InputElement).value,
-              children: [
-                new Html<'option'>({ value: 'general', children: 'general' }),
-                new Html<'option'>({ value: 'travel', children: 'travel' }),
-                new Html<'option'>({ value: 'music', children: 'music' })
-              ]
-            })
-          ]
-        }),
-        new Html<'button'>({
-          onclick: e -> show = !show,
-          children: if (show) 'Close chat' else 'Open chat'
-        }),
-        if (show) new Html<'hr'>({}) else null,
-        if (show) new ChatRoom({ roomId: roomId }) else null
-      ]
-    });
+  function build() {
+    return new Fragment([
+      new Html<'label'>({
+        children: [
+          new Text('Choose the chat room: '),
+          new Html<'select'>({
+            value: roomId,
+            onchange: e -> roomId.set((cast e.target:js.html.InputElement).value),
+            children: [
+              new Html<'option'>({ value: 'general', children: 'general' }),
+              new Html<'option'>({ value: 'travel', children: 'travel' }),
+              new Html<'option'>({ value: 'music', children: 'music' })
+            ]
+          })
+        ]
+      }),
+      new Html<'button'>({
+        onclick: e -> show.update(showing -> !showing),
+        children: [
+          new Text(compute(() -> if (show()) 'Close chat' else 'Open chat'))
+        ]
+      }),
+      new Show(show, () -> new Html<'hr'>({})),
+      new Show(show, () -> new ChatRoom({ roomId: roomId }))
+    ]);
   }
 }
+
 ```
 
-Pine also doesn't have a `useRef`, but the Provider can be used to create more or less the same functionality. For example:
+Pine also doesn't have a `useRef`, but because `build` methods only run once it simply doesn't need it! For example, this:
 
 ```js
 import { useRef } from 'react';
@@ -222,25 +225,21 @@ export default function Counter() {
 }
 ```
 
-...will look like this in Pine:
+...will just look like this in Pine:
 
 ```haxe
 import pine.*;
 import pine.html.*;
 
 class Counter extends AutoComponent {
-  function render(context:Context) {
-    return new Provider<{ current: Int }>({
-      create: () -> { current: 0 },
-      // Not really needed, but `dispose` is required on all Providers:
-      dispose: ref -> ref.current = null,
-      render: ref -> new Html<'button'>({
-        onclick: e -> {
-          ref.current += 1;
-          js.Browser.window.alert('You clicked ${ref.current} times!');
-        },
-        children: 'Click me!'
-      })
+  function build() {
+    var ref = { current: 0 };
+    return new Html<'button'>({
+      onclick: e -> {
+        ref.current += 1;
+        js.Browser.window.alert('You clicked ${ref.current} times!');
+      },
+      children: 'Click me!'
     });
   }
 }

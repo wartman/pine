@@ -316,6 +316,7 @@ class TodoInput extends AutoComponent {
         // Focus doesn't work for some reason :\
         el.focus();
       }
+      null;
     });
 
     return new Html<'input'>({
