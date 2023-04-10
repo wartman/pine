@@ -1,23 +1,14 @@
 import haxe.Timer;
+import pine2.*;
+import pine2.html.*;
+import pine2.html.client.Client;
 import pine2.signal.Observer;
 import pine2.signal.Signal;
-import pine2.component.Box;
-import pine2.*;
-import pine2.html.server.HtmlElementObject;
-import pine2.html.server.Server;
 
 function main() {
   var value = new Signal('foo');
-  var obj = new HtmlElementObject('div', {});
-  var root = mount(obj, () -> new Example(value));
-
-  var obs = new Observer(() -> trace('value: ' + value.get()));
-  trace(obj.toString());
-
-  Timer.delay(() -> {
-    value.set('bar');
-    trace(obj.toString());
-  }, 200);
+  var obj = new HtmlElementObject('main', {});
+  mount(obj, () -> new Example(value));
 }
 
 class Example extends ProxyComponent {
@@ -28,10 +19,26 @@ class Example extends ProxyComponent {
   }
 
   function build():Component {
-    return new Box({ className: 'foo' }, [
-      new Text('Before [ '),
-      new Text(value),
-      new Text(' ] After'),
-    ]);
+    return new Html<'div'>({
+      id: 'wrapper',
+      className: compute(() -> 'example ' + value()),
+      children: [
+        'This is before the span. ',
+        new Html<'span'>({
+          children: [
+            new Text('Before [ '),
+            value,
+            new Text(' ] After'),
+          ]
+        }),
+        new Html<'input'>({
+          value: value,
+          oninput: e -> {
+            var input:js.html.InputElement = cast e.target;
+            value.set(input.value);
+          }
+        })
+      ]
+    });
   }
 }

@@ -5,6 +5,7 @@ class Placeholder extends ObjectComponent {
 
   function initializeObject() {
     object = getAdaptor()?.createPlaceholderObject();
+    adaptor?.insertObject(object, slot, findNearestObjectHostAncestor);
   }
 
   public function visitChildren(visitor:(child:Component) -> Bool) {}

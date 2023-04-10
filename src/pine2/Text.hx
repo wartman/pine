@@ -3,7 +3,7 @@ package pine2;
 import pine2.signal.Signal;
 import pine2.signal.Observer;
 
-abstract Text(TextComponent) to TextComponent to Component {
+abstract Text(TextComponent) to TextComponent to Component to Child {
   @:from public inline static function ofString(content:String) {
     return new Text(content);
   }

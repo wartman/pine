@@ -3,18 +3,18 @@ package pine2;
 import pine2.signal.Signal;
 
 class For<T> extends ProxyComponent {
-  final value:Signal<Array<T>>;
-  final render:(value:T)->Component;
+  final value:ReadonlySignal<Array<T>>;
+  final buildItem:(value:T)->Component;
 
-  public function new(value, render) {
+  public function new(value, buildItem) {
     this.value = value;
-    this.render = render;
+    this.buildItem = buildItem;
   }
 
   function build():Component {
     // @todo: We need to implement a way to reuse values if they
-    // don't change -- we should only call `render` if the value
+    // don't change -- we should only call `buildItem` if the value
     // is different.
-    return new Fragment(compute(() -> value.get().map(render)));
+    return new Fragment(compute(() -> value().map(buildItem)));
   }
 }

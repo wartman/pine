@@ -3,7 +3,7 @@ package pine2.signal;
 import haxe.Exception;
 import pine2.signal.Graph;
 
-enum abstract ObserverStatus(Int) {
+enum abstract ObserverStatus(String) {
   final Pending;
   final Inactive;
   final Valid;

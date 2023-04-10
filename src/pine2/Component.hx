@@ -1,5 +1,7 @@
 package pine2;
 
+import pine2.signal.Signal.ReadonlySignal;
+import pine2.internal.Cursor;
 import pine2.internal.ObjectHost;
 import kit.Assert;
 import pine2.Disposable;
@@ -17,6 +19,7 @@ enum ComponentStatus {
   Disposed;
 }
 
+@:allow(pine2)
 abstract class Component implements Disposable implements DisposableHost {
   final disposables:DisposableCollection = new DisposableCollection();
 
@@ -36,6 +39,12 @@ abstract class Component implements Disposable implements DisposableHost {
     status = Valid;
   }
 
+  public function hydrate(?parent:Component, cursor:Cursor, ?slot:Slot) {
+    assert(status == Pending);
+    throw new haxe.exceptions.NotImplementedException();
+    // @todo
+  }
+
   public function createSlot(index:Int, previous:Null<Component>):Slot {
     return new Slot(index, previous);
   }
@@ -53,10 +62,10 @@ abstract class Component implements Disposable implements DisposableHost {
     return adaptor;
   }
 
-  public function findAncestor(match:(parent:Component)->Bool):Maybe<Component> {
+  public function findAncestor<T:Component>(match:(parent:Component)->Bool):Maybe<T> {
     return switch parent {
       case null: None;
-      case parent if (match(parent)): Some(parent);
+      case parent if (match(parent)): Some(cast parent);
       case parent: parent.findAncestor(match);
     }
   }
@@ -66,7 +75,7 @@ abstract class Component implements Disposable implements DisposableHost {
   }
 
   public function findNearestObjectHostAncestor():Dynamic {
-    return findAncestor(ancestor -> Std.isOfType(ancestor, ObjectHost))
+    return findAncestor(ancestor -> ancestor is ObjectHost)
       .map(o -> o.getObject())
       .orThrow('No parent object found');
   }
@@ -75,7 +84,7 @@ abstract class Component implements Disposable implements DisposableHost {
     return new Signal(value);
   }
 
-  inline function compute<T>(compute):Computation<T> {
+  inline function compute<T>(compute):ReadonlySignal<T> {
     var computed = new Computation(compute);
     addDisposable(computed);
     return computed;

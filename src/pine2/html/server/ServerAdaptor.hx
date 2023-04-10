@@ -1,9 +1,10 @@
 package pine2.html.server;
 
+import pine2.internal.Cursor;
 import kit.Assert;
 
 import pine2.internal.Adaptor;
-import pine2.object.Object;
+import pine2.object.*;
 
 class ServerAdaptor implements Adaptor {
   public function new() {}
@@ -18,6 +19,10 @@ class ServerAdaptor implements Adaptor {
 
   public function createPlaceholderObject():Dynamic {
     return new HtmlTextObject('');
+  }
+
+  public function createCursor(object:Dynamic):Cursor {
+    return new ObjectCursor(object);
   }
 
   public function updateTextObject(object:Dynamic, value:String) {

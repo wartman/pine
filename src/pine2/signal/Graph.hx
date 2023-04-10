@@ -62,6 +62,7 @@ function setCurrentConsumer(consumer:Maybe<ConsumerNode>) {
 
 function enqueueConsumer(node:ConsumerNode) {
   if (!pending.has(node)) pending.add(node);
+  validateConsumers(); // @todo: in the future, this should be scheduled.
 }
 
 function validateConsumers() {

@@ -6,18 +6,21 @@ using Lambda;
 
 class Computation<T> extends Observer implements ProducerNode {
   final consumers:List<ConsumerNode> = new List();
+  final equals:(a:T, b:T) -> Bool;
   var value:T;
 
-  public function new(computation:()->T) {
-    super(() -> value = computation());
+  public function new(computation:()->T, ?equals) {
+    this.equals = equals ?? (a, b) -> a == b;
+    super(() -> {
+      var newValue = computation();
+      if (this.equals(value, newValue)) return;
+      version.increment();
+      this.value = newValue;
+      notify();
+    });
   }
 
   public function get():T {
-    switch status {
-      case Valid:
-      default: throw 'oops';
-    }
-
     switch getCurrentConsumer() {
       case None:
       case Some(consumer) if (consumer == this):
@@ -35,10 +38,6 @@ class Computation<T> extends Observer implements ProducerNode {
   }
 
   public function notify() {
-    switch status {
-      case Valid:
-      default: throw 'oops';
-    }
     for (consumer in consumers) if (consumer.isInactive()) {
       consumers.remove(consumer);
     } else {

@@ -13,13 +13,13 @@
 
 --each
 
--main todo.Todo
+-main todo.Todo2
 
 -js dist/assets/todo.js
 
 # --next
 
-# -main counter.Counter
+# -main counter.Counter2
 
 # -js dist/assets/counter.js
 

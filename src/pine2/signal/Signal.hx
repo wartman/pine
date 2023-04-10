@@ -18,6 +18,11 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>) from ReadonlySignalObject<T>
   public inline function new(value:T) {
     this = new SignalObject(value);
   }
+
+  @:op(a())
+  public inline function get():T {
+    return this.get();
+  }
 }
 
 typedef ReadonlySignalObject<T> = {
@@ -33,6 +38,11 @@ abstract Signal<T>(SignalObject<T>) from SignalObject<T> to ReadonlySignal<T> {
 
   public inline function new(value:T) {
     this = new SignalObject(value);
+  }
+
+  @:op(a())
+  public inline function get():T {
+    return this.get();
   }
 }
 
@@ -84,7 +94,6 @@ class SignalObject<T> implements ProducerNode {
     } else {
       consumer.invalidate();
     }
-    validateConsumers();
   }
 
   public function bindConsumer(consumer:ConsumerNode) {

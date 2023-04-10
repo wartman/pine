@@ -9,7 +9,7 @@ class Root extends Component implements ObjectHost {
   final build:()->Component;
   var child:Null<Component>;
   
-  public function new(object, build, adaptor) {
+  public function new(object:Dynamic, build, adaptor) {
     this.object = object;
     this.build = build;
     this.adaptor = adaptor;
@@ -38,5 +38,9 @@ class Root extends Component implements ObjectHost {
       status = Valid;
     });
     addDisposable(childrenObserver);
+  }
+
+  function teardownObject() {
+    // noop
   }
 }

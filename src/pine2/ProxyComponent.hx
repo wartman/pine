@@ -11,8 +11,9 @@ abstract class ProxyComponent extends Component {
   function initialize() {
     var observer = new Observer(() -> {
       assert(status != Building);
-      assert(status != Disposing);
       assert(status != Disposed);
+      
+      if (status == Disposing) return;
 
       status = Building;
       if (child != null) child.dispose();
@@ -26,14 +27,18 @@ abstract class ProxyComponent extends Component {
 
   function getObject():Dynamic {
     var object:Null<Dynamic> = null;
-    
+      
     visitChildren(child -> {
-      if (object != null) throw 'Element has more than one objects';
+      if (object != null) {
+        throw new PineException('Component has more than one objects');
+      }
       object = child.getObject();
       true;
     });
 
-    if (object == null) throw 'Could not resolve an object';
+    if (object == null) {
+      throw new PineException('Could not resolve an object');
+    }
 
     return object;
   }
