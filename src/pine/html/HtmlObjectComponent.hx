@@ -16,12 +16,7 @@ class HtmlObjectComponent<Attrs:{} & { ?children:Children }> extends ElementWith
     this.attrs = new Attributes([]);
     for (field in Reflect.fields(props)) {
       if (field == 'children') continue;
-      var value:pine.html.HtmlAttribute<Any> = Reflect.field(props, field);
-      this.attrs.set(field, switch value?.unwrap() {
-        case null: new ReadonlySignal(null);
-        case Left(v): new ReadonlySignal(v);
-        case Right(signal): signal;
-      });
+      this.attrs.set(field, Reflect.field(props, field));
     }
   }
 
@@ -46,11 +41,7 @@ class HtmlVoidObjectComponent<Attrs:{}> extends ElementWithoutChildrenComponent 
     this.tag = tag;
     this.attrs = new Attributes([]);
     for (field in Reflect.fields(props)) {
-      var value:pine.html.HtmlAttribute<Any> = Reflect.field(props, field);
-      this.attrs.set(field, switch value.unwrap() {
-        case Left(v): new ReadonlySignal(v);
-        case Right(signal): signal;
-      });
+      this.attrs.set(field, Reflect.field(props, field));
     }
   }
 

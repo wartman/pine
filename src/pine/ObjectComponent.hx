@@ -53,17 +53,26 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
   }
 
   public function observeAttributeChanges(component:Component) {
+    inline function applyAttribute(name:String, signal:ReadonlySignal<Any>) {
+      var value = signal.get();
+      switch component.status {
+        case Initializing(Hydrating(_)):
+          component.getAdaptor().updateObjectAttribute(component.getObject(), name, value, true);
+        default:
+          component.getAdaptor().updateObjectAttribute(component.getObject(), name, value);
+      }
+    }
     for (name => signal in this) {
-      component.effect(() -> {
-        var value = signal.get();
-        switch component.status {
-          case Initializing(Hydrating(_)):
-            component.getAdaptor().updateObjectAttribute(component.getObject(), name, value, true);
-          default:
-            component.getAdaptor().updateObjectAttribute(component.getObject(), name, value);
-        }
-        null;
-      });
+      if (signal.isInactive()) {
+        // If the signal is inactive, avoid observing it.
+        applyAttribute(name, signal);
+      } else {
+        // Otherwise wrap it in an effect.
+        component.effect(() -> {
+          applyAttribute(name, signal);
+          null;
+        });
+      }
     }
   }
 }

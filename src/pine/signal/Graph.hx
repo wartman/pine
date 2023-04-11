@@ -14,7 +14,7 @@ abstract NodeVersion(Int) {
     this++;
   }
 
-  inline function unwrap():Int {
+  @:to inline function unwrap():Int {
     return this;
   }
 
@@ -26,6 +26,7 @@ abstract NodeVersion(Int) {
 @:allow(pine.signal)
 interface Node extends Disposable {
   public final id:UniqueId;
+  public function isInactive():Bool;
   public function getVersion():NodeVersion;
 }
 
@@ -38,7 +39,6 @@ interface ProducerNode extends Node {
 
 @:allow(pine.signal)
 interface ConsumerNode extends Node {
-  public function isInactive():Bool;
   public function invalidate():Void;
   public function validate():Void;
   public function pollProducers():Bool;

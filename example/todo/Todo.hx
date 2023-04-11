@@ -157,7 +157,7 @@ class TodoFooter extends AutoComponent {
     
     return new Html<'footer'>({
       className: 'footer',
-      style: if (total == 0) 'display: none' else null,
+      style: compute(() -> if (total() == 0) 'display: none' else null),
       children: [
         new Html<'span'>({
           className: 'todo-count',

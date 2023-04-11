@@ -6,31 +6,6 @@ import pine.signal.Graph;
 using Lambda;
 
 @:forward
-abstract ReadonlySignal<T>(ReadonlySignalObject<T>) from ReadonlySignalObject<T> from Computation<T> {
-  @:from public static function ofValue<T>(value:T):ReadonlySignal<T> {
-    return new ReadonlySignal(value);
-  }
-
-  @:from public static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
-    return signal;
-  }
-
-  public inline function new(value:T) {
-    this = new SignalObject(value);
-  }
-
-  @:op(a())
-  public inline function get():T {
-    return this.get();
-  }
-}
-
-typedef ReadonlySignalObject<T> = {
-  public function get():T;
-  public function peek():T;
-}
-
-@:forward
 abstract Signal<T>(SignalObject<T>) from SignalObject<T> to ReadonlySignal<T> {
   @:from public static function ofValue<T>(value:T):Signal<T> {
     return new Signal(value);
@@ -118,6 +93,10 @@ class SignalObject<T> implements ProducerNode {
     consumers.remove(consumer);
   }
 
+  public function isInactive() {
+    return isDisposed;
+  }
+
   public function dispose() {
     if (isDisposed) return;
 
@@ -127,5 +106,54 @@ class SignalObject<T> implements ProducerNode {
       unbindConsumer(consumer);
       consumer.unbindProducer(this);
     }
+  }
+}
+
+@:forward
+abstract ReadonlySignal<T>(ReadonlySignalObject<T>) 
+  from ReadonlySignalObject<T>
+  from Computation<T> 
+{
+  @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
+    return new StaticSignal(value);
+  }
+
+  @:from public inline static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
+    return signal;
+  }
+
+  public inline function new(value:T) {
+    this = new SignalObject(value);
+  }
+
+  @:op(a())
+  public inline function get():T {
+    return this.get();
+  }
+}
+
+typedef ReadonlySignalObject<T> = {
+  public function get():T;
+  public function peek():T;
+  public function isInactive():Bool;
+}
+
+class StaticSignal<T> {
+  final value:T;
+
+  public function new(value) {
+    this.value = value;
+  }
+
+  public function get() {
+    return value;
+  }
+
+  public function peek() {
+    return value;
+  }
+
+  public function isInactive() {
+    return true;
   }
 }

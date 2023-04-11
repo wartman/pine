@@ -41,7 +41,9 @@ abstract class Component implements Disposable implements DisposableHost {
 
     this.slot = slot;
     this.parent = parent;
-    if (this.adaptor == null) this.adaptor = parent?.getAdaptor();
+    if (this.adaptor == null && parent != null) {
+      this.adaptor = parent.getAdaptor();
+    }
 
     initialize();
     status = Built;
@@ -91,6 +93,8 @@ abstract class Component implements Disposable implements DisposableHost {
 
   inline function signal<T>(value:T):Signal<T> {
     return new Signal(value);
+    // @todo: Should we dispose owned signals when the Component 
+    // is disposed?
   }
 
   inline function compute<T>(compute):ReadonlySignal<T> {
