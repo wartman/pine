@@ -152,13 +152,13 @@ class Counter extends AutoComponent {
             new Text(count) 
           ]
         }),
-        // The `For` component takes a `ReadonlySignal<Array<T>>` (which the
+        // The `Each` component takes a `ReadonlySignal<Array<T>>` (which the
         // `compute` function returns) and iterates over it to create Components.
         //
         // Note that it requires items to be objects to ensure they can be
-        // compared -- `For` will only create a new Component if it detects 
+        // compared -- `Each` will only create a new Component if it detects 
         // a new value and will do its best to reuse existing ones.
-        new For(
+        new Each(
           compute(() -> [ for (i in 0...count()) { value: i } ]),
           i -> new Text(Std.string(i.value))
         ),

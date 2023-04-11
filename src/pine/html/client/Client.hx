@@ -9,5 +9,8 @@ function mount(el:Element, build:()->Component) {
 }
 
 function hydrate(el:Element, build:()->Component) {
-  // @todo
+  var adaptor = new ClientAdaptor();
+  var root = new Root(el, build, adaptor);
+  root.hydrate(null, adaptor.createCursor(el));
+  return root;
 }

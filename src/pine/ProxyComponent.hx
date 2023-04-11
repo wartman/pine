@@ -16,11 +16,20 @@ abstract class ProxyComponent extends Component {
       
       if (status == Disposing) return;
 
+      var incomingStatus = status;
       status = Building;
+
       child = build();
       if (child == null) child = new Placeholder();
-      child.mount(this, slot);
-      status = Valid;
+
+      switch incomingStatus {
+        case Initializing(Hydrating(cursor)):
+          child.hydrate(this, cursor, slot);
+        default:
+          child.mount(this, slot);
+      }
+
+      status = Built;
     });
   }
 

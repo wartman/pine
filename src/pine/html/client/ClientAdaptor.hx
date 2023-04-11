@@ -35,9 +35,25 @@ class ClientAdaptor implements Adaptor {
     (object:js.html.Text).textContent = value;
   }
 
-  public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic) {
+  public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool) {
     var el:Element = object;
     var isSvg = el.namespaceURI == svgNamespace;
+    
+    if (isHydrating == true) {
+      name = getHtmlName(name);
+      // Only set events.
+      // @todo: Setting events this way feels questionable.
+      if (name.startsWith('on')) {
+        var name = name.toLowerCase();
+        if (value == null) {
+          Reflect.setField(el, name, cast null);
+        } else {
+          Reflect.setField(el, name, value);
+        }
+      }
+      return;
+    }
+
     switch name {
       case 'ref' | 'key':
       // noop

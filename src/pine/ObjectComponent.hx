@@ -11,7 +11,7 @@ abstract class ObjectComponent extends Component implements ObjectHost {
   
   public function initialize() {
     initializeObject();
-    status = Valid;
+    status = Built;
   }
 
   function getObject():Dynamic {
@@ -20,7 +20,7 @@ abstract class ObjectComponent extends Component implements ObjectHost {
 
   function teardownObject() {
     if (object != null) {
-      getAdaptor()?.removeObject(object, slot);
+      getAdaptor().removeObject(object, slot);
       object = null;
     }
   }
@@ -29,7 +29,7 @@ abstract class ObjectComponent extends Component implements ObjectHost {
     if (slot == newSlot) return;
     var prevSlot = slot;
     super.updateSlot(newSlot);
-    getAdaptor()?.moveObject(getObject(), prevSlot, slot, findNearestObjectHostAncestor);
+    getAdaptor().moveObject(getObject(), prevSlot, slot, findNearestObjectHostAncestor);
   }
 
   override function dispose() {
@@ -56,7 +56,12 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
     for (name => signal in this) {
       component.effect(() -> {
         var value = signal.get();
-        component.getAdaptor()?.updateObjectAttribute(component.getObject(), name, value);
+        switch component.status {
+          case Initializing(Hydrating(_)):
+            component.getAdaptor().updateObjectAttribute(component.getObject(), name, value, true);
+          default:
+            component.getAdaptor().updateObjectAttribute(component.getObject(), name, value);
+        }
         null;
       });
     }
@@ -76,8 +81,14 @@ abstract class ElementWithChildrenComponent extends ObjectComponent {
 
     var attributes = getAttributes(); 
 
-    object = adaptor?.createElementObject(getName(), attributes.getInitialAttrs());
-    adaptor?.insertObject(object, slot, findNearestObjectHostAncestor);
+    switch status {
+      case Initializing(Hydrating(cursor)):
+        object = cursor.current();
+      default:
+        object = getAdaptor().createElementObject(getName(), attributes.getInitialAttrs());
+        getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
+    }
+    
     attributes.observeAttributeChanges(this);
 
     var prevChildren:Array<Component> = [];
@@ -87,9 +98,21 @@ abstract class ElementWithChildrenComponent extends ObjectComponent {
 
       if (status == Disposing) return;
 
-      status = Building;
-      prevChildren = reconcileChildren(this, prevChildren, getChildren().get());
-      status = Valid;
+      var newChildren = getChildren().get();
+
+      switch status {
+        case Initializing(Hydrating(cursor)):
+          status = Building;
+          var childCursor = cursor.currentChildren();
+          prevChildren = hydrateChildren(this, childCursor, newChildren);
+          assert(childCursor.current() == null);
+          cursor.next();
+        default:
+          status = Building;
+          prevChildren = reconcileChildren(this, prevChildren, newChildren);
+      }
+
+      status = Built;
     });
     addDisposable(childrenObserver);
     addDisposable(() -> prevChildren.resize(0));
@@ -106,15 +129,23 @@ abstract class ElementWithoutChildrenComponent extends ObjectComponent {
   abstract function getAttributes():Attributes;
 
   function initializeObject() {
-    assert(adaptor != null);
     assert(object == null);
 
     var attributes = getAttributes(); 
 
-    object = adaptor?.createElementObject(getName(), attributes.getInitialAttrs());
-    adaptor?.insertObject(object, slot, findNearestObjectHostAncestor);
-    attributes.observeAttributeChanges(this);
+    switch status {
+      case Initializing(Hydrating(cursor)):
+        object = cursor.current();
+        attributes.observeAttributeChanges(this);
+        cursor.next();
+      default:
+        object = getAdaptor().createElementObject(getName(), attributes.getInitialAttrs());
+        getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
+        attributes.observeAttributeChanges(this);
+    }
   }
 
-  public function visitChildren(visitor:(child:Component) -> Bool) {}
+  public function visitChildren(visitor:(child:Component) -> Bool) {
+    // noop
+  }
 }

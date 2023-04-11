@@ -1,22 +1,25 @@
 package pine;
 
-import pine.signal.Signal.ReadonlySignal;
-import pine.internal.Cursor;
-import pine.internal.ObjectHost;
 import kit.Assert;
 import pine.Disposable;
+import pine.internal.*;
 import pine.signal.*;
-import pine.internal.Adaptor;
+import pine.signal.Signal;
 
 using Kit;
 
 enum ComponentStatus {
   Pending;
-  Valid;
-  Invalid;
+  Initializing(status:ComponentInitializationStatus);
   Building;
+  Built;
   Disposing;
   Disposed;
+}
+
+enum ComponentInitializationStatus {
+  Mounting;
+  Hydrating(cursor:Cursor);
 }
 
 @:allow(pine)
@@ -29,20 +32,25 @@ abstract class Component implements Disposable implements DisposableHost {
   var status:ComponentStatus = Pending;
 
   public function mount(?parent:Component, ?slot:Slot) {
-    assert(status == Pending);
+    switch status {
+      case Initializing(_):
+      default:
+        assert(status == Pending);
+        status = Initializing(Mounting);
+    }
 
     this.slot = slot;
     this.parent = parent;
     if (this.adaptor == null) this.adaptor = parent?.getAdaptor();
 
     initialize();
-    status = Valid;
+    status = Built;
   }
 
   public function hydrate(?parent:Component, cursor:Cursor, ?slot:Slot) {
     assert(status == Pending);
-    throw new haxe.exceptions.NotImplementedException();
-    // @todo
+    status = Initializing(Hydrating(cursor));
+    mount(parent, slot);
   }
 
   public function createSlot(index:Int, previous:Null<Component>):Slot {

@@ -234,11 +234,7 @@ class TodoContainer extends AutoComponent {
         // @todo: toggles
         new Html<'ul'>({
           className: 'todo-list',
-          children: new For(items, todo -> new TodoItem({todo: todo}))
-          // children: [
-          //   for (todo in items)
-          //     new TodoItem({todo: todo, key: todo.id})
-          // ]
+          children: new Each(items, todo -> new TodoItem({todo: todo}))
         })
       ]
     });

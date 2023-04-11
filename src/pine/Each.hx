@@ -3,7 +3,7 @@ package pine;
 import kit.Assert;
 import pine.signal.Signal;
 
-class For<T:{}> extends ProxyComponent {
+class Each<T:{}> extends ProxyComponent {
   final value:ReadonlySignal<Array<T>>;
   final buildItem:(value:T)->Component;
 
@@ -13,8 +13,6 @@ class For<T:{}> extends ProxyComponent {
   }
 
   function build():Component {
-    // @todo: We may want a more robust way to check if an Item 
-    // already exists.
     var existing:Map<T, Component> = [];
     addDisposable(() -> existing.clear());
 

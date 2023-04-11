@@ -29,12 +29,26 @@ class TextComponent extends ObjectComponent {
   }
 
 	function initializeObject() {
-    object = getAdaptor()?.createTextObject(content.peek());
-    adaptor?.insertObject(object, slot, findNearestObjectHostAncestor);
+    var adaptor = getAdaptor();
+
+    switch status {
+      case Initializing(Hydrating(cursor)):
+        object = cursor.current();
+        cursor.next();
+      default:
+        object = adaptor.createTextObject(content.peek());
+        adaptor.insertObject(object, slot, findNearestObjectHostAncestor);
+    }
+
     var observer = new Observer(() -> {
       var text = content.get();
-      getAdaptor()?.updateTextObject(getObject(), text);
+      switch status {
+        case Initializing(_):
+        default:
+          getAdaptor().updateTextObject(getObject(), text);
+      }
     });
+
     addDisposable(observer);
   }
 

@@ -65,3 +65,12 @@ function reconcileChildren(parent:Component, oldChildren:Array<Component>, newCh
 
   return newChildren;
 }
+
+function hydrateChildren(parent:Component, cursor:Cursor, children:Array<Component>) {
+  var previous:Null<Component> = null;
+  for (i => child in children) {
+    child.hydrate(parent, cursor, parent.createSlot(i, previous));
+    previous = child;
+  }
+  return children;
+}

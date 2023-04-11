@@ -29,7 +29,7 @@ class ServerAdaptor implements Adaptor {
     (object:HtmlTextObject).updateContent(value);
   }
 
-  public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic) {
+  public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool) {
     (object:HtmlElementObject).setAttribute(name, value);
   }
 

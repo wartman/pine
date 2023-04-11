@@ -48,6 +48,7 @@ abstract Signal<T>(SignalObject<T>) from SignalObject<T> to ReadonlySignal<T> {
 
 class SignalObject<T> implements ProducerNode {
   public final id = new UniqueId();
+  var isDisposed:Bool = false;
 	var version:NodeVersion = new NodeVersion();
   var value:T;
   final equals:(a:T, b:T) -> Bool;
@@ -63,7 +64,14 @@ class SignalObject<T> implements ProducerNode {
   }
 
   public function set(newValue:T):T {
-    if (equals(value, newValue)) return value;
+    if (isDisposed) {
+      throw 'Attempted to set a disposed signal';
+    }
+    
+    if (equals(value, newValue)) {
+      return value;
+    }
+
     value = newValue;
     version.increment();
     notify();
@@ -71,12 +79,17 @@ class SignalObject<T> implements ProducerNode {
   }
 
   public function get():T {
+    if (isDisposed) {
+      return value;
+    }
+
     switch getCurrentConsumer() {
       case None:
       case Some(consumer):
         consumer.bindProducer(this);
         bindConsumer(consumer);
     }
+
     return value;
   }
 
@@ -106,6 +119,10 @@ class SignalObject<T> implements ProducerNode {
   }
 
   public function dispose() {
+    if (isDisposed) return;
+
+    isDisposed = true;
+    
     for (consumer in consumers) {
       unbindConsumer(consumer);
       consumer.unbindProducer(this);

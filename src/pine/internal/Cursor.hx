@@ -5,5 +5,4 @@ interface Cursor {
   public function currentChildren():Cursor;
   public function next():Void;
   public function move(current:Dynamic):Void;
-  public function clone():Cursor;
 }

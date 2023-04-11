@@ -40,9 +40,17 @@ class Fragment extends Component {
 
       if (status == Disposing) return;
 
-      status = Building;
-      prevChildren = reconcileChildren(this, prevChildren, children.get());
-      status = Valid;
+      var newChildren = children.get();
+      switch status {
+        case Initializing(Hydrating(cursor)):
+          status = Building;
+          prevChildren = hydrateChildren(this, cursor, newChildren);
+        default:
+          status = Building;
+          prevChildren = reconcileChildren(this, prevChildren, newChildren);
+      }
+
+      status = Built;
     });
 
     addDisposable(childrenObserver);
