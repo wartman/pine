@@ -29,15 +29,21 @@ final class DisposableCallback implements Disposable {
 }
 
 final class DisposableCollection implements Disposable implements DisposableHost {
+  var isDisposed:Bool = false;
   final disposables:List<Disposable> = new List();
 
   public function new() {}
 
   public function addDisposable(disposable:DisposableItem) {
+    if (isDisposed) {
+      disposable.dispose();
+      return;
+    }
     disposables.add(disposable);
   }
 
   public function dispose() {
+    isDisposed = true;
     for (disposable in disposables) {
       disposables.remove(disposable);
       disposable.dispose();

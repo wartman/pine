@@ -25,25 +25,25 @@ class Root extends Component implements ObjectHost {
 
   public function initialize() {
     Observer.untrack(() -> {
-      assert(status != Building);
-      assert(status != Disposed);
+      assert(componentBuildStatus != Building);
+      assert(componentLifecycleStatus != Disposed);
       assert(child == null);
 
-      if (status == Disposing) return;
+      if (componentLifecycleStatus == Disposing) return;
 
-      switch status {
-        case Initializing(Hydrating(cursor)):
-          status = Building;
+      switch componentLifecycleStatus {
+        case Hydrating(cursor):
+          componentBuildStatus = Building;
           child = build();
           child.hydrate(this, cursor.currentChildren(), slot ?? createSlot(0, null));
           cursor.next();
         default:
-          status = Building;
+          componentBuildStatus = Building;
           child = build();
           child.mount(this, slot ?? createSlot(0, null));
       }
 
-      status = Built;
+      componentBuildStatus = Built;
     });
   }
 

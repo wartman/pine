@@ -1,5 +1,7 @@
 package pine.internal;
 
+import kit.Assert;
+
 function reconcileChildren(parent:Component, oldChildren:Array<Component>, newChildren:Array<Component>):Array<Component> {
   var newHead = 0;
   var oldHead = 0;
@@ -56,6 +58,7 @@ function reconcileChildren(parent:Component, oldChildren:Array<Component>, newCh
     if (!oldChildren.contains(newChild)) {
       newChild.mount(parent, parent.createSlot(newHead, previousChild));
     } else {
+      assert(newChild.parent == parent);
       newChild.updateSlot(parent.createSlot(newHead, previousChild));
     }
 

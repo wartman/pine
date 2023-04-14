@@ -2,45 +2,52 @@ package pine;
 
 import kit.Assert;
 import pine.signal.*;
+import pine.signal.Signal;
+
+using Kit;
 
 abstract class ProxyComponent extends Component {
-  var child:Null<Component> = null;
+  var childComponent:Null<Component> = null;
+  var onMountEffects:Array<()->Void> = [];
 
   abstract function build():Component;
 
   function initialize() {
     Observer.untrack(() -> {
-      assert(status != Building);
-      assert(status != Disposed);
-      assert(child == null);
+      assert(componentLifecycleStatus != Disposed);
+      assert(componentBuildStatus != Building);
+      assert(childComponent == null);
       
-      if (status == Disposing) return;
+      if (componentLifecycleStatus == Disposing) return;
 
-      var incomingStatus = status;
-      status = Building;
+      componentBuildStatus = Building;
 
-      child = build();
-      if (child == null) child = new Placeholder();
+      childComponent = build();
+      if (childComponent == null) childComponent = new Placeholder();
 
-      switch incomingStatus {
-        case Initializing(Hydrating(cursor)):
-          child.hydrate(this, cursor, slot);
+      switch componentLifecycleStatus {
+        case Hydrating(cursor):
+          childComponent.hydrate(this, cursor, slot);
         default:
-          child.mount(this, slot);
+          childComponent.mount(this, slot);
       }
 
-      status = Built;
+      var effects = onMountEffects;
+      onMountEffects = [];
+      for (e in effects) e();
+
+      componentBuildStatus = Built;
     });
   }
 
   function getObject():Dynamic {
     var object:Null<Dynamic> = null;
       
-    visitChildren(child -> {
+    visitChildren(childComponent -> {
       if (object != null) {
         throw new PineException('Component has more than one objects');
       }
-      object = child.getObject();
+      object = childComponent.getObject();
       true;
     });
 
@@ -53,13 +60,59 @@ abstract class ProxyComponent extends Component {
 
   override function updateSlot(?newSlot:Slot) {
     super.updateSlot(newSlot);
-    visitChildren(child -> {
-      child.updateSlot(newSlot);
+    visitChildren(childComponent -> {
+      childComponent.updateSlot(newSlot);
       true;
     });
   }
 
-  function visitChildren(visitor:(child:Component)->Bool) {
-    if (child != null) visitor(child);
+  function visitChildren(visitor:(childComponent:Component)->Bool) {
+    if (childComponent != null) visitor(childComponent);
+  }
+
+  inline function signal<T>(value:T):Signal<T> {
+    return new Signal(value);
+    // @todo: Should we dispose owned signals when the Component 
+    // is disposed?
+  }
+
+  inline function compute<T>(compute):ReadonlySignal<T> {
+    var computed = new Computation(compute);
+    addDisposable(computed);
+    return computed;
+  }
+
+  function effect(handler:()->Null<()->Void>) {
+    onMount(() -> immediateEffect(handler));
+  }
+
+  function immediateEffect(handler:()->Null<()->Void>) {
+    var cleanup:Null<()->Void> = null;
+    var observer = new Observer(() -> {
+      if (cleanup != null) {
+        cleanup();
+        cleanup = null;
+      }
+      switch componentLifecycleStatus {
+        case Disposing | Disposed: return;
+        default:
+      }
+      cleanup = handler();
+    });
+    addDisposable(() -> {
+      observer.dispose();
+      if (cleanup != null) {
+        cleanup();
+        cleanup = null;
+      }
+    });
+  }
+
+  inline function onMount(handler:()->Void) {
+    onMountEffects.push(handler);
+  }
+
+  inline function onCleanup(handler:()->Void) {
+    addDisposable(handler);
   }
 }

@@ -112,7 +112,7 @@ class SignalObject<T> implements ProducerNode {
 @:forward
 abstract ReadonlySignal<T>(ReadonlySignalObject<T>) 
   from ReadonlySignalObject<T>
-  from Computation<T> 
+  from Computation<T>
 {
   @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
     return new StaticSignal(value);

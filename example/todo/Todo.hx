@@ -302,14 +302,13 @@ class TodoInput extends AutoComponent {
   final clearOnComplete:Bool;
   final onSubmit:(data:String) -> Void;
   final onCancel:() -> Void;
-  var isEditing:Bool = false;
-  var value:String;
+  final isEditing:Signal<Bool> = false;
+  final value:Signal<String>;
 
   function build():Component {
     effect(() -> {
       if (isEditing()) {
         var el:js.html.InputElement = getObject();
-        // Focus doesn't work for some reason :\
         el.focus();
       }
       null;

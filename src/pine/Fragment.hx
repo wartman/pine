@@ -1,8 +1,8 @@
 package pine;
 
 import kit.Assert;
-import pine.signal.Observer;
 import pine.internal.Reconcile;
+import pine.signal.Observer;
 
 class Fragment extends Component {
   var marker:Null<Component> = null;
@@ -35,22 +35,22 @@ class Fragment extends Component {
 
     var prevChildren:Array<Component> = [];
     var childrenObserver = new Observer(() -> {
-      assert(status != Building);
-      assert(status != Disposed);
+      assert(componentBuildStatus != Building);
+      assert(componentLifecycleStatus != Disposed);
 
-      if (status == Disposing) return;
+      if (componentLifecycleStatus == Disposing) return;
 
       var newChildren = children.get();
-      switch status {
-        case Initializing(Hydrating(cursor)):
-          status = Building;
+      switch componentLifecycleStatus {
+        case Hydrating(cursor):
+          componentBuildStatus = Building;
           prevChildren = hydrateChildren(this, cursor, newChildren);
         default:
-          status = Building;
+          componentBuildStatus = Building;
           prevChildren = reconcileChildren(this, prevChildren, newChildren);
       }
 
-      status = Built;
+      componentBuildStatus = Built;
     });
 
     addDisposable(childrenObserver);

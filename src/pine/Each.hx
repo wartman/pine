@@ -2,6 +2,7 @@ package pine;
 
 import kit.Assert;
 import pine.signal.Signal;
+import pine.signal.Computation;
 
 class Each<T:{}> extends ProxyComponent {
   final value:ReadonlySignal<Array<T>>;
@@ -16,7 +17,7 @@ class Each<T:{}> extends ProxyComponent {
     var existing:Map<T, Component> = [];
     addDisposable(() -> existing.clear());
 
-    return new Fragment(compute(() -> {
+    var children = new Computation(() -> {
       var items = value();
 
       // Forget any components that don't have an associated item.
@@ -40,6 +41,9 @@ class Each<T:{}> extends ProxyComponent {
       }
 
       next;
-    }));
+    });
+    addDisposable(children);
+
+    return new Fragment(children);
   }
 }

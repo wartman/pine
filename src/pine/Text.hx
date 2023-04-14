@@ -31,8 +31,8 @@ class TextComponent extends ObjectComponent {
 	function initializeObject() {
     var adaptor = getAdaptor();
 
-    switch status {
-      case Initializing(Hydrating(cursor)):
+    switch componentLifecycleStatus {
+      case Hydrating(cursor):
         object = cursor.current();
         cursor.next();
       default:
@@ -42,8 +42,8 @@ class TextComponent extends ObjectComponent {
 
     var observer = new Observer(() -> {
       var text = content.get();
-      switch status {
-        case Initializing(_):
+      switch componentLifecycleStatus {
+        case Mounting | Hydrating(_):
         default:
           getAdaptor().updateTextObject(getObject(), text);
       }

@@ -25,13 +25,13 @@ class Portal extends Component {
     marker = new Placeholder();
     marker.mount(this, slot);
 
-    switch status {
-      case Initializing(Hydrating(_)):
+    switch componentLifecycleStatus {
+      case Hydrating(_):
         portalRoot = new Root(target, build, getAdaptor());
-        portalRoot.hydrate(null, getAdaptor().createCursor(target));
+        portalRoot.hydrate(this, getAdaptor().createCursor(target));
       default:
         portalRoot = new Root(target, build, getAdaptor());
-        portalRoot.mount();
+        portalRoot.mount(this);
     }
   }
 

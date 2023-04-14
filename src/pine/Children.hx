@@ -1,9 +1,14 @@
 package pine;
 
+import pine.signal.Computation;
 import pine.signal.Signal;
 
 @:forward
-abstract Children(ReadonlySignal<Array<Child>>) from ReadonlySignal<Array<Child>> to ReadonlySignal<Array<Child>> {
+abstract Children(ReadonlySignal<Array<Child>>) 
+  from ReadonlySignal<Array<Child>>
+  from Computation<Array<Child>>
+  to ReadonlySignal<Array<Child>> 
+{
   @:from
   public inline static function ofArray(children:Array<Child>):Children {
     return new ReadonlySignal(children);

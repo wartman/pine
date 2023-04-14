@@ -11,7 +11,6 @@ abstract class ObjectComponent extends Component implements ObjectHost {
   
   public function initialize() {
     initializeObject();
-    status = Built;
   }
 
   function getObject():Dynamic {
@@ -55,8 +54,8 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
   public function observeAttributeChanges(component:Component) {
     inline function applyAttribute(name:String, signal:ReadonlySignal<Any>) {
       var value = signal.get();
-      switch component.status {
-        case Initializing(Hydrating(_)):
+      switch component.componentLifecycleStatus {
+        case Hydrating(_):
           component.getAdaptor().updateObjectAttribute(component.getObject(), name, value, true);
         default:
           component.getAdaptor().updateObjectAttribute(component.getObject(), name, value);
@@ -67,11 +66,9 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
         // If the signal is inactive, avoid observing it.
         applyAttribute(name, signal);
       } else {
-        // Otherwise wrap it in an effect.
-        component.effect(() -> {
-          applyAttribute(name, signal);
-          null;
-        });
+        // Otherwise wrap it in an observer.
+        var observer = new Observer(() -> applyAttribute(name, signal));
+        component.addDisposable(observer);
       }
     }
   }
@@ -90,8 +87,8 @@ abstract class ElementWithChildrenComponent extends ObjectComponent {
 
     var attributes = getAttributes(); 
 
-    switch status {
-      case Initializing(Hydrating(cursor)):
+    switch componentLifecycleStatus {
+      case Hydrating(cursor):
         object = cursor.current();
       default:
         object = getAdaptor().createElementObject(getName(), attributes.getInitialAttrs());
@@ -102,26 +99,26 @@ abstract class ElementWithChildrenComponent extends ObjectComponent {
 
     var prevChildren:Array<Component> = [];
     var childrenObserver = new Observer(() -> {
-      assert(status != Building);
-      assert(status != Disposed);
+      assert(componentBuildStatus != Building);
+      assert(componentLifecycleStatus != Disposed);
 
-      if (status == Disposing) return;
+      if (componentLifecycleStatus == Disposing) return;
 
       var newChildren = getChildren().get();
 
-      switch status {
-        case Initializing(Hydrating(cursor)):
-          status = Building;
+      switch componentLifecycleStatus {
+        case Hydrating(cursor):
+          componentBuildStatus = Building;
           var childCursor = cursor.currentChildren();
           prevChildren = hydrateChildren(this, childCursor, newChildren);
           assert(childCursor.current() == null);
           cursor.next();
         default:
-          status = Building;
+          componentBuildStatus = Building;
           prevChildren = reconcileChildren(this, prevChildren, newChildren);
       }
 
-      status = Built;
+      componentBuildStatus = Built;
     });
     addDisposable(childrenObserver);
     addDisposable(() -> prevChildren.resize(0));
@@ -142,8 +139,8 @@ abstract class ElementWithoutChildrenComponent extends ObjectComponent {
 
     var attributes = getAttributes(); 
 
-    switch status {
-      case Initializing(Hydrating(cursor)):
+    switch componentLifecycleStatus {
+      case Hydrating(cursor):
         object = cursor.current();
         attributes.observeAttributeChanges(this);
         cursor.next();
@@ -152,6 +149,8 @@ abstract class ElementWithoutChildrenComponent extends ObjectComponent {
         getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
         attributes.observeAttributeChanges(this);
     }
+
+    componentBuildStatus = Built;
   }
 
   public function visitChildren(visitor:(child:Component) -> Bool) {

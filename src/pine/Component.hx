@@ -3,23 +3,27 @@ package pine;
 import kit.Assert;
 import pine.Disposable;
 import pine.internal.*;
-import pine.signal.*;
-import pine.signal.Signal;
 
 using Kit;
-
-enum ComponentStatus {
-  Pending;
-  Initializing(status:ComponentInitializationStatus);
-  Building;
-  Built;
-  Disposing;
-  Disposed;
-}
 
 enum ComponentInitializationStatus {
   Mounting;
   Hydrating(cursor:Cursor);
+}
+
+enum abstract ComponentBuildStatus(Int) {
+  final Pending;
+  final Building;
+  final Built;
+}
+
+enum ComponentLifecycleStatus {
+  Pending;
+  Mounting;
+  Hydrating(cursor:Cursor);
+  Live;
+  Disposing;
+  Disposed;
 }
 
 @:allow(pine)
@@ -29,14 +33,27 @@ abstract class Component implements Disposable implements DisposableHost {
   var parent:Null<Component> = null;
   var slot:Null<Slot> = null;
   var adaptor:Null<Adaptor> = null;
-  var status:ComponentStatus = Pending;
+  var componentLifecycleStatus:ComponentLifecycleStatus = Pending;
+  var componentBuildStatus:ComponentBuildStatus = Pending;
+
+  public inline function isComponentBuilding() {
+    return componentBuildStatus == Building;
+  }
+
+  public inline function isComponentDisposing() {
+    return componentLifecycleStatus == Disposing;
+  }
+
+  public inline function isComponentDisposed() {
+    return componentLifecycleStatus == Disposed;
+  }
 
   public function mount(?parent:Component, ?slot:Slot) {
-    switch status {
-      case Initializing(_):
+    switch componentLifecycleStatus {
+      case Hydrating(_):
       default:
-        assert(status == Pending);
-        status = Initializing(Mounting);
+        assert(componentLifecycleStatus == Pending, 'Component was $componentLifecycleStatus');
+        componentLifecycleStatus = Mounting;
     }
 
     this.slot = slot;
@@ -46,12 +63,13 @@ abstract class Component implements Disposable implements DisposableHost {
     }
 
     initialize();
-    status = Built;
+    
+    componentLifecycleStatus = Live;
   }
 
   public function hydrate(?parent:Component, cursor:Cursor, ?slot:Slot) {
-    assert(status == Pending);
-    status = Initializing(Hydrating(cursor));
+    assert(componentLifecycleStatus == Pending);
+    componentLifecycleStatus = Hydrating(cursor);
     mount(parent, slot);
   }
 
@@ -91,40 +109,14 @@ abstract class Component implements Disposable implements DisposableHost {
       .orThrow('No parent object found');
   }
 
-  inline function signal<T>(value:T):Signal<T> {
-    return new Signal(value);
-    // @todo: Should we dispose owned signals when the Component 
-    // is disposed?
-  }
-
-  inline function compute<T>(compute):ReadonlySignal<T> {
-    var computed = new Computation(compute);
-    addDisposable(computed);
-    return computed;
-  }
-
-  inline function effect(handler:()->Null<()->Void>) {
-    var cleanup:Null<()->Void> = null;
-    var observer = new Observer(() -> {
-      if (cleanup != null) cleanup();
-      cleanup = handler();
-    });
-    addDisposable(() -> {
-      observer.dispose();
-      if (cleanup != null) {
-        cleanup();
-        cleanup = null;
-      }
-    });
-    return observer;
-  }
-
   public function queryChildren(match:(child:Component)->Bool, recursive:Bool = false):Array<Component> {
     var results:Array<Component> = [];
     visitChildren(child -> {
-      if (match(child)) results.push(child);
+      if (match(child)) {
+        results.push(child);
+      } 
       if (recursive) {
-        results = results.concat(child.queryChildren(match));
+        results = results.concat(child.queryChildren(match, true));
       }
       true;
     });
@@ -161,7 +153,7 @@ abstract class Component implements Disposable implements DisposableHost {
     return cast queryChildren(child -> Std.isOfType(child, type), recursive);
   }
 
-  public function findChildOfType<T:Component>(type:Class<T>, recursive = false):T {
+  public function findChildOfType<T:Component>(type:Class<T>, recursive = false):Maybe<T> {
     return cast findChild(child -> Std.isOfType(child, type), recursive);
   }
 
@@ -176,14 +168,14 @@ abstract class Component implements Disposable implements DisposableHost {
   }
 
   public function dispose() {
-    if (status == Disposed || status == Disposing) return;
+    if (componentLifecycleStatus == Disposed || componentLifecycleStatus == Disposing) return;
 
-    status = Disposing;
+    componentLifecycleStatus = Disposing;
+    disposables.dispose();
     visitChildren(child -> {
       child.dispose(); 
       true;
     });
-    disposables.dispose();
-    status = Disposed;
+    componentLifecycleStatus = Disposed;
   }
 }
