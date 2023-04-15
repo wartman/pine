@@ -1,10 +1,29 @@
 package pine.signal;
 
+import pine.Disposable;
+import pine.signal.Signal;
 import pine.signal.Graph;
 
 using Lambda;
 
-class Computation<T> extends Observer implements ProducerNode {
+@:forward
+abstract Computation<T>(ComputationObject<T>) 
+  from ComputationObject<T> 
+  to ReadonlySignal<T>
+  to Disposable
+  to DisposableItem
+{
+  public inline function new(computation, ?equals) {
+    this = new ComputationObject(computation, equals);
+  }
+
+  @:op(a())
+  public inline function get():T {
+    return this.get();
+  }
+}
+
+class ComputationObject<T> extends Observer implements ProducerNode {
   final consumers:List<ConsumerNode> = new List();
   final equals:(a:T, b:T) -> Bool;
   var value:T;
@@ -38,6 +57,10 @@ class Computation<T> extends Observer implements ProducerNode {
 
   public function peek() {
     return value;
+  }
+
+  public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
+    return new Computation(() -> transform(get()));
   }
 
   public function notify() {

@@ -46,6 +46,7 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
   public function getInitialAttrs():{} {
     var obj:{} = {};
     for (name => signal in this) {
+      if (signal == null) continue;
       Reflect.setField(obj, name, signal.peek());
     }
     return obj;
@@ -62,6 +63,7 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
       }
     }
     for (name => signal in this) {
+      if (signal == null) continue;
       if (signal.isInactive()) {
         // If the signal is inactive, avoid observing it.
         applyAttribute(name, signal);
@@ -74,7 +76,7 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
   }
 }
 
-abstract class ElementWithChildrenComponent extends ObjectComponent {
+abstract class ObjectWithChildrenComponent extends ObjectComponent {
   abstract function getName():String;
 
   abstract function getAttributes():Attributes;
@@ -129,7 +131,7 @@ abstract class ElementWithChildrenComponent extends ObjectComponent {
   }
 }
 
-abstract class ElementWithoutChildrenComponent extends ObjectComponent {
+abstract class ObjectWithoutChildrenComponent extends ObjectComponent {
   abstract function getName():String;
 
   abstract function getAttributes():Attributes;

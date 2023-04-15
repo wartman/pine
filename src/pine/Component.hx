@@ -1,5 +1,6 @@
 package pine;
 
+import pine.signal.Graph.withOwner;
 import kit.Assert;
 import pine.Disposable;
 import pine.internal.*;
@@ -62,7 +63,10 @@ abstract class Component implements Disposable implements DisposableHost {
       this.adaptor = parent.getAdaptor();
     }
 
-    initialize();
+    // Note: `withOwner` is very important here -- it ensures
+    // all Observables created inside the initialize function
+    // will be disposed when this Component is. 
+    withOwner(this, initialize);
     
     componentLifecycleStatus = Live;
   }

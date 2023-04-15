@@ -34,7 +34,7 @@ class Fragment extends Component {
     });
 
     var prevChildren:Array<Component> = [];
-    var childrenObserver = new Observer(() -> {
+    Observer.track(() -> {
       assert(componentBuildStatus != Building);
       assert(componentLifecycleStatus != Disposed);
 
@@ -53,7 +53,6 @@ class Fragment extends Component {
       componentBuildStatus = Built;
     });
 
-    addDisposable(childrenObserver);
     addDisposable(() -> prevChildren.resize(0));
   }
 

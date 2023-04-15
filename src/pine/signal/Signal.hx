@@ -6,7 +6,10 @@ import pine.signal.Graph;
 using Lambda;
 
 @:forward
-abstract Signal<T>(SignalObject<T>) from SignalObject<T> to ReadonlySignal<T> {
+abstract Signal<T>(SignalObject<T>)
+  from SignalObject<T>
+  to ReadonlySignal<T> 
+{
   @:from public static function ofValue<T>(value:T):Signal<T> {
     return new Signal(value);
   }
@@ -76,6 +79,10 @@ class SignalObject<T> implements ProducerNode {
     return value;
   }
 
+  public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
+    return new Computation(() -> transform(get()));
+  }
+
   public function notify() {
     for (consumer in consumers) if (consumer.isInactive()) {
       consumers.remove(consumer);
@@ -112,7 +119,7 @@ class SignalObject<T> implements ProducerNode {
 @:forward
 abstract ReadonlySignal<T>(ReadonlySignalObject<T>) 
   from ReadonlySignalObject<T>
-  from Computation<T>
+  from ComputationObject<T>
 {
   @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
     return new StaticSignal(value);
@@ -124,6 +131,10 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>)
 
   public inline function new(value:T) {
     this = new SignalObject(value);
+  }
+  
+  public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
+    return new Computation(() -> transform(get()));
   }
 
   @:op(a())

@@ -32,8 +32,8 @@ function createConnection(serverUrl:String, roomId:String):Connection {
 }
 
 class ChatRoom extends AutoComponent {
-  var roomId:String;
-  var serverUrl:String = 'https://localhost:1234';
+  @:signal final roomId:String;
+  @:signal final serverUrl:String = 'https://localhost:1234';
 
   function build() {
     effect(() -> {
@@ -60,8 +60,8 @@ class ChatRoom extends AutoComponent {
 }
 
 class ChatApp extends AutoComponent {
-  var roomId:String = 'general';
-  var show:Bool = false;
+  @:signal final roomId:String = 'general';
+  @:signal final show:Bool = false;
 
   function build() {
     return new Fragment([

@@ -1,5 +1,6 @@
 package pine;
 
+import pine.signal.Graph.setCurrentOwner;
 import kit.Assert;
 import pine.signal.Observer;
 import pine.internal.ObjectHost;

@@ -64,7 +64,7 @@ function main() {
 }
 
 class Counter extends AutoComponent {
-  var count:Int = 0;
+  @:signal final count:Int = 0;
 
   function build() {
     return new Html<'div'>({
@@ -88,13 +88,11 @@ class Counter extends AutoComponent {
 
 And that's it! When we click on the `+` or `-` buttons, we'll see the count go up or down.
 
-Pine is doing a bit behind the scenes, and it all comes down to this line of code:
+Pine is doing a bit behind the scenes, and it all comes down to this line of code, which is converting the `count` field into a `pine.signal.Signal<Int>`:
 
 ```haxe
-var count:Int = 0;
+@:signal final count:Int = 0;
 ```
-
-In an `AutoComponent`, a `final` field is just added to the constructor -- nothing special happens. Mutable fields -- like `var count` here -- are different, and they're converted into a `pine.signal.Signal<T>`.
 
 Reactivity
 ----------
@@ -176,29 +174,19 @@ class Counter extends AutoComponent {
 }
 ```
 
+> @todo: Clean this up and explain `@:constant`, `@:signal`, `@:readonly` and `@:computed` fields.
+
 Records
 -------
 
-To make global states a bit easer to handle, Pine provides a `Record` interface. It works just like AutoComponents, where `final` fields are added to the constructor and `var` fields become Signals.
+To make global states a bit easer to handle, Pine provides a `Record` class. It works just like AutoComponents.
 
 ```haxe
 import pine.Record;
 
 class Greeting implements Record {
-  final greeting:String = 'hello';
-  var location:String = 'world';
-}
-```
-
-Incidentally, if you don't want Pine to process your fields, just mark them with `@:skip`. This works for Records and AutoComponents.
-
-```haxe
-import pine.Record;
-
-class Greeting implements Record {
-  final greeting:String = 'hello';
-  // Won't be turned into a Signal:
-  @:skip var location:String = 'world';
+  public final greeting:String = 'hello';
+  @:signal public final location:String = 'world';
 }
 ```
 

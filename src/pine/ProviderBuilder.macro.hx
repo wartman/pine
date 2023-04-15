@@ -62,6 +62,21 @@ function buildProvider(type:Type) {
     }
   });
 
+  if (Context.unify(type, (macro:pine.Disposable).toType())) {
+    builder.add(macro class {
+      public function new(props:{
+        create:() -> $ct,
+        build:(value:$ct) -> Component,
+        ?dispose:(value:$ct) -> Void,
+      }) {
+        super({
+          create: props.create,
+          build: props.build,
+          dispose: props.dispose ?? value -> value.dispose() 
+        });
+      }
+    });
+  }
 
   Context.defineType({
     pack: pack,

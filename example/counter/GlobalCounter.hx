@@ -22,7 +22,7 @@ class GlobalCounter extends AutoComponent {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ new Text('Current count:'), Text.ofInt(count.get()) ]
+          children: [ 'Current count:', count.map(Std.string) ]
         }),
         new Html<'button'>({
           onclick: _ -> if (count.peek() > 0) count.set(count.peek() - 1),

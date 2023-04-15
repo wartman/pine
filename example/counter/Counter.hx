@@ -13,16 +13,13 @@ function main() {
 }
 
 class Counter extends AutoComponent {
-  var count:Int = 0;
+  @:signal final count:Int = 0;
 
   function build() {
     return new Html<'div'>({
       children: [
         new Html<'div'>({
-          children: [ 
-            'Current count:', 
-            new Text(compute(() -> Std.string(count())))
-          ]
+          children: [ 'Current count:', count.map(Std.string) ]
         }),
         new Html<'button'>({
           onclick: _ -> if (count.peek() > 0) count.update(i -> i - 1),

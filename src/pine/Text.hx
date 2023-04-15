@@ -1,5 +1,6 @@
 package pine;
 
+import pine.signal.Computation;
 import pine.signal.Signal;
 import pine.signal.Observer;
 
@@ -16,7 +17,31 @@ abstract Text(TextComponent) to TextComponent to Component to Child {
     return new Text(content + '');
   }
 
-  public inline function new(content) {
+  @:from public inline static function ofStringReadonlySignal(content:ReadonlySignal<String>) {
+    return new Text(content);
+  }
+
+  @:from public inline static function ofIntReadonlySignal(content:ReadonlySignal<Int>) {
+    return new Text(new Computation(() -> content() + ''));
+  }
+
+  @:from public inline static function ofFloatReadonlySignal(content:ReadonlySignal<Float>) {
+    return new Text(new Computation(() -> content() + ''));
+  }
+
+  @:from public inline static function ofStringSignal(content:Signal<String>) {
+    return new Text(content);
+  }
+
+  @:from public inline static function ofIntSignal(content:Signal<Int>) {
+    return new Text(new Computation(() -> content() + ''));
+  }
+
+  @:from public inline static function ofFloatSignal(content:Signal<Float>) {
+    return new Text(new Computation(() -> content() + ''));
+  }
+
+  public inline function new(content:ReadonlySignal<String>) {
     this = new TextComponent(content);
   }
 }
@@ -40,7 +65,7 @@ class TextComponent extends ObjectComponent {
         adaptor.insertObject(object, slot, findNearestObjectHostAncestor);
     }
 
-    var observer = new Observer(() -> {
+    Observer.track(() -> {
       var text = content.get();
       switch componentLifecycleStatus {
         case Mounting | Hydrating(_):
@@ -48,8 +73,6 @@ class TextComponent extends ObjectComponent {
           getAdaptor().updateTextObject(getObject(), text);
       }
     });
-
-    addDisposable(observer);
   }
 
 	public function visitChildren(visitor:(child:Component) -> Bool) {}

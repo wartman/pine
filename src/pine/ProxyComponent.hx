@@ -1,5 +1,6 @@
 package pine;
 
+import pine.signal.Graph.withOwner;
 import kit.Assert;
 import pine.signal.*;
 import pine.signal.Signal;
@@ -72,18 +73,14 @@ abstract class ProxyComponent extends Component {
 
   inline function signal<T>(value:T):Signal<T> {
     return new Signal(value);
-    // @todo: Should we dispose owned signals when the Component 
-    // is disposed?
   }
 
   inline function compute<T>(compute):ReadonlySignal<T> {
-    var computed = new Computation(compute);
-    addDisposable(computed);
-    return computed;
+    return new Computation(compute);
   }
 
   function effect(handler:()->Null<()->Void>) {
-    onMount(() -> immediateEffect(handler));
+    onMount(() -> withOwner(this, () -> immediateEffect(handler)));
   }
 
   function immediateEffect(handler:()->Null<()->Void>) {

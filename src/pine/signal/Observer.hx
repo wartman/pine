@@ -1,6 +1,7 @@
 package pine.signal;
 
 import haxe.Exception;
+import pine.internal.Debug;
 import pine.signal.Graph;
 
 enum abstract ObserverStatus(Int) {
@@ -33,6 +34,12 @@ class Observer implements ConsumerNode {
 
   public function new(handler) {
     this.handler = handler;
+    switch getCurrentOwner() {
+      case Some(owner):
+        owner.addDisposable(this);
+      case None:
+        warn('Creating an Observer without an owner means it may never get disposed');
+    }
     validate();
   }
 

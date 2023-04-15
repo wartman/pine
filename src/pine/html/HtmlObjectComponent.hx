@@ -5,7 +5,7 @@ import pine.signal.Signal;
 import pine.ObjectComponent;
 
 // @todo: This can probably be merged with ElementComponent. 
-class HtmlObjectComponent<Attrs:{} & { ?children:Children }> extends ElementWithChildrenComponent {
+class HtmlObjectComponent<Attrs:{} & { ?children:Children }> extends ObjectWithChildrenComponent {
   final tag:String;
   final attrs:Attributes;
   final children:Children;
@@ -33,7 +33,7 @@ class HtmlObjectComponent<Attrs:{} & { ?children:Children }> extends ElementWith
   }
 }
 
-class HtmlVoidObjectComponent<Attrs:{}> extends ElementWithoutChildrenComponent {
+class HtmlVoidObjectComponent<Attrs:{}> extends ObjectWithoutChildrenComponent {
   final tag:String;
   final attrs:Attributes;
   

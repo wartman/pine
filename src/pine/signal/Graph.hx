@@ -46,9 +46,38 @@ interface ConsumerNode extends Node {
   public function unbindProducer(node:ProducerNode):Void;
 }
 
+private var currentOwner:Maybe<DisposableHost> = None;
 private var currentConsumer:Maybe<ConsumerNode> = None;
 private final pending:List<ConsumerNode> = new List();
 private var depth:Int = 0;
+
+function withOwner(owner:DisposableHost, cb:()->Void) {
+  var prev = setCurrentOwner(Some(owner));
+  try cb() catch (e) {
+    setCurrentOwner(prev);
+    throw e;
+  }
+  setCurrentOwner(prev);
+}
+
+inline function getCurrentOwner() {
+  return currentOwner;
+}
+
+function setCurrentOwner(owner:Maybe<DisposableHost>) {
+  var prev = currentOwner;
+  currentOwner = owner;
+  return prev;
+}
+
+function withConsumer(consumer:ConsumerNode, cb:()->Void) {
+  var prev = setCurrentConsumer(Some(consumer));
+  try cb() catch (e) {
+    setCurrentConsumer(prev);
+    throw e;
+  }
+  setCurrentConsumer(prev);
+}
 
 inline function getCurrentConsumer() {
   return currentConsumer;

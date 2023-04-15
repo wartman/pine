@@ -34,6 +34,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
   var builder = new ClassBuilder([]);
   var pos = Context.currentPos();
   var props = tag.type.toComplexType();
+  var tagName = isSvg ? 'svg:${tag.name}' : tag.name;
 
   switch tag.kind {
     case TagNormal:
@@ -42,7 +43,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
       };
       builder.add(macro class {
         public function new(attrs:$attrs) {
-          super($v{tag.name}, attrs);
+          super($v{tagName}, attrs);
         }
       });
       Context.defineType({

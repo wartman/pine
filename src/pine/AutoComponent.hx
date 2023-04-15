@@ -1,4 +1,4 @@
 package pine;
 
-@:autoBuild(pine.internal.macro.AutoConstructor.build())
+@:autoBuild(pine.internal.macro.ReactiveObjectBuilder.build())
 abstract class AutoComponent extends ProxyComponent {}

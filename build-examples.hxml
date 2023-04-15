@@ -3,8 +3,9 @@
 
 -lib kit
 
+--debug
+
 -D js-es=6
--D debug
 -D analyzer-optimize
 
 --dce full

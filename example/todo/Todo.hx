@@ -17,11 +17,11 @@ function main() {
   );
 }
 
-class Todo implements Record {
-  public final id:Int;
-  public var description:String;
-  public var isCompleted:Bool;
-  public var isEditing:Bool;
+class Todo extends Record {
+  @:constant public final id:Int;
+  @:signal public final description:String;
+  @:signal public final isCompleted:Bool;
+  @:signal public final isEditing:Bool;
   
   public function toJson() {
     return {
@@ -41,7 +41,7 @@ enum abstract TodoVisibility(String) from String to String {
 
 typedef TodoProvider = Provider<TodoStore>;
 
-class TodoStore implements Record {
+class TodoStore extends Record {
   static inline final storageId = 'pine-todo-store';
 
   public inline static function from(context:Component) {
@@ -76,9 +76,12 @@ class TodoStore implements Record {
     });
   }
 
-  var uid:Int;
-  public var visibility:TodoVisibility;
-  public var todos:Array<Todo>;
+  @:signal final uid:Int;
+  @:signal public final visibility:TodoVisibility;
+  @:signal public final todos:Array<Todo>;
+  @:computed public final total:Int = todos().length;
+  @:computed public final completed:Int = total() - todos().filter(todo -> !todo.isCompleted()).length;
+  @:computed public final remaining:Int = total() - todos().filter(todo -> todo.isCompleted()).length;
   
   public function addTodo(description:String) {
     uid.update(id -> id + 1);
@@ -111,7 +114,6 @@ class TodoApp extends AutoComponent {
   function build() {
     return new TodoProvider({
       create: TodoStore.load,
-      dispose: _ -> null,
       build: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
         children: [
@@ -151,22 +153,18 @@ class TodoFooter extends AutoComponent {
   final store:TodoStore;
 
   public function build():Component {
-    var total = compute(() -> store.todos().length);
-    var todosCompleted = compute(() -> total() - store.todos().filter(todo -> !todo.isCompleted()).length);
-    var todosLeft = compute(() -> total() - store.todos().filter(todo -> todo.isCompleted()).length);
-    
     return new Html<'footer'>({
       className: 'footer',
-      style: compute(() -> if (total() == 0) 'display: none' else null),
+      style: compute(() -> if (store.total() == 0) 'display: none' else null),
       children: [
         new Html<'span'>({
           className: 'todo-count',
           children: new Html<'strong'>({ 
             children: [
-              new Text(compute(() -> switch todosLeft() {
+              store.remaining.map(remaining -> switch remaining {
                 case 1: '1 item left';
-                default: '${todosLeft()} items left';
-              }))
+                default: '${remaining} items left';
+              })
             ]
           })
         }),
@@ -180,11 +178,11 @@ class TodoFooter extends AutoComponent {
         }),
         new Html<'button'>({
           className: 'clear-completed',
-          style: compute(() -> if (todosCompleted() == 0) 'visibility: hidden' else null),
+          style: compute(() -> if (store.completed() == 0) 'visibility: hidden' else null),
           onclick: _ -> store.removeCompletedTodos(),
           children: [ 
             'Clear completed (', 
-            new Text(compute(() -> Std.string(todosCompleted()))), 
+            store.completed.map(Std.string),
             ')' 
           ]
         })
@@ -216,7 +214,7 @@ class TodoContainer extends AutoComponent {
   final store:TodoStore;
 
   function build() {
-    final len = compute(() -> store.todos().length);
+    final len = store.todos.map(todos -> todos.length);
     final items = compute(() -> {
       var visibility = store.visibility();
       store.todos().filter(todo -> switch visibility {
@@ -228,7 +226,7 @@ class TodoContainer extends AutoComponent {
 
     return new Html<'section'>({
       className: 'main',
-      ariaHidden: compute(() -> len() == 0),
+      ariaHidden: len.map(len -> len == 0),
       style: compute(() -> if (len() == 0) 'visibility: hidden' else null),
       children: [
         // @todo: toggles
@@ -243,13 +241,12 @@ class TodoContainer extends AutoComponent {
 
 class TodoItem extends AutoComponent {
   final todo:Todo;
+  @:computed final className:String = [
+    if (todo.isCompleted()) 'completed' else null,
+    if (todo.isEditing()) 'editing' else null
+  ].filter(c -> c != null).join(' ');
 
   function build() {
-    var className = compute(() -> [
-      if (todo.isCompleted()) 'completed' else null,
-      if (todo.isEditing()) 'editing' else null
-    ].filter(c -> c != null).join(' '));
-
     return new Html<'li'>({
       id: 'todo-${todo.id}',
       className: className,
@@ -302,8 +299,8 @@ class TodoInput extends AutoComponent {
   final clearOnComplete:Bool;
   final onSubmit:(data:String) -> Void;
   final onCancel:() -> Void;
-  final isEditing:Signal<Bool> = false;
-  final value:Signal<String>;
+  @:signal final isEditing:Bool = false;
+  @:signal final value:String;
 
   function build():Component {
     effect(() -> {

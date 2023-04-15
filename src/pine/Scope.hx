@@ -1,5 +1,7 @@
 package pine;
 
+import pine.signal.Computation;
+
 class Scope extends ProxyComponent {
   final buildWithContext:(context:Component)->Component;
   
@@ -8,7 +10,7 @@ class Scope extends ProxyComponent {
   }
 
   function build():Component {
-    return new Fragment(compute(() -> [ buildWithContext(this) ]));
+    return new Fragment(new Computation(() -> [ buildWithContext(this) ]));
   }
 }
 
