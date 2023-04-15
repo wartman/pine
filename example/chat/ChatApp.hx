@@ -48,7 +48,7 @@ class ChatRoom extends AutoComponent {
           new Text('Server URL: '),
           new Html<'input'>({
             value: serverUrl,
-            onchange: (e) -> serverUrl.set((cast e.target:js.html.InputElement).value)
+            onChange: (e) -> serverUrl.set((cast e.target:js.html.InputElement).value)
           })
         ]
       }),
@@ -70,7 +70,7 @@ class ChatApp extends AutoComponent {
           new Text('Choose the chat room: '),
           new Html<'select'>({
             value: roomId,
-            onchange: e -> roomId.set((cast e.target:js.html.InputElement).value),
+            onChange: e -> roomId.set((cast e.target:js.html.InputElement).value),
             children: [
               new Html<'option'>({ value: 'general', children: 'general' }),
               new Html<'option'>({ value: 'travel', children: 'travel' }),
@@ -80,7 +80,7 @@ class ChatApp extends AutoComponent {
         ]
       }),
       new Html<'button'>({
-        onclick: e -> show.update(showing -> !showing),
+        onClick: e -> show.update(showing -> !showing),
         children: [
           new Text(compute(() -> if (show()) 'Close chat' else 'Open chat'))
         ]

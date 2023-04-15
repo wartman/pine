@@ -179,7 +179,7 @@ class TodoFooter extends AutoComponent {
         new Html<'button'>({
           className: 'clear-completed',
           style: compute(() -> if (store.completed() == 0) 'visibility: hidden' else null),
-          onclick: _ -> store.removeCompletedTodos(),
+          onClick: _ -> store.removeCompletedTodos(),
           children: [ 
             'Clear completed (', 
             store.completed.map(Std.string),
@@ -198,7 +198,7 @@ class VisibilityControl extends AutoComponent {
   
   function build() {
     return new Html<'li'>({
-      onclick: _ -> store.visibility.set(visibility),
+      onClick: _ -> store.visibility.set(visibility),
       children: [
         new Html<'a'>({
           href: url,
@@ -258,11 +258,11 @@ class TodoItem extends AutoComponent {
               className: 'toggle',
               type: InputType.Checkbox,
               checked: todo.isCompleted,
-              onclick: _ -> todo.isCompleted.update(status -> !status)
+              onClick: _ -> todo.isCompleted.update(status -> !status)
             }), 
             new Html<'label'>({
-              ondblclick: e -> todo.isEditing.set(true),
-              onclick: e -> {
+              onDblClick: e -> todo.isEditing.set(true),
+              onClick: e -> {
                 e.preventDefault();
                 e.stopPropagation();
               },
@@ -270,7 +270,7 @@ class TodoItem extends AutoComponent {
                 todo.description,
                 new Html<'button'>({
                   className: 'destroy',
-                  onclick: _ -> TodoStore.from(this).removeTodo(todo)
+                  onClick: _ -> TodoStore.from(this).removeTodo(todo)
                 })
               ]
             }),
@@ -317,17 +317,17 @@ class TodoInput extends AutoComponent {
       autofocus: true,
       value: value == null ? '' : value,
       name: className,
-      oninput: e -> {
+      onInput: e -> {
         var target:js.html.InputElement = cast e.target;
         value.set(target.value);
       },
-      onblur: _ -> {
+      onBlur: _ -> {
         onCancel();
         if (clearOnComplete) {
           value.set('');
         }
       },
-      onkeydown: e -> {
+      onKeyDown: e -> {
         var ev:js.html.KeyboardEvent = cast e;
         if (ev.key == 'Enter') {
           onSubmit(value.peek());

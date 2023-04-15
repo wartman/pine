@@ -1,5 +1,7 @@
 package pine.signal;
 
+import pine.signal.Graph.getCurrentOwner;
+import pine.internal.Debug;
 import pine.signal.Computation;
 import pine.signal.Graph;
 
@@ -35,6 +37,13 @@ class SignalObject<T> implements ProducerNode {
   public function new(value, ?equals) {
     this.value = value;
     this.equals = equals ?? (a, b) -> a == b;
+    switch getCurrentOwner() {
+      case Some(owner):
+        owner.addDisposable(this);
+      case None:
+        // This should be fine for Signals -- if there is
+        // no Owner, we can assume that this is a Global signal.
+    }
   }
 
   public function getVersion() {
@@ -43,7 +52,8 @@ class SignalObject<T> implements ProducerNode {
 
   public function set(newValue:T):T {
     if (isDisposed) {
-      throw 'Attempted to set a disposed signal';
+      warn('Attempted to set a disposed signal');
+      return value;
     }
     
     if (equals(value, newValue)) {

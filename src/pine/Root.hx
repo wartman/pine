@@ -1,9 +1,8 @@
 package pine;
 
-import pine.signal.Graph.setCurrentOwner;
 import kit.Assert;
 import pine.signal.Observer;
-import pine.internal.ObjectHost;
+import pine.object.ObjectHost;
 
 class Root extends Component implements ObjectHost {
   final object:Dynamic;

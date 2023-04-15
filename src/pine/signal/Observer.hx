@@ -120,6 +120,7 @@ class Observer implements ConsumerNode {
   }
 
   public function dispose() {
+    if (isInactive()) return;
     status = Inactive;
     unbindAll();
   }

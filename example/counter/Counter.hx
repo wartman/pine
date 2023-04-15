@@ -22,11 +22,11 @@ class Counter extends AutoComponent {
           children: [ 'Current count:', count.map(Std.string) ]
         }),
         new Html<'button'>({
-          onclick: _ -> if (count.peek() > 0) count.update(i -> i - 1),
+          onClick: _ -> if (count.peek() > 0) count.update(i -> i - 1),
           children: '-'
         }),
         new Html<'button'>({
-          onclick: _ -> count.update(i -> i + 1),
+          onClick: _ -> count.update(i -> i + 1),
           children: '+'
         })
       ]

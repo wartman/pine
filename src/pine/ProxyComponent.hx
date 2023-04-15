@@ -1,8 +1,8 @@
 package pine;
 
-import pine.signal.Graph.withOwner;
 import kit.Assert;
 import pine.signal.*;
+import pine.signal.Graph;
 import pine.signal.Signal;
 
 using Kit;

@@ -1,7 +1,7 @@
 package pine;
 
 import kit.Assert;
-import pine.internal.ObjectHost;
+import pine.object.ObjectHost;
 import pine.internal.Reconcile;
 import pine.signal.*;
 import pine.signal.Signal;
@@ -100,7 +100,7 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
     attributes.observeAttributeChanges(this);
 
     var prevChildren:Array<Component> = [];
-    var childrenObserver = new Observer(() -> {
+    Observer.track(() -> {
       assert(componentBuildStatus != Building);
       assert(componentLifecycleStatus != Disposed);
 
@@ -122,7 +122,6 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
 
       componentBuildStatus = Built;
     });
-    addDisposable(childrenObserver);
     addDisposable(() -> prevChildren.resize(0));
   }
 

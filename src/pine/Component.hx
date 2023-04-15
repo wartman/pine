@@ -1,9 +1,10 @@
 package pine;
 
-import pine.signal.Graph.withOwner;
 import kit.Assert;
 import pine.Disposable;
 import pine.internal.*;
+import pine.object.ObjectHost;
+import pine.signal.Graph;
 
 using Kit;
 
@@ -180,6 +181,9 @@ abstract class Component implements Disposable implements DisposableHost {
       child.dispose(); 
       true;
     });
+    parent = null;
+    slot = null;
+    adaptor = null;
     componentLifecycleStatus = Disposed;
   }
 }
