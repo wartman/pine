@@ -65,12 +65,12 @@ function buildProvider(type:Type) {
   if (Context.unify(type, (macro:pine.Disposable).toType())) {
     builder.add(macro class {
       public function new(props:{
-        create:() -> $ct,
+        value:$ct,
         build:(value:$ct) -> Component,
         ?dispose:(value:$ct) -> Void,
       }) {
         super({
-          create: props.create,
+          value: props.value,
           build: props.build,
           dispose: props.dispose ?? value -> value.dispose() 
         });

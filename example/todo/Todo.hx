@@ -113,7 +113,7 @@ class TodoStore extends Record {
 class TodoApp extends AutoComponent {
   function build() {
     return new TodoProvider({
-      create: TodoStore.load,
+      value: TodoStore.load(),
       build: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
         children: [

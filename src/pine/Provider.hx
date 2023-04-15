@@ -6,17 +6,16 @@ import kit.Assert;
 class Provider<T> {}
 
 abstract class ProviderComponent<T> extends ProxyComponent {
-  final create:()->T;
   final buildWithValue:(value:T)->Component;
   final disposeOfValue:(value:T)->Void;
   var value:Null<T> = null;
 
   public function new(props:{
-    create:() -> T,
+    value:T,
     build:(value:T) -> Component,
     dispose:(value:T) -> Void,
   }) {
-    this.create = props.create;
+    this.value = props.value;
     this.buildWithValue = props.build;
     this.disposeOfValue = props.dispose;
   }
@@ -26,8 +25,7 @@ abstract class ProviderComponent<T> extends ProxyComponent {
   }
 
   public function build() {
-    assert(value == null);
-    value = create();
+    assert(value != null);
     return buildWithValue(value);
   }
 
