@@ -6,15 +6,23 @@ import kit.Assert;
 import pine.internal.Adaptor;
 import pine.object.*;
 
+typedef ServerAdaptorOptions = {
+  ?prefixTextWithMarker:Bool
+};
+
 class ServerAdaptor implements Adaptor {
-  public function new() {}
+  final options:ServerAdaptorOptions;
+
+  public function new(?options) {
+    this.options = options ?? { prefixTextWithMarker: true };
+  }
 
   public function createElementObject(name:String, initialAttrs:{}):Dynamic {
     return new HtmlElementObject(name, initialAttrs);
   }
 
   public function createTextObject(value:String):Dynamic {
-    return new HtmlTextObject(value);
+    return new HtmlTextObject(value, options?.prefixTextWithMarker ?? true);
   }
 
   public function createPlaceholderObject():Dynamic {

@@ -106,14 +106,14 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
 
       if (componentLifecycleStatus == Disposing) return;
 
-      var newChildren = getChildren().get();
+      var newChildren = getChildren().get().filter(c -> c != null);
 
       switch componentLifecycleStatus {
         case Hydrating(cursor):
           componentBuildStatus = Building;
           var childCursor = cursor.currentChildren();
           prevChildren = hydrateChildren(this, childCursor, newChildren);
-          assert(childCursor.current() == null);
+          assert(childCursor.current() == null, getFormattedErrorMessage('Hydration failed: too many children'));
           cursor.next();
         default:
           componentBuildStatus = Building;
@@ -126,7 +126,10 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
   }
 
   public function visitChildren(visitor:(child:Component) -> Bool) {
-    for (child in getChildren().peek()) if (!visitor(child)) break;
+    for (child in getChildren().peek()) {
+      if (child == null) continue;
+      if (!visitor(child)) break;
+    }
   }
 }
 

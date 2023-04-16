@@ -80,7 +80,7 @@ abstract class ProxyComponent extends Component {
   }
 
   function effect(handler:()->Null<()->Void>) {
-    onMount(() -> withOwner(this, () -> immediateEffect(handler)));
+    onMount(() -> immediateEffect(handler));
   }
 
   function immediateEffect(handler:()->Null<()->Void>) {

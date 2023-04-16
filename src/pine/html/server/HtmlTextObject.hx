@@ -6,9 +6,11 @@ using StringTools;
 
 class HtmlTextObject extends Object {
   var content:String;
+  final prefixWithComment:Bool;
 
-  public function new(content) {
+  public function new(content, prefixWithComment = true) {
     this.content = content;
+    this.prefixWithComment = prefixWithComment;
   }
 
   public function updateContent(content) {
@@ -21,6 +23,6 @@ class HtmlTextObject extends Object {
     // that text components are split up during hydration. On the
     // client side comments will be ignored, but should still ensure
     // text nodes are properly delimited.  
-    return '<!--#-->' + content.htmlEscape();
+    return prefixWithComment ? '<!--#-->' + content.htmlEscape() : content.htmlEscape();
   }
 }

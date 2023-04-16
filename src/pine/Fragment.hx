@@ -40,7 +40,7 @@ class Fragment extends Component {
 
       if (componentLifecycleStatus == Disposing) return;
 
-      var newChildren = children.get();
+      var newChildren = children.get().filter(c -> c != null);
       switch componentLifecycleStatus {
         case Hydrating(cursor):
           componentBuildStatus = Building;

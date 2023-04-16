@@ -54,7 +54,7 @@ abstract class Component implements Disposable implements DisposableHost {
     switch componentLifecycleStatus {
       case Hydrating(_):
       default:
-        assert(componentLifecycleStatus == Pending, 'Component was $componentLifecycleStatus');
+        assert(componentLifecycleStatus == Pending, getFormattedErrorMessage('Component was $componentLifecycleStatus'));
         componentLifecycleStatus = Mounting;
     }
 
@@ -186,4 +186,39 @@ abstract class Component implements Disposable implements DisposableHost {
     adaptor = null;
     componentLifecycleStatus = Disposed;
   }
+
+  #if debug
+  // @todo: Move these into the error macro?
+  @:nullSafety(Off)
+  function getComponentDebugName() {
+    return Type.getClassName(Type.getClass(this));
+  }
+
+  function getComponentDescription() {
+    var name = getComponentDebugName();
+    var ancestor = parent;
+    var stack = [ while (ancestor != null) {
+      var name = ancestor.getComponentDebugName();
+      ancestor = ancestor.parent;
+      name;
+    } ];
+    stack.reverse();
+    stack.push(name);
+    return [ for (index => name in stack) {
+      var padding = [ for (_ in 0...index) '  ' ].join('');
+      if (index == stack.length - 1) '$padding-> $name' else '$padding$name';
+    } ].join('\n');
+  }
+
+  public function getFormattedErrorMessage(message:String) {
+    return [
+      message,
+      '',
+      'Component tree:',
+      '',
+      getComponentDescription(),
+      '',
+    ].join('\n');
+  }
+  #end
 }

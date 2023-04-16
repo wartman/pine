@@ -50,8 +50,12 @@ function buildProvider(type:Type) {
       return switch maybeFrom(component) {
         case Some(value): 
           value;
-        case None: 
+        case None:
+          #if debug
+          throw new pine.PineException(component.getFormattedErrorMessage('No provider exists for the type ' + $v{typeName}));
+          #else
           throw new pine.PineException('No provider exists for the type ' + $v{typeName});
+          #end
       }
     }
 
