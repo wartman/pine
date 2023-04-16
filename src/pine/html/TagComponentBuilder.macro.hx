@@ -13,12 +13,8 @@ function buildGeneric(typeName:String, isSvg:Bool = false) {
   return switch Context.getLocalType() {
     case TInst(cls, [ TInst(_.get() => {kind: KExpr(macro $v{(tag:String)})}, _) ]):
       buildComponent(cls.get().name, getTagInfo(tag, typeName), isSvg);
-    case TInst(cls, [ TInst(t, params) ]):
-      trace(t);
-      throw 'assert';
     case TInst(cls, []):
       Context.error('Tag required', Context.currentPos());
-      return null;
     default:
       throw 'assert';
   }
@@ -28,7 +24,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
   var pack = ['pine', 'html'];
   var name = '${baseName}_${tag.name}';
   var path:TypePath = { pack: pack, name: name };
-  
+
   if (path.typePathExists()) return TPath(path);
 
   var builder = new ClassBuilder([]);

@@ -25,11 +25,11 @@ class GlobalCounter extends AutoComponent {
           children: [ 'Current count:', count.map(Std.string) ]
         }),
         new Html<'button'>({
-          onclick: _ -> if (count.peek() > 0) count.set(count.peek() - 1),
+          onClick: _ -> if (count.peek() > 0) count.set(count.peek() - 1),
           children: '-'
         }),
         new Html<'button'>({
-          onclick: _ -> count.set(count.peek() + 1),
+          onClick: _ -> count.set(count.peek() + 1),
           children: '+'
         })
       ]

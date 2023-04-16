@@ -11,12 +11,14 @@ class ClientCursor implements Cursor {
   }
 
   public function current():Null<Dynamic> {
+    if (node != null && node.nodeType == Node.COMMENT_NODE) next();
     return node;
   }
 
   public function next() {
     if (node == null) return;
     node = node.nextSibling;
+    if (node != null && node.nodeType == Node.COMMENT_NODE) next();
   }
 
   public function currentChildren():Cursor {

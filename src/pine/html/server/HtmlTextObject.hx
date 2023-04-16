@@ -17,6 +17,10 @@ class HtmlTextObject extends Object {
   }
 
   public function toString():String {
-    return content.htmlEscape();
+    // Important: we prefix all strings with a comment to ensure
+    // that text components are split up during hydration. On the
+    // client side comments will be ignored, but should still ensure
+    // text nodes are properly delimited.  
+    return '<!--#-->' + content.htmlEscape();
   }
 }

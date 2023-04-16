@@ -35,13 +35,14 @@ class ClientAdaptor implements Adaptor {
     (object:js.html.Text).textContent = value;
   }
 
+  // @todo: Refactor this to be better  
   public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool) {
     var el:Element = object;
     var isSvg = el.namespaceURI == svgNamespace;
     
     if (isHydrating == true) {
       name = getHtmlName(name);
-      // Only set events.
+      // Only bind events.
       // @todo: Setting events this way feels questionable.
       if (name.startsWith('on')) {
         var name = name.toLowerCase();
@@ -55,8 +56,6 @@ class ClientAdaptor implements Adaptor {
     }
 
     switch name {
-      case 'ref' | 'key':
-      // noop
       case 'className':
         updateObjectAttribute(el, 'class', value);
       case 'xmlns' if (isSvg): // skip

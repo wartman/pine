@@ -2,9 +2,8 @@
 -cp test
 -cp example
 
--lib medic
 -lib kit
--lib nuke
+-lib kit.spec
 
 --debug
 
@@ -15,8 +14,7 @@
 --dce full
 --macro nullSafety("pine")
 
-# -main Run
--main Run2
+-main Run
 -js dist/test/index.js
 
 -cmd node dist/test/index.js

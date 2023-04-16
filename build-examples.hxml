@@ -3,31 +3,34 @@
 
 -lib kit
 
---debug
-
 -D js-es=6
 -D analyzer-optimize
 
+--debug
 --dce full
-
 --macro nullSafety("pine")
+
+# For whatever reason, compiling fails with more than one
+# target right now.
 
 --each
 
--main todo.Todo
+# -main todo.Todo
+# -js dist/assets/todo.js
 
--js dist/assets/todo.js
+# --next
+
+-main hydrate.Hydrate
+-js dist/assets/hydrate.js
 
 # --next
 
 # -main counter.Counter
-
 # -js dist/assets/counter.js
 
 # --next
 
 # -main counter.GlobalCounter
-
 # -js dist/assets/global-counter.js
 
 # --next

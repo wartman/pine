@@ -18,7 +18,7 @@ class ServerAdaptor implements Adaptor {
   }
 
   public function createPlaceholderObject():Dynamic {
-    return new HtmlTextObject('');
+    return new HtmlPlaceholderObject();
   }
 
   public function createCursor(object:Dynamic):Cursor {
