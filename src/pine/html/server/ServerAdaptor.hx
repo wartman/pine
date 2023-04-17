@@ -1,7 +1,7 @@
 package pine.html.server;
 
 import pine.internal.Cursor;
-import kit.Assert;
+import pine.internal.Debug;
 
 import pine.internal.Adaptor;
 import pine.object.*;

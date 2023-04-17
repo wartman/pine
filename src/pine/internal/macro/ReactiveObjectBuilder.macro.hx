@@ -29,7 +29,7 @@ function build() {
     props.push(createSignalField(field, false));
   }
   
-  for (field in builder.findFieldsByMeta(':readonly')) {
+  for (field in builder.findFieldsByMeta(':observable')) {
     props.push(createSignalField(field, true));
   }
 
@@ -90,7 +90,7 @@ private function createSignalField(field:Field, isReadonly:Bool):FieldBuilder {
       if (!field.access.contains(AFinal)) {
         if (Compiler.getConfiguration().debug) {
           Context.warning(
-            '@:signal and @:readonly fields are strongly encouraged to be final. They will be converted to final fields by the compiler for you, which may be confusing.',
+            '@:signal and @:observable fields are strongly encouraged to be final. They will be converted to final fields by the compiler for you, which may be confusing.',
             field.pos
           );
         }

@@ -1,6 +1,6 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 import pine.signal.Signal;
 import pine.signal.Computation;
 

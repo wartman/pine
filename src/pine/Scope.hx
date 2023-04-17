@@ -16,7 +16,7 @@ class Scope extends ProxyComponent {
 
 // // The following may be overkill:
 
-// import kit.Assert;
+// import pine.internal.Debug;
 // import pine.signal.Observer;
 
 // class Scope extends Component {

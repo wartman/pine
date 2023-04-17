@@ -1,6 +1,6 @@
 package pine.internal;
 
-import kit.Assert;
+import pine.internal.Debug;
 
 function reconcileChildren(parent:Component, oldChildren:Array<Component>, newChildren:Array<Component>):Array<Component> {
   var newHead = 0;

@@ -50,7 +50,7 @@ class Observer implements ConsumerNode {
   public function invalidate() {
     switch status {
       case Validating:
-        throw 'Cycle detected';
+        throw new PineException('Cycle detected');
       case Invalid | Inactive:
       case Valid | Pending:
         status = Invalid;
@@ -61,7 +61,7 @@ class Observer implements ConsumerNode {
   public function validate() {
     switch status {
       case Validating:
-        throw 'Cycle detected';
+        throw new PineException('Cycle detected');
       case Inactive | Valid: 
         return;
       case Invalid if (!pollProducers()):

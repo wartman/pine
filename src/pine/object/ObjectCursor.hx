@@ -1,6 +1,6 @@
 package pine.object;
 
-import kit.Assert;
+import pine.internal.Debug;
 import pine.internal.Cursor;
 
 class ObjectCursor implements Cursor {

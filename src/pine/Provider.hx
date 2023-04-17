@@ -1,6 +1,6 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}

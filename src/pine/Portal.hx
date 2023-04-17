@@ -1,6 +1,6 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 
 class Portal extends Component {
   final target:Dynamic;

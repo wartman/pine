@@ -1,6 +1,6 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 import pine.internal.Reconcile;
 import pine.signal.Observer;
 
@@ -18,7 +18,7 @@ class Fragment extends Component {
     if (currentLen == 0) {
       var obj = marker?.getObject();
       if (obj == null) {
-        throw new PineException('No object found');
+        error('No object found');
       }
       return obj;
     }

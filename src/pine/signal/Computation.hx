@@ -46,7 +46,7 @@ class ComputationObject<T> extends Observer implements ProducerNode {
     switch getCurrentConsumer() {
       case None:
       case Some(consumer) if (consumer == this):
-        throw 'Cannot observe self';
+        throw new PineException('Cannot observe self');
       case Some(consumer):
         consumer.bindProducer(this);
         bindConsumer(consumer);

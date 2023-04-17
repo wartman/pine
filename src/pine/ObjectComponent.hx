@@ -1,8 +1,8 @@
 package pine;
 
-import kit.Assert;
-import pine.object.ObjectHost;
+import pine.internal.Debug;
 import pine.internal.Reconcile;
+import pine.object.ObjectHost;
 import pine.signal.*;
 import pine.signal.Signal;
 
@@ -113,7 +113,7 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
           componentBuildStatus = Building;
           var childCursor = cursor.currentChildren();
           prevChildren = hydrateChildren(this, childCursor, newChildren);
-          assert(childCursor.current() == null, getFormattedErrorMessage('Hydration failed: too many children'));
+          assert(childCursor.current() == null, 'Hydration failed: too many children');
           cursor.next();
         default:
           componentBuildStatus = Building;
@@ -128,7 +128,7 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
   public function visitChildren(visitor:(child:Component) -> Bool) {
     for (child in getChildren().peek()) {
       if (child == null) continue;
-      if (!visitor(child)) break;
+      if (!visitor(child)) return;
     }
   }
 }

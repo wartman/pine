@@ -1,6 +1,6 @@
 package pine.html;
 
-import kit.Assert;
+import pine.internal.Debug;
 import pine.Children;
 import pine.signal.Signal;
 import pine.ObjectComponent;

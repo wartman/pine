@@ -2,7 +2,7 @@ package pine.html.client;
 
 import js.Browser;
 import js.html.Element;
-import kit.Assert;
+import pine.internal.Debug;
 import pine.internal.Adaptor;
 import pine.internal.Cursor;
 

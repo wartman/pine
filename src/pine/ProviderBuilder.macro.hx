@@ -52,7 +52,7 @@ function buildProvider(type:Type) {
           value;
         case None:
           #if debug
-          throw new pine.PineException(component.getFormattedErrorMessage('No provider exists for the type ' + $v{typeName}));
+          throw new pine.PineException.PineComponentException('No provider exists for the type ' + $v{typeName}, component);
           #else
           throw new pine.PineException('No provider exists for the type ' + $v{typeName});
           #end

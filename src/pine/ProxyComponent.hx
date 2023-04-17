@@ -1,9 +1,7 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 import pine.signal.*;
-import pine.signal.Graph;
-import pine.signal.Signal;
 
 using Kit;
 
@@ -46,14 +44,14 @@ abstract class ProxyComponent extends Component {
       
     visitChildren(childComponent -> {
       if (object != null) {
-        throw new PineException('Component has more than one objects');
+        error('Component has more than one objects');
       }
       object = childComponent.getObject();
       true;
     });
 
     if (object == null) {
-      throw new PineException('Could not resolve an object');
+      error('Could not resolve an object');
     }
 
     return object;
@@ -71,19 +69,11 @@ abstract class ProxyComponent extends Component {
     if (childComponent != null) visitor(childComponent);
   }
 
-  inline function signal<T>(value:T):Signal<T> {
-    return new Signal(value);
+  function addEffect(handler:()->Null<()->Void>) {
+    onMount(() -> addImmediateEffect(handler));
   }
 
-  inline function compute<T>(compute):ReadonlySignal<T> {
-    return new Computation(compute);
-  }
-
-  function effect(handler:()->Null<()->Void>) {
-    onMount(() -> immediateEffect(handler));
-  }
-
-  function immediateEffect(handler:()->Null<()->Void>) {
+  function addImmediateEffect(handler:()->Null<()->Void>) {
     var cleanup:Null<()->Void> = null;
     var observer = new Observer(() -> {
       if (cleanup != null) {
@@ -107,9 +97,5 @@ abstract class ProxyComponent extends Component {
 
   inline function onMount(handler:()->Void) {
     onMountEffects.push(handler);
-  }
-
-  inline function onCleanup(handler:()->Void) {
-    addDisposable(handler);
   }
 }

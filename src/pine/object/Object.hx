@@ -1,6 +1,6 @@
 package pine.object;
 
-import kit.Assert;
+import pine.internal.Debug;
 
 /**
   A simple Object that can be used as the target for a

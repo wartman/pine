@@ -1,6 +1,6 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 
 class Placeholder extends ObjectComponent {
   public function new() {}

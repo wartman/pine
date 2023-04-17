@@ -1,6 +1,6 @@
 package pine;
 
-import kit.Assert;
+import pine.internal.Debug;
 import pine.signal.Observer;
 import pine.object.ObjectHost;
 
