@@ -155,7 +155,7 @@ class TodoFooter extends AutoComponent {
   public function build():Component {
     return new Html<'footer'>({
       className: 'footer',
-      style: compute(() -> if (store.total() == 0) 'display: none' else null),
+      style: store.total.map(total -> if (total == 0) 'display: none' else null),
       children: [
         new Html<'span'>({
           className: 'todo-count',
@@ -178,7 +178,7 @@ class TodoFooter extends AutoComponent {
         }),
         new Html<'button'>({
           className: 'clear-completed',
-          style: compute(() -> if (store.completed() == 0) 'visibility: hidden' else null),
+          style: store.completed.map(completed -> if (completed == 0) 'visibility: hidden' else null),
           onClick: _ -> store.removeCompletedTodos(),
           children: [ 
             'Clear completed (', 
@@ -202,7 +202,7 @@ class VisibilityControl extends AutoComponent {
       children: [
         new Html<'a'>({
           href: url,
-          className: compute(() -> if (visibility == store.visibility()) 'selected' else null),
+          className: new Computation(() -> if (visibility == store.visibility()) 'selected' else null),
           children: (visibility:String)
         })
       ]
@@ -215,7 +215,7 @@ class TodoContainer extends AutoComponent {
 
   function build() {
     final len = store.todos.map(todos -> todos.length);
-    final items = compute(() -> {
+    final items = new Computation(() -> {
       var visibility = store.visibility();
       store.todos().filter(todo -> switch visibility {
         case All: true;
@@ -227,7 +227,7 @@ class TodoContainer extends AutoComponent {
     return new Html<'section'>({
       className: 'main',
       ariaHidden: len.map(len -> len == 0),
-      style: compute(() -> if (len() == 0) 'visibility: hidden' else null),
+      style: new Computation(() -> if (len() == 0) 'visibility: hidden' else null),
       children: [
         // @todo: toggles
         new Html<'ul'>({
@@ -303,7 +303,7 @@ class TodoInput extends AutoComponent {
   @:signal final value:String;
 
   function build():Component {
-    effect(() -> {
+    addEffect(() -> {
       if (isEditing()) {
         var el:js.html.InputElement = getObject();
         el.focus();

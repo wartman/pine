@@ -15,13 +15,13 @@
 
 --each
 
-# -main todo.Todo
-# -js dist/assets/todo.js
+-main todo.Todo
+-js dist/assets/todo.js
 
 # --next
 
--main hydrate.Hydrate
--js dist/assets/hydrate.js
+# -main hydrate.Hydrate
+# -js dist/assets/hydrate.js
 
 # --next
 
