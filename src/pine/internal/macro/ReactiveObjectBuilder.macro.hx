@@ -43,12 +43,12 @@ function build() {
   }
 
   var computation:Expr = if (computed.length > 0) macro {
-    var prev = pine.signal.Graph.setCurrentOwner(Some(this));
+    var prevOwner = pine.signal.Graph.setCurrentOwner(Some(this));
     try $b{computed} catch (e) {
-      pine.signal.Graph.setCurrentOwner(prev);
+      pine.signal.Graph.setCurrentOwner(prevOwner);
       throw e;
     }
-    pine.signal.Graph.setCurrentOwner(prev);
+    pine.signal.Graph.setCurrentOwner(prevOwner);
   } else macro null;
 
   builder.add(macro class {

@@ -1,7 +1,6 @@
 package pine;
 
 import pine.signal.Signal;
-import pine.signal.Graph;
 
 class Show extends ProxyComponent {
   final condition:ReadonlySignal<Bool>;
@@ -16,9 +15,9 @@ class Show extends ProxyComponent {
 
   function build():Component {
     return new Scope(_ -> if (condition()) {
-      untrackValue(then);
+      then();
     } else if (otherwise != null) {
-      untrackValue(otherwise);
+      otherwise();
     } else {
       new Placeholder();
     });

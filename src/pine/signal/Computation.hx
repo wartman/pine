@@ -30,7 +30,7 @@ class ComputationObject<T> extends Observer implements ProducerNode {
 
   public function new(computation:()->T, ?equals) {
     this.equals = equals ?? (a, b) -> a == b;
-    value = computation();
+    value = untrackValue(computation);
     super(() -> {
       var newValue = computation();
       if (this.equals(value, newValue)) return;
