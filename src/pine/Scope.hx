@@ -43,7 +43,7 @@ class Scope extends ProxyComponent {
 
 //   public function initialize() {
 //     var previousChild = child;
-//     var observer = new Observer(() -> {
+//     Observer.track(() -> {
 //       assert(componentLifecycleStatus != Disposed);
 //       assert(componentBuildStatus != Building);
 
@@ -69,6 +69,5 @@ class Scope extends ProxyComponent {
 
 //       componentBuildStatus = Built;
 //     });
-//     addDisposable(observer);
 //   }
 // }

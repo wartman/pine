@@ -1,6 +1,5 @@
 package pine.signal;
 
-import pine.signal.Graph.getCurrentOwner;
 import pine.internal.Debug;
 import pine.signal.Computation;
 import pine.signal.Graph;

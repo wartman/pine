@@ -58,6 +58,17 @@ function build() {
     }
   });
 
+  for (field in builder.findFieldsByMeta(':action')) switch field.kind {
+    case FFun(f):
+      if (f.ret != null && f.ret != macro:Void) {
+        Context.error(':action methods cannot return anything', field.pos);
+      }
+      var expr = f.expr;
+      f.expr = macro pine.signal.Action.run(() -> $expr);
+    default:
+      Context.error(':action fields must be functions', field.pos);
+  }
+
   return builder.export();
 }
 
@@ -132,7 +143,6 @@ private function createComputed(field:Field):Expr {
       return macro this.$name = new pine.signal.Computation(() -> $e);
     default:
       Context.error('Invalid field', field.pos);
-
   }
 }
 

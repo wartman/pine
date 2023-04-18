@@ -114,3 +114,10 @@ function untrack(compute:()->Void) {
   batch(compute);
   setCurrentConsumer(prev);
 }
+
+function untrackValue<T>(compute:()->T) {
+  var prev = setCurrentConsumer(None);
+  var value = compute();
+  setCurrentConsumer(prev);
+  return value;
+}
