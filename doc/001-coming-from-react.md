@@ -3,7 +3,7 @@ Coming from React
 
 While Pine does not have hooks like React does, much of the functionality they provide are covered by other features.
 
-Hooks like `useState` and `useReducer` can mostly be replaced with `var` properties on AutoComponents and Records.
+Hooks like `useState` and `useReducer` can mostly be replaced with `@:signal`, `@:observable` and `@:computed` properties on AutoComponents and Records.
 
 Taking this example from the React website:
 
