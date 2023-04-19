@@ -1,4 +1,4 @@
-package pine;
+package pine.internal;
 
 @:forward
 abstract UniqueId(Int) to Int {

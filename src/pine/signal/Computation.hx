@@ -3,7 +3,9 @@ package pine.signal;
 import pine.Disposable;
 import pine.signal.Signal;
 import pine.signal.Graph;
+import pine.internal.Debug;
 
+using Kit;
 using Lambda;
 
 @:forward
@@ -17,8 +19,7 @@ abstract Computation<T>(ComputationObject<T>)
     this = new ComputationObject(computation, equals);
   }
 
-  @:op(a())
-  public inline function get():T {
+  @:op(a()) public inline function get():T {
     return this.get();
   }
 }
@@ -26,37 +27,42 @@ abstract Computation<T>(ComputationObject<T>)
 class ComputationObject<T> extends Observer implements ProducerNode {
   final consumers:List<ConsumerNode> = new List();
   final equals:(a:T, b:T) -> Bool;
-  var value:T;
+  var value:Maybe<T> = None;
 
   public function new(computation:()->T, ?equals) {
     this.equals = equals ?? (a, b) -> a == b;
-    value = untrackValue(computation);
     super(() -> {
       var newValue = computation();
-      if (this.equals(value, newValue)) return;
-      version.increment();
-      value = newValue;
-      notify();
+      switch value {
+        case Some(oldValue) if (this.equals(oldValue, newValue)): 
+          // noop
+        case Some(_):
+          version.increment();
+          value = Some(newValue);
+          notify();
+        case None:
+          value = Some(newValue);
+      }
     });
   }
 
   public function get():T {
-    if (isInactive()) return value;
+    if (isInactive()) return resolveValue();
 
     switch getCurrentConsumer() {
       case None:
       case Some(consumer) if (consumer == this):
-        throw new PineException('Cannot observe self');
+        error('Cannot observe self');
       case Some(consumer):
         consumer.bindProducer(this);
         bindConsumer(consumer);
     }
 
-    return value;
+    return resolveValue();
   }
 
-  public function peek() {
-    return value;
+  public function peek():T {
+    return resolveValue();
   }
 
   public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
@@ -78,6 +84,13 @@ class ComputationObject<T> extends Observer implements ProducerNode {
 
   public function unbindConsumer(consumer:ConsumerNode) {
     consumers.remove(consumer);
+  }
+
+  inline function resolveValue() {
+    return switch value {
+      case Some(value): value;
+      case None: error('Value was not initialized');
+    }
   }
 
   override function dispose() {

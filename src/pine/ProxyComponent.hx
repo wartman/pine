@@ -75,7 +75,7 @@ abstract class ProxyComponent extends Component {
 
   function addImmediateEffect(handler:()->Null<()->Void>) {
     var cleanup:Null<()->Void> = null;
-    var observer = new Observer(() -> {
+    Observer.track(() -> {
       if (cleanup != null) {
         cleanup();
         cleanup = null;
@@ -86,12 +86,9 @@ abstract class ProxyComponent extends Component {
       }
       cleanup = handler();
     });
-    addDisposable(() -> {
-      observer.dispose();
-      if (cleanup != null) {
-        cleanup();
-        cleanup = null;
-      }
+    addDisposable(() -> if (cleanup != null) {
+      cleanup();
+      cleanup = null;
     });
   }
 
