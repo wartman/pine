@@ -1,10 +1,10 @@
 {
   "name": "pine",
   "classPath": "src",
-  "version": "0.0.3",
-  "description": "Isomorphic UI for haxe",
+  "version": "0.1.0-alpha.1",
+  "description": "Isomorphic, reactive UI for haxe",
   "license": "MIT",
-  "releasenote": "Pre-alpha -- using Kit for internal functions",
+  "releasenote": "Move to a non-vdom based rendering solution.",
   "contributors": [
     "wartman"
   ],
