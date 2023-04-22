@@ -80,6 +80,14 @@ function buildProvider(type:Type) {
         });
       }
     });
+  } else {
+    // @todo: This is an inelegant way of keeping the AutoComponent
+    // @:build macro from running. We need a better solution.
+    builder.add(macro class {
+      public function new(props) {
+        super(props);
+      }
+    });
   }
 
   Context.defineType({
