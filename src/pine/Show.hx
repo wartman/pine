@@ -1,9 +1,7 @@
 package pine;
 
-import pine.signal.Signal;
-
-class Show extends ProxyComponent {
-  final condition:ReadonlySignal<Bool>;
+class Show extends AutoComponent {
+  @:observable final condition:Bool;
   final then:()->Component;
   final otherwise:Null<()->Component>;
 

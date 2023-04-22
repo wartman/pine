@@ -4,7 +4,7 @@ import pine.debug.Debug;
 import pine.signal.Signal;
 import pine.signal.Computation;
 
-class Each<T:{}> extends ProxyComponent {
+class Each<T:{}> extends AutoComponent {
   final value:ReadonlySignal<Array<T>>;
   final buildItem:(value:T)->Component;
 

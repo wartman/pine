@@ -2,7 +2,7 @@ package pine;
 
 import pine.signal.Computation;
 
-class Scope extends ProxyComponent {
+class Scope extends AutoComponent {
   final childWithContext:(context:Component)->Component;
   
   public function new(child) {

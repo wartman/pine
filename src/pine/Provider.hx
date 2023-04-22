@@ -5,7 +5,7 @@ import pine.debug.Debug;
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}
 
-abstract class ProviderComponent<T> extends ProxyComponent {
+abstract class ProviderComponent<T> extends AutoComponent {
   final childWithValue:(value:T)->Component;
   final disposeOfValue:(value:T)->Void;
   var value:Null<T> = null;

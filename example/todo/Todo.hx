@@ -150,7 +150,7 @@ class TodoApp extends AutoComponent {
 }
 
 class TodoFooter extends AutoComponent {
-  final store:TodoStore;
+  @:constant final store:TodoStore;
 
   public function build():Component {
     return new Html<'footer'>({
@@ -192,9 +192,9 @@ class TodoFooter extends AutoComponent {
 }
 
 class VisibilityControl extends AutoComponent {
-  final store:TodoStore;
-  final visibility:TodoVisibility;
-  final url:String;
+  @:constant final store:TodoStore;
+  @:constant final visibility:TodoVisibility;
+  @:constant final url:String;
   
   function build() {
     return new Html<'li'>({
@@ -211,7 +211,7 @@ class VisibilityControl extends AutoComponent {
 }
 
 class TodoContainer extends AutoComponent {
-  final store:TodoStore;
+  @:constant final store:TodoStore;
 
   function build() {
     final len = store.todos.map(todos -> todos.length);
@@ -242,7 +242,7 @@ class TodoContainer extends AutoComponent {
 }
 
 class TodoItem extends AutoComponent {
-  final todo:Todo;
+  @:constant final todo:Todo;
   @:computed final className:String = [
     if (todo.isCompleted()) 'completed' else null,
     if (todo.isEditing()) 'editing' else null
@@ -297,10 +297,10 @@ class TodoItem extends AutoComponent {
 }
 
 class TodoInput extends AutoComponent {
-  final className:String;
-  final clearOnComplete:Bool;
-  final onSubmit:(data:String) -> Void;
-  final onCancel:() -> Void;
+  @:constant final className:String;
+  @:constant final clearOnComplete:Bool;
+  @:constant final onSubmit:(data:String) -> Void;
+  @:constant final onCancel:() -> Void;
   @:signal final isEditing:Bool = false;
   @:signal final value:String;
 

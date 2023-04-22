@@ -50,12 +50,25 @@ function build() {
     pine.signal.Graph.setCurrentOwner(prevOwner);
   } else macro null;
 
-  builder.add(macro class {
-    public function new(props:$propType) {
-      $b{inits};
-      ${computation};
+  switch builder.findField('new') {
+    case Some(field): switch field.kind {
+      case FFun(f):
+        var expr = f.expr;
+        f.expr = macro {
+          $expr;
+          ${computation};
+        }
+      default:
+        throw 'assert';
     }
-  });
+    case None:
+      builder.add(macro class {
+        public function new(props:$propType) {
+          $b{inits};
+          ${computation};
+        }
+      });
+  }
 
   for (field in builder.findFieldsByMeta(':action')) switch field.kind {
     case FFun(f):
