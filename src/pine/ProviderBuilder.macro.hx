@@ -3,10 +3,10 @@ package pine;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
-import pine.internal.macro.ClassBuilder;
+import pine.macro.ClassBuilder;
 
 using haxe.macro.Tools;
-using pine.internal.macro.MacroTools;
+using pine.macro.MacroTools;
 
 function buildGeneric() {
   return switch Context.getLocalType() {
@@ -70,12 +70,12 @@ function buildProvider(type:Type) {
     builder.add(macro class {
       public function new(props:{
         value:$ct,
-        build:(value:$ct) -> Component,
+        child:(value:$ct) -> Component,
         ?dispose:(value:$ct) -> Void,
       }) {
         super({
           value: props.value,
-          build: props.build,
+          child: props.child,
           dispose: props.dispose ?? value -> value.dispose() 
         });
       }

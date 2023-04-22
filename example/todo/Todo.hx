@@ -114,7 +114,7 @@ class TodoApp extends AutoComponent {
   function build() {
     return new TodoProvider({
       value: TodoStore.load(),
-      build: store -> new Html<'div'>({
+      child: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
         children: [
           // @todo: portal
@@ -227,7 +227,9 @@ class TodoContainer extends AutoComponent {
     return new Html<'section'>({
       className: 'main',
       ariaHidden: len.map(len -> len == 0),
-      style: new Computation(() -> if (len() == 0) 'visibility: hidden' else null),
+      // Functions are cast into Computations for ReadonlySignal
+      // attributes.
+      style: () -> if (len() == 0) 'visibility: hidden' else null,
       children: [
         // @todo: toggles
         new Html<'ul'>({

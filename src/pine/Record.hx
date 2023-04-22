@@ -2,7 +2,7 @@ package pine;
 
 import pine.Disposable;
 
-@:autoBuild(pine.internal.macro.ReactiveObjectBuilder.build())
+@:autoBuild(pine.macro.ReactiveObjectBuilder.build())
 abstract class Record implements Disposable implements DisposableHost {
   final disposables:DisposableCollection = new DisposableCollection();
 

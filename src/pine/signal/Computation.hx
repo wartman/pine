@@ -3,7 +3,7 @@ package pine.signal;
 import pine.Disposable;
 import pine.signal.Signal;
 import pine.signal.Graph;
-import pine.internal.Debug;
+import pine.debug.Debug;
 
 using Kit;
 using Lambda;
@@ -15,11 +15,17 @@ abstract Computation<T>(ComputationObject<T>)
   to Disposable
   to DisposableItem
 {
+  @:from
+  public inline static function ofFunction<T>(computation:()->T):Computation<T> {
+    return new Computation(computation);
+  }
+
   public inline function new(computation, ?equals) {
     this = new ComputationObject(computation, equals);
   }
 
-  @:op(a()) public inline function get():T {
+  @:op(a()) 
+  public inline function get():T {
     return this.get();
   }
 }

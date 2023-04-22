@@ -1,8 +1,8 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 import pine.internal.Reconcile;
-import pine.object.ObjectHost;
+import pine.internal.*;
 import pine.signal.*;
 import pine.signal.Signal;
 

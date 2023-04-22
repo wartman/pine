@@ -1,7 +1,7 @@
 package pine.signal;
 
-import pine.internal.Debug;
-import pine.internal.UniqueId;
+import pine.debug.Debug;
+import pine.core.UniqueId;
 import pine.signal.Computation;
 import pine.signal.Graph;
 
@@ -131,11 +131,18 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>)
   from ReadonlySignalObject<T>
   from ComputationObject<T>
 {
-  @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
+  @:from
+  public inline static function ofFunction<T>(computation:()->T):ReadonlySignal<T> {
+    return new Computation(computation);
+  }
+
+  @:from
+  public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
     return new StaticSignal(value);
   }
 
-  @:from public inline static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
+  @:from
+  public inline static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
     return signal;
   }
 

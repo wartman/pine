@@ -1,9 +1,8 @@
 package pine;
 
-import pine.internal.Debug;
 import pine.Disposable;
 import pine.internal.*;
-import pine.object.ObjectHost;
+import pine.debug.Debug;
 import pine.signal.Graph;
 
 using Kit;

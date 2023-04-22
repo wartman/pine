@@ -1,7 +1,7 @@
 package pine.signal;
 
 import pine.Disposable;
-import pine.internal.UniqueId;
+import pine.core.UniqueId;
 
 using Kit;
 using Lambda;

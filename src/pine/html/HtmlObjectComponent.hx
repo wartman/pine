@@ -1,9 +1,7 @@
 package pine.html;
 
-import pine.internal.Debug;
-import pine.Children;
-import pine.signal.Signal;
 import pine.ObjectComponent;
+import pine.signal.Signal;
 
 // @todo: This can probably be merged with ElementComponent. 
 class HtmlObjectComponent<Attrs:{} & { ?children:Children }> extends ObjectWithChildrenComponent {

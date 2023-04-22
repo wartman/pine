@@ -1,8 +1,8 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 import pine.signal.Observer;
-import pine.object.ObjectHost;
+import pine.internal.ObjectHost;
 
 class Root extends Component implements ObjectHost {
   final object:Dynamic;

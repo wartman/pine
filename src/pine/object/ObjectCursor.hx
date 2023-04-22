@@ -1,6 +1,6 @@
 package pine.object;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 import pine.internal.Cursor;
 
 class ObjectCursor implements Cursor {

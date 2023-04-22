@@ -1,4 +1,4 @@
-package pine;
+package pine.internal;
 
 class Slot {
   public final index:Int;

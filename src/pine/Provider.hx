@@ -1,22 +1,22 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 
 @:genericBuild(pine.ProviderBuilder.buildGeneric())
 class Provider<T> {}
 
 abstract class ProviderComponent<T> extends ProxyComponent {
-  final buildWithValue:(value:T)->Component;
+  final childWithValue:(value:T)->Component;
   final disposeOfValue:(value:T)->Void;
   var value:Null<T> = null;
 
   public function new(props:{
     value:T,
-    build:(value:T) -> Component,
+    child:(value:T) -> Component,
     dispose:(value:T) -> Void,
   }) {
     this.value = props.value;
-    this.buildWithValue = props.build;
+    this.childWithValue = props.child;
     this.disposeOfValue = props.dispose;
   }
 
@@ -26,7 +26,7 @@ abstract class ProviderComponent<T> extends ProxyComponent {
 
   public function build() {
     assert(value != null);
-    return buildWithValue(value);
+    return childWithValue(value);
   }
 
   override function dispose() {

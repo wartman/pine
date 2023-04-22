@@ -36,7 +36,7 @@ class ChatRoom extends AutoComponent {
   @:signal final serverUrl:String = 'https://localhost:1234';
 
   function build() {
-    effect(() -> {
+    addEffect(() -> {
       var connection = createConnection(serverUrl(), roomId());
       connection.connect();
       return () -> connection.disconnect();
@@ -82,7 +82,7 @@ class ChatApp extends AutoComponent {
       new Html<'button'>({
         onClick: e -> show.update(showing -> !showing),
         children: [
-          new Text(compute(() -> if (show()) 'Close chat' else 'Open chat'))
+          new Text(() -> if (show()) 'Close chat' else 'Open chat')
         ]
       }),
       new Show(show, () -> new Html<'hr'>({})),

@@ -1,5 +1,7 @@
 package pine.internal;
 
+import pine.internal.*;
+
 interface Adaptor {
   public function createElementObject(name:String, initialAttrs:{}):Dynamic;
   public function createTextObject(value:String):Dynamic;

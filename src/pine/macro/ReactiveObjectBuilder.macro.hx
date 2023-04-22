@@ -1,9 +1,8 @@
-package pine.internal.macro;
+package pine.macro;
 
 import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import pine.internal.macro.ClassBuilder;
 
 using Lambda;
 

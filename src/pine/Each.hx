@@ -1,6 +1,6 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 import pine.signal.Signal;
 import pine.signal.Computation;
 

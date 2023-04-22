@@ -3,11 +3,11 @@ package pine.html;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.Context;
-import pine.internal.macro.ClassBuilder;
+import pine.macro.ClassBuilder;
 
 using Lambda;
 using haxe.macro.Tools;
-using pine.internal.macro.MacroTools;
+using pine.macro.MacroTools;
 
 function buildGeneric(typeName:String, isSvg:Bool = false) {
   return switch Context.getLocalType() {

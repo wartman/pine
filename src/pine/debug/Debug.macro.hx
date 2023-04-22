@@ -1,4 +1,4 @@
-package pine.internal;
+package pine.debug;
 
 import haxe.macro.Compiler;
 import haxe.macro.Context;

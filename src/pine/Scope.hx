@@ -3,20 +3,20 @@ package pine;
 import pine.signal.Computation;
 
 class Scope extends ProxyComponent {
-  final buildWithContext:(context:Component)->Component;
+  final childWithContext:(context:Component)->Component;
   
-  public function new(build) {
-    this.buildWithContext = build;
+  public function new(child) {
+    this.childWithContext = child;
   }
 
   function build():Component {
-    return new Fragment(new Computation(() -> [ buildWithContext(this) ]));
+    return new Fragment(new Computation(() -> [ childWithContext(this) ]));
   }
 }
 
 // // The following may be overkill:
 
-// import pine.internal.Debug;
+// import pine.debug.Debug;
 // import pine.signal.Observer;
 
 // class Scope extends Component {

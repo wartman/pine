@@ -1,6 +1,6 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 
 class Placeholder extends ObjectComponent {
   public function new() {}

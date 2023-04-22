@@ -1,11 +1,11 @@
-package pine.internal.macro;
+package pine.macro;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
 using StringTools;
 using haxe.macro.Tools;
-using pine.internal.Hash;
+using pine.core.Hash;
 
 function typeExists(name:String) {
   try {

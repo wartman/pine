@@ -1,6 +1,7 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
+import pine.internal.*;
 
 class Portal extends Component {
   final target:Dynamic;

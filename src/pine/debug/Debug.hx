@@ -1,4 +1,4 @@
-package pine.internal;
+package pine.debug;
 
 macro function warn(e);
 

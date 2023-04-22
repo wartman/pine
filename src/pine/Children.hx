@@ -29,7 +29,8 @@ abstract Children(ReadonlySignal<Array<Child>>)
     return [ new Text(content) ];
   }
 
-  @:to public inline function toArray():Array<Component> {
+  @:to 
+  public inline function toArray():Array<Component> {
     return this.peek();
   }
 }

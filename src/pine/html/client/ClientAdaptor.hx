@@ -2,9 +2,9 @@ package pine.html.client;
 
 import js.Browser;
 import js.html.Element;
-import pine.internal.Debug;
-import pine.internal.Adaptor;
-import pine.internal.Cursor;
+import pine.debug.Debug;
+import pine.internal.*;
+import pine.internal.Slot;
 
 using StringTools;
 

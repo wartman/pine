@@ -1,10 +1,9 @@
 package pine.html.server;
 
-import pine.internal.Cursor;
-import pine.internal.Debug;
-
-import pine.internal.Adaptor;
+import pine.debug.Debug;
+import pine.internal.*;
 import pine.object.*;
+import pine.internal.Slot;
 
 typedef ServerAdaptorOptions = {
   ?prefixTextWithMarker:Bool

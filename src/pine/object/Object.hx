@@ -1,6 +1,6 @@
 package pine.object;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 
 /**
   A simple Object that can be used as the target for a

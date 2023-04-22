@@ -1,7 +1,8 @@
 package pine;
 
-import pine.internal.Debug;
+import pine.debug.Debug;
 import pine.signal.*;
+import pine.internal.Slot;
 
 using Kit;
 
