@@ -65,12 +65,9 @@ abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlyS
     for (name => signal in this) {
       if (signal == null) continue;
       if (signal.isInactive()) {
-        // If the signal is inactive, avoid observing it.
         applyAttribute(name, signal);
       } else {
-        // Otherwise wrap it in an observer.
-        var observer = new Observer(() -> applyAttribute(name, signal));
-        component.addDisposable(observer);
+        Observer.track(() -> applyAttribute(name, signal));
       }
     }
   }

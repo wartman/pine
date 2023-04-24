@@ -42,7 +42,6 @@ class Each<T:{}> extends AutoComponent {
 
       next;
     });
-    addDisposable(children);
 
     return new Fragment(children);
   }

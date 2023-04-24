@@ -5,7 +5,7 @@ import haxe.macro.Expr;
 
 using StringTools;
 using haxe.macro.Tools;
-using pine.core.Hash;
+using kit.Hash;
 
 function typeExists(name:String) {
   try {
