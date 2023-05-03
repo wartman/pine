@@ -10,9 +10,9 @@ import pine.signal.*;
 
 using Reflect;
 
-function main() {
+function todo() {
   mount(
-    Browser.document.getElementById('root'),
+    Browser.document.getElementById('todo-root'),
     () -> new TodoApp({})
   );
 }

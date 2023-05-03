@@ -7,9 +7,9 @@ import pine.html.client.Client;
 // Implements this example from React:
 // https://beta.reactjs.org/reference/react/useEffect
 
-function main() {
+function chatApp() {
   mount(
-    js.Browser.document.getElementById('root'),
+    js.Browser.document.getElementById('chat-app-root'),
     () -> new ChatApp({})
   );
 }

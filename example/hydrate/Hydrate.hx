@@ -3,26 +3,26 @@ package hydrate;
 import js.Browser;
 import pine.*;
 import pine.html.*;
-import pine.html.client.Client.hydrate;
+import pine.html.client.Client.hydrate as clientHydrate;
 import pine.html.server.Server.mount as mountServer;
 import pine.html.server.HtmlElementObject;
 
-function main() {
+function hydrate() {
   // We would never actually do this in a real app -- create the component
   // as a string, insert it into the HTML, and *then* hydrate it --
   // but it should give you an idea of how it all works.
 
-  var root = new HtmlElementObject('div', { id: 'root' });
+  var root = new HtmlElementObject('div', { id: 'hydrate-root' });
   // Pretend we've created this HTML on a server.
   var html = mountServer(root, () -> new Counter({}));
 
   var htmlString = (html.getObject():HtmlElementObject).toString();
   trace(htmlString);
-  Browser.document.body.innerHTML = htmlString;
+  Browser.document.body.querySelector('#hydrate-section').innerHTML = htmlString;
 
-  var jsRoot = Browser.document.getElementById('root');
+  var jsRoot = Browser.document.getElementById('hydrate-root');
 
-  hydrate(jsRoot, () -> new Counter({}));
+  clientHydrate(jsRoot, () -> new Counter({}));
 }
 
 class Counter extends AutoComponent {

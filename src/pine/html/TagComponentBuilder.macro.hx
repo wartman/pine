@@ -24,7 +24,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
   var pack = ['pine', 'html'];
   var name = '${baseName}_${tag.name}';
   var path:TypePath = { pack: pack, name: name };
-
+  
   if (path.typePathExists()) return TPath(path);
 
   var builder = new ClassBuilder([]);

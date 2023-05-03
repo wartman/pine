@@ -5,9 +5,9 @@ import pine.*;
 import pine.html.*;
 import pine.html.client.Client;
 
-function main() {
+function counter() {
   mount(
-    Browser.document.getElementById('root'),
+    Browser.document.getElementById('counter-root'),
     () -> new Counter({})
   );
 }

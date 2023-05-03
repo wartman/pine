@@ -8,11 +8,11 @@ import pine.html.client.Client;
 
 final count:Signal<Int> = new Signal(0);
 
-function main() {
+function globalCounter() {
   Observer.track(() -> trace(count.get()));
 
   mount(
-    Browser.document.getElementById('root'),
+    Browser.document.getElementById('global-counter-root'),
     () -> new GlobalCounter({})
   );
 }
@@ -21,6 +21,9 @@ class GlobalCounter extends AutoComponent {
   function build() {
     return new Html<'div'>({
       children: [
+        new Html<'h3'>({
+          children: 'Global Counter'
+        }),
         new Html<'div'>({
           children: [ 'Current count:', count.map(Std.string) ]
         }),

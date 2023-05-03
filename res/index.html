@@ -1,17 +1,30 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="styles.css" />
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
   </head>
   <body>
-    <div id="root">
-      <ul>
-        <li><a href="./todo.html">TodoMVC Example</a></li>
-        <li><a href="./counter.html">Counter Example</a></li>
-        <li><a href="./hydrate.html">Hydration Example</a></li>
-        <li><a href="./chat.html">A "Chat" App</a></li>
-        <li><a href="./global-counter.html">Counter using Global State Example</a></li>
-      </ul>
-    </div>
+    <div id="todo-root"></div>
+    <section>
+      <h2>Counters</h2>
+      <div id="counter-root"></div>
+      <div id="global-counter-root"></div>
+    </section>
+    <section>
+      <h2>Hydration</h2>
+      <div id="hydrate-section">
+        <div id="hydration-root"></div>
+      </div>
+    </section>
+    <section>
+      <h2>Chat App Example</h2>
+      <div id="chat-app-root"></div>
+    </section>
+    <section>
+      <h2>Suspense Example</h2>
+      <div id="suspense-root"></div>
+    </section>
+    <script src="../dist/assets/index.js"></script>
   </body>
 </html>
