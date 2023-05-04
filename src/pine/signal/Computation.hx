@@ -15,11 +15,6 @@ abstract Computation<T>(ComputationObject<T>)
   to Disposable
   to DisposableItem
 {
-  @:from
-  public inline static function ofFunction<T>(computation:()->T):Computation<T> {
-    return new Computation(computation);
-  }
-
   public inline function new(computation, ?equals) {
     this = new ComputationObject(computation, equals);
   }

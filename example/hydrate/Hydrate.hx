@@ -17,8 +17,9 @@ function hydrate() {
   var html = mountServer(root, () -> new Counter({}));
 
   var htmlString = (html.getObject():HtmlElementObject).toString();
-  trace(htmlString);
-  Browser.document.body.querySelector('#hydrate-section').innerHTML = htmlString;
+  
+  Browser.document.body.querySelector('#hydrate-display').innerText = htmlString;
+  Browser.document.body.querySelector('#hydrate-target').innerHTML = htmlString;
 
   var jsRoot = Browser.document.getElementById('hydrate-root');
 

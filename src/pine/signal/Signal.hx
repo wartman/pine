@@ -132,11 +132,6 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>)
   from ComputationObject<T>
 {
   @:from
-  public inline static function ofFunction<T>(computation:()->T):ReadonlySignal<T> {
-    return new Computation(computation);
-  }
-
-  @:from
   public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
     return new StaticSignal(value);
   }

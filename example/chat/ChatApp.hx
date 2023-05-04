@@ -82,7 +82,7 @@ class ChatApp extends AutoComponent {
       new Html<'button'>({
         onClick: e -> show.update(showing -> !showing),
         children: [
-          new Text(() -> if (show()) 'Close chat' else 'Open chat')
+          new Text(show.map(show -> if (show) 'Close chat' else 'Open chat'))
         ]
       }),
       new Show(show, () -> new Html<'hr'>({})),

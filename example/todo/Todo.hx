@@ -229,7 +229,7 @@ class TodoContainer extends AutoComponent {
       ariaHidden: len.map(len -> len == 0),
       // Functions are cast into Computations for ReadonlySignal
       // attributes.
-      style: () -> if (len() == 0) 'visibility: hidden' else null,
+      style: len.map(len -> if (len == 0) 'visibility: hidden' else null),
       children: [
         // @todo: toggles
         new Html<'ul'>({

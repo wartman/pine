@@ -73,12 +73,11 @@ class SuspenseBoundary extends AutoComponent {
   }
 
   final child:Component;
-  @:observable public final onComplete:()->Void;
-  @:signal public final status:SuspenseBoundaryStatus = Ready;
+  final onComplete:()->Void;
+  @:signal final status:SuspenseBoundaryStatus = Ready;
 
-  public function build():Component {
+  function build():Component {
     addEffect(() -> {
-      var complete = onComplete();
       return switch status() {
         case Ready:
           // @todo: Can we remove this timer?
@@ -87,7 +86,7 @@ class SuspenseBoundary extends AutoComponent {
               case Suspended(_): return;
               default:
             }
-            complete();
+            onComplete();
           }, 10);
           () -> {
             timer.stop();
