@@ -28,6 +28,10 @@ class ServerAdaptor implements Adaptor {
     return new HtmlPlaceholderObject();
   }
 
+  public function createEmptyContainerObject():Dynamic {
+    return createElementObject('div', {});
+  }
+
   public function createCursor(object:Dynamic):Cursor {
     return new ObjectCursor(object);
   }

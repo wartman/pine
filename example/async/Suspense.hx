@@ -3,46 +3,69 @@ package async;
 import haxe.Timer;
 import js.Browser;
 import pine.*;
-import pine.Suspense;
+import pine.html.*;
 import pine.html.client.Client;
-import pine.signal.*;
 
 using Kit;
 
 function suspense() {
-  var allDone = new Signal(false);
-
   mount(
     Browser.document.getElementById('suspense-root'),
-    () -> new SuspenseBoundary({
-      onComplete: () -> allDone.set(true),
-      child: new Fragment([
-        new Text(allDone.map(complete -> if (complete) 'all done' else 'waiting...')),
-        new Suspense<String, String>({
-          task: new Task(activate -> {
-            Timer.delay(() -> activate(Ok('Done.')), 1000);
-          }),
-          child: status -> switch status {
-            case Suspended: 'Pending...';
-            case Active(result): switch result {
-              case Ok(value): value;
-              case Error(err): err;
-            }
-          }
-        }),
-        new Suspense<String, String>({
-          task: new Task(activate -> {
-            Timer.delay(() -> activate(Ok('Also Done.')), 2500);
-          }),
-          child: status -> switch status {
-            case Suspended: 'Pending...';
-            case Active(result): switch result {
-              case Ok(value): value;
-              case Error(err): err;
-            }
-          }
-        })
-      ])
-    })
+    () -> new SuspenseExample({})
   );
+}
+
+class SuspenseExample extends AutoComponent {
+  function build() {
+    return new Fragment([
+      new Html<'h3'>({ children: 'With Fallback' }),
+      new Suspense({
+        onComplete: () -> trace('All resources loaded with fallback.'),
+        fallback: () -> 'loading...',
+        child: new Fragment([
+          new Target({ message: 'First', delay: 1000 }),
+          new Target({ message: 'Second', delay: 1500 }),
+          new Target({ message: 'Third', delay: 2000 }),
+        ])
+      }),
+      new Html<'h3'>({ children: 'Without Fallback' }),
+      new Suspense({
+        onComplete: () -> trace('All resources loaded without fallback.'),
+        child: new Fragment([
+          new Target({ message: 'First', delay: 1000 }),
+          new Target({ message: 'Second', delay: 1500 }),
+          new Target({ message: 'Third', delay: 2000 }),
+        ])
+      })
+    ]);
+  }
+}
+
+class Target extends AutoComponent {
+  final message:String;
+  final delay:Int;
+
+  function build():Component {
+    var resource = Resource.from(this).fetch(() -> new Task(activate -> {
+      Timer.delay(() -> activate(Ok(message)), delay);
+    }));
+    return new Html<'div'>({
+      children: [
+        resource.data.map(status -> switch status {
+          case Loading: '...';
+          case Loaded(value): value;
+          case Error(e): e.message;
+        }),
+        ' ',
+        new Html<'button'>({
+          onClick: _ -> resource.refetch(),
+          disabled: resource.data.map(status -> switch status {
+            case Loaded(_): false;
+            default: true;
+          }),
+          children: 'Refetch'
+        })
+      ]
+    });
+  }
 }

@@ -6,6 +6,7 @@ interface Adaptor {
   public function createElementObject(name:String, initialAttrs:{}):Dynamic;
   public function createTextObject(value:String):Dynamic;
   public function createPlaceholderObject():Dynamic;
+  public function createEmptyContainerObject():Dynamic;
   public function createCursor(object:Dynamic):Cursor;
   public function updateTextObject(object:Dynamic, value:String):Void;
   public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool):Void;

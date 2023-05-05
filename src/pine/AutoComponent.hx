@@ -69,6 +69,10 @@ abstract class AutoComponent extends Component {
     if (childComponent != null) visitor(childComponent);
   }
 
+  inline function onMount(handler:()->Void) {
+    onMountEffects.push(handler);
+  }
+
   function addEffect(handler:()->Null<()->Void>) {
     onMount(() -> addImmediateEffect(handler));
   }
@@ -90,9 +94,5 @@ abstract class AutoComponent extends Component {
       cleanup();
       cleanup = null;
     });
-  }
-
-  inline function onMount(handler:()->Void) {
-    onMountEffects.push(handler);
   }
 }

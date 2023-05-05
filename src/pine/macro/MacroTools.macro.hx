@@ -11,7 +11,6 @@ function typeExists(name:String) {
   try {
     return Context.getType(name) != null;
   } catch (e:String) {
-    trace(e);
     return false;
   }
 }

@@ -27,6 +27,10 @@ class ClientAdaptor implements Adaptor {
     return createTextObject('');
   }
 
+  public function createEmptyContainerObject():Dynamic {
+    return createElementObject('div', {});
+  }
+
   public function createCursor(object:Dynamic):Cursor {
     return new ClientCursor(object);
   }

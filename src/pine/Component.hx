@@ -49,6 +49,13 @@ abstract class Component implements Disposable implements DisposableHost {
     return componentLifecycleStatus == Disposed;
   }
 
+  public inline function isComponentHydrating() {
+    return switch componentLifecycleStatus {
+      case Hydrating(_): true;
+      default: false;
+    }
+  }
+
   public function mount(?parent:Component, ?slot:Slot) {
     switch componentLifecycleStatus {
       case Hydrating(_):
