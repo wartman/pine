@@ -1,5 +1,6 @@
 package async;
 
+import pine.signal.Signal;
 import haxe.Timer;
 import js.Browser;
 import pine.*;
@@ -17,10 +18,21 @@ function suspense() {
 
 class SuspenseExample extends AutoComponent {
   function build() {
+    final withFallbackStatus = new Signal(false);
+    final withoutFallbackStatus = new Signal(false);
     return new Fragment([
-      new Html<'h3'>({ children: 'With Fallback' }),
+      new Html<'h3'>({ 
+        children: [
+          'With Fallback ',
+          withFallbackStatus.map(status -> switch status {
+            case true: '✔';
+            case false: '❌';
+          })
+        ]
+      }),
       new Suspense({
-        onComplete: () -> trace('All resources loaded with fallback.'),
+        onComplete: () -> withFallbackStatus.set(true),
+        onSuspended: () -> withFallbackStatus.set(false),
         fallback: () -> 'loading...',
         child: new Fragment([
           new Target({ message: 'First', delay: 1000 }),
@@ -28,9 +40,18 @@ class SuspenseExample extends AutoComponent {
           new Target({ message: 'Third', delay: 2000 }),
         ])
       }),
-      new Html<'h3'>({ children: 'Without Fallback' }),
+      new Html<'h3'>({ 
+        children: [
+          'Without Fallback',
+          withoutFallbackStatus.map(status -> switch status {
+            case true: '✔';
+            case false: '❌';
+          })
+        ]
+      }),
       new Suspense({
-        onComplete: () -> trace('All resources loaded without fallback.'),
+        onComplete: () -> withoutFallbackStatus.set(true),
+        onSuspended: () -> withoutFallbackStatus.set(false),
         child: new Fragment([
           new Target({ message: 'First', delay: 1000 }),
           new Target({ message: 'Second', delay: 1500 }),
@@ -48,7 +69,9 @@ class Target extends AutoComponent {
   function build():Component {
     var resource = Resource.from(this).fetch(() -> new Task(activate -> {
       Timer.delay(() -> activate(Ok(message)), delay);
-    }));
+    }), { 
+      onHydrate: () -> message
+    });
     return new Html<'div'>({
       children: [
         resource.data.map(status -> switch status {

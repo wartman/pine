@@ -7,9 +7,9 @@
 -D analyzer-optimize
 -D message-reporting=pretty
 
-# --debug
-# --dce full
-# --macro nullSafety("pine")
+--debug
+--dce full
+--macro nullSafety("pine")
 
 -main Examples
 -js dist/assets/index.js

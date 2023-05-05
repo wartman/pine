@@ -23,18 +23,20 @@ class Suspense extends Component {
 
   final child:Component;
   final fallback:Null<()->Child>;
+  final onSuspended:Null<()->Void>;
   final onComplete:Null<()->Void>;
   final status = new Signal<SuspenseStatus>(Ready);
-  var hiddenMarker:Null<Component> = null;
   var currentComponent:Null<Child> = null;
 
   public function new(props:{
     child:Child,
     ?fallback:()->Child,
+    ?onSuspended:()->Void,
     ?onComplete:()->Void
   }) {
     this.child = props.child;
     this.fallback = props.fallback;
+    this.onSuspended = props.onSuspended;
     this.onComplete = props.onComplete;
   }
 
@@ -45,9 +47,10 @@ class Suspense extends Component {
       case Suspended(remaining):
         status.set(Suspended(remaining.concat([task])));
       case Ready:
+        if (onSuspended != null) onSuspended();
         status.set(Suspended([task]));
     }
-    var link = task.handle(_ -> switch status.peek() {
+    var link:Null<Cancellable> = task.handle(_ -> switch status.peek() {
       case Suspended(remaining) if (remaining.contains(task)):
         var remaining = remaining.filter(o -> o != task);
         if (remaining.length == 0) {
@@ -81,14 +84,25 @@ class Suspense extends Component {
   }
 
 	public function initialize() {
-    // @todo: There may be a better way to handle this
-    hiddenMarker = new Placeholder();
+    // Basically, what we're doing in this method is creating a 
+    // Root that never gets mounted in a place the user can see
+    // and we give it a single Placeholder component. We then use this
+    // placeholder as our previous element in a hidden Slot. It's 
+    // important that we don't actually mount our `child` component
+    // on the hidden Root -- we want it to be a child of the Suspense. Instead,
+    // we just update its slot as needed, passing it the hidden slot when
+    // we want it to disappear from view and the Suspense's slot when
+    // we want it to be visible. This also means that the 
+    // suspended `child` component will keep updating as normal
+    // in its hidden branch, which is what we want.
+    var marker = new Placeholder();
     var root = new Root(
-      adaptor.createEmptyContainerObject(),
-      () -> hiddenMarker,
-      adaptor
+      getAdaptor().createEmptyContainerObject(),
+      () -> marker,
+      getAdaptor()
     );
-    var hiddenSlot = createSlot(1, hiddenMarker);
+    var hiddenSlot = createSlot(1, marker);
+
     root.mount();
     addDisposable(root);
 
@@ -101,7 +115,7 @@ class Suspense extends Component {
         // @todo: Maybe we have our Resources throw an error
         // during hydration if they suspend? Get closer to the
         // problem that way.
-        assert(switch scope.peek() {
+        assert(switch status.peek() {
           case Ready: true;
           default: false;
         }, 'Components should not suspend during hydration');
@@ -118,6 +132,9 @@ class Suspense extends Component {
 
       componentBuildStatus = Building;
       
+      // If we don't have a fallback, forget all the complex
+      // switching the component slot stuff and just handle
+      // the `onComplete` method if needed.
       if (fallback == null) {
         currentComponent = child;
         if (currentComponent.slot != slot) {
