@@ -2,6 +2,7 @@ package chat;
 
 import pine.*;
 import pine.html.*;
+import pine.signal.Signal;
 import pine.html.client.Client;
 
 // Implements this example from React:
@@ -17,18 +18,35 @@ function chatApp() {
 typedef Connection = {
   connect:()->Void,
   disconnect:()->Void
-} 
+}
+
+final displayOutput = new Signal<Array<String>>([]);
+
+function display(message) {
+  displayOutput.update(messages -> messages.concat([message]));
+}
 
 function createConnection(serverUrl:String, roomId:String):Connection {
   // A real implementation would actually connect to the server
   return {
     connect: () -> {
-      trace('✅ Connecting to "$roomId" room at $serverUrl...');
+      display('✅ Connecting to "$roomId" room at $serverUrl...');
     },
     disconnect: () -> {
-      trace('❌ Disconnected from "$roomId" room at $serverUrl');
+      display('❌ Disconnected from "$roomId" room at $serverUrl');
     }
   };
+}
+
+class Log extends AutoComponent {
+  function build() {
+    return new Html<'pre'>({
+      style: 'height: 300px;overflow-y:auto;display:block;background:#666;color:#fff',
+      children: [
+        displayOutput.map(messages -> messages.join('\n'))
+      ]
+    });
+  }
 }
 
 class ChatRoom extends AutoComponent {
@@ -65,28 +83,33 @@ class ChatApp extends AutoComponent {
 
   function build() {
     return new Fragment([
-      new Html<'label'>({
+      new Html<'div'>({
         children: [
-          new Text('Choose the chat room: '),
-          new Html<'select'>({
-            value: roomId,
-            onChange: e -> roomId.set((cast e.target:js.html.InputElement).value),
+          new Html<'label'>({
             children: [
-              new Html<'option'>({ value: 'general', children: 'general' }),
-              new Html<'option'>({ value: 'travel', children: 'travel' }),
-              new Html<'option'>({ value: 'music', children: 'music' })
+              new Text('Choose the chat room: '),
+              new Html<'select'>({
+                value: roomId,
+                onChange: e -> roomId.set((cast e.target:js.html.InputElement).value),
+                children: [
+                  new Html<'option'>({ value: 'general', children: 'general' }),
+                  new Html<'option'>({ value: 'travel', children: 'travel' }),
+                  new Html<'option'>({ value: 'music', children: 'music' })
+                ]
+              })
             ]
-          })
+          }),
+          new Html<'button'>({
+            onClick: e -> show.update(showing -> !showing),
+            children: [
+              new Text(show.map(show -> if (show) 'Close chat' else 'Open chat'))
+            ]
+          }),
+          new Show(show, () -> new Html<'hr'>({})),
+          new Show(show, () -> new ChatRoom({ roomId: roomId }))
         ]
       }),
-      new Html<'button'>({
-        onClick: e -> show.update(showing -> !showing),
-        children: [
-          new Text(show.map(show -> if (show) 'Close chat' else 'Open chat'))
-        ]
-      }),
-      new Show(show, () -> new Html<'hr'>({})),
-      new Show(show, () -> new ChatRoom({ roomId: roomId }))
+      new Log({})
     ]);
   }
 }
