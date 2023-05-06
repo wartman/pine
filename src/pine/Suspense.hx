@@ -26,10 +26,12 @@ class Suspense extends Component {
   final onSuspended:Null<()->Void>;
   final onComplete:Null<()->Void>;
   final status = new Signal<SuspenseStatus>(Ready);
+  final propagateSuspension:Bool;
   var currentComponent:Null<Child> = null;
 
   public function new(props:{
     child:Child,
+    ?propagateSuspension:Bool,
     ?fallback:()->Child,
     ?onSuspended:()->Void,
     ?onComplete:()->Void
@@ -38,9 +40,14 @@ class Suspense extends Component {
     this.fallback = props.fallback;
     this.onSuspended = props.onSuspended;
     this.onComplete = props.onComplete;
+    this.propagateSuspension = props.propagateSuspension ?? true;
   }
 
   public function await<T, E>(task:Task<T, E>) {
+    if (propagateSuspension) {
+      Suspense.maybeFrom(this).unwrap()?.await(task);
+    }
+
     switch status.peek() {
       case Suspended(remaining) if (remaining.contains(task)):
         return;
@@ -85,10 +92,9 @@ class Suspense extends Component {
 
 	public function initialize() {
     // Basically, what we're doing in this method is creating a 
-    // Root that never gets mounted in a place the user can see
-    // and we give it a single Placeholder component. We then use this
-    // placeholder as our previous element in a hidden Slot. It's 
-    // important that we don't actually mount our `child` component
+    // Root with an unmounted object with a single Placeholder component. 
+    // We then use this placeholder as our previous element in a hidden Slot. 
+    // It's important that we don't actually mount our `child` component
     // on the hidden Root -- we want it to be a child of the Suspense. Instead,
     // we just update its slot as needed, passing it the hidden slot when
     // we want it to disappear from view and the Suspense's slot when

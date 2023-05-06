@@ -1,5 +1,6 @@
 package async;
 
+import haxe.Resource;
 import pine.signal.Signal;
 import haxe.Timer;
 import js.Browser;
@@ -57,7 +58,8 @@ class SuspenseExample extends AutoComponent {
           new Target({ message: 'Second', delay: 1500 }),
           new Target({ message: 'Third', delay: 2000 }),
         ])
-      })
+      }),
+      new OtherFeatures({})
     ]);
   }
 }
@@ -69,8 +71,8 @@ class Target extends AutoComponent {
   function build():Component {
     var resource = Resource.from(this).fetch(() -> new Task(activate -> {
       Timer.delay(() -> activate(Ok(message)), delay);
-    }), { 
-      onHydrate: () -> message
+    }), {
+      hydrate: () -> message
     });
     return new Html<'div'>({
       children: [
@@ -89,6 +91,22 @@ class Target extends AutoComponent {
           children: 'Refetch'
         })
       ]
+    });
+  }
+}
+
+class OtherFeatures extends AutoComponent {
+  function build() {
+    var res = Resource.from(this).fetch(() -> new Task(activate -> {
+      Timer.delay(() -> activate(Ok('Loaded')), 1000);
+    }));
+    return new Suspense({
+      propagateSuspension: false,
+      child: new Show(res.loading, () -> 'Loading...', () -> {
+        // Should be safe to extract here.
+        res.data().extract(Loaded(value));
+        value;
+      }) 
     });
   }
 }

@@ -2,8 +2,8 @@ package pine;
 
 class Show extends AutoComponent {
   @:observable final condition:Bool;
-  final then:()->Component;
-  final otherwise:Null<()->Component>;
+  final then:()->Child;
+  final otherwise:Null<()->Child>;
 
   public function new(condition, then, ?otherwise) {
     this.condition = condition;

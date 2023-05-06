@@ -1,5 +1,6 @@
 package pine;
 
+import pine.signal.Signal.ReadonlySignal;
 import pine.signal.*;
 import pine.signal.Graph;
 
@@ -16,7 +17,7 @@ typedef ResourceOptions<T, E> = {
     Get data synchronously if the parent component is hydrating,
     ensuring that hydration will work properly.
   **/
-  public final ?onHydrate:()->T;
+  public final ?hydrate:()->T;
 }
 
 // @todo: Add features like mutation and using stale values 
@@ -28,15 +29,17 @@ class Resource<T, E = kit.Error> implements Disposable {
   
   final context:Component;
   final fetch:()->Task<T, E>;
-  final onHydrate:Null<()->T>;
+  final hydrate:Null<()->T>;
   public final data:Signal<ResourceStatus<T, E>>;
+  public final loading:ReadonlySignal<Bool>;
   var link:Null<Cancellable>;
 
   public function new(context, fetch, ?options:ResourceOptions<T, E>) {
     this.context = context;
     this.fetch = fetch;
-    this.onHydrate = options?.onHydrate;
-    this.data = new Signal(Loading);
+    hydrate = options?.hydrate;
+    data = new Signal(Loading);
+    loading = data.map(status -> status == Loading);
 
     switch getCurrentOwner() {
       case Some(owner): 
@@ -50,17 +53,13 @@ class Resource<T, E = kit.Error> implements Disposable {
   public function get():ResourceStatus<T, E> {
     return data.get();
   }
-  
-  public function isLoading():Bool {
-    return get() == Loading;
-  }
 
   public function refetch() {
     if (link != null) link.cancel();
 
     if (context.isComponentHydrating()) {
-      if (onHydrate != null) {
-        data.set(Loaded(onHydrate()));
+      if (hydrate != null) {
+        data.set(Loaded(hydrate()));
         return;
       }
       // @todo: Throw if we try to hydrate and we don't have a sync
