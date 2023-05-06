@@ -1,6 +1,5 @@
 package async;
 
-import haxe.Resource;
 import pine.signal.Signal;
 import haxe.Timer;
 import js.Browser;
@@ -31,6 +30,13 @@ class SuspenseExample extends AutoComponent {
           })
         ]
       }),
+      new Html<'p'>({
+        children: '
+          If we provide a "fallback" property in our Suspense component,
+          all of the component\'s children will be replaced by the
+          fallback every time a suspense is triggered. 
+        '
+      }),
       new Suspense({
         onComplete: () -> withFallbackStatus.set(true),
         onSuspended: () -> withFallbackStatus.set(false),
@@ -50,6 +56,14 @@ class SuspenseExample extends AutoComponent {
           })
         ]
       }),
+      new Html<'p'>({
+        children: '
+          If we don\'t provide a fallback, then the suspended
+          components will be displayed as normal. This can still
+          be useful, as we can use the `onComplete` and `onSuspended`
+          props to track if any child Resources are loading.
+        '
+      }),
       new Suspense({
         onComplete: () -> withoutFallbackStatus.set(true),
         onSuspended: () -> withoutFallbackStatus.set(false),
@@ -58,6 +72,9 @@ class SuspenseExample extends AutoComponent {
           new Target({ message: 'Second', delay: 1500 }),
           new Target({ message: 'Third', delay: 2000 }),
         ])
+      }),
+      new Html<'h3'>({
+        children: 'Other Features'
       }),
       new OtherFeatures({})
     ]);
