@@ -1,5 +1,6 @@
 package pine;
 
+import pine.Disposable;
 import pine.signal.Signal.ReadonlySignal;
 import pine.signal.*;
 import pine.signal.Graph;
@@ -20,18 +21,35 @@ typedef ResourceOptions<T, E> = {
   public final ?hydrate:()->T;
 }
 
-// @todo: Add features like mutation and using stale values 
-// until a new value is fetched.
-class Resource<T, E = kit.Error> implements Disposable {
+@:forward
+abstract Resource<T, E = kit.Error>(ResourceObject<T, E>)
+  from ResourceObject<T, E>
+  to Disposable
+{
   public inline static function from(context:Component) {
     return new ResourceFactory(context);
   }
+
+  public inline function new(context, fetch, ?options) {
+    this = new ResourceObject(context, fetch, options);
+  }
+
+  @:op(a())
+  public inline function sure() {
+    return this.sure();
+  }
+}
+
+// @todo: Add features like mutation and using stale values 
+// until a new value is fetched.
+class ResourceObject<T, E = kit.Error> implements Disposable {
+  public final data:Signal<ResourceStatus<T, E>>;
+  public final loading:ReadonlySignal<Bool>;
   
   final context:Component;
   final fetch:()->Task<T, E>;
   final hydrate:Null<()->T>;
-  public final data:Signal<ResourceStatus<T, E>>;
-  public final loading:ReadonlySignal<Bool>;
+  
   var link:Null<Cancellable>;
 
   public function new(context, fetch, ?options:ResourceOptions<T, E>) {
@@ -50,8 +68,9 @@ class Resource<T, E = kit.Error> implements Disposable {
     refetch();
   }
 
-  public function get():ResourceStatus<T, E> {
-    return data.get();
+  public function sure():T {
+    data.get().extract(Loaded(value));
+    return value;
   }
 
   public function refetch() {

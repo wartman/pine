@@ -119,11 +119,7 @@ class OtherFeatures extends AutoComponent {
     }));
     return new Suspense({
       propagateSuspension: false,
-      child: new Show(res.loading, () -> 'Loading...', () -> {
-        // Should be safe to extract here.
-        res.data().extract(Loaded(value));
-        value;
-      }) 
+      child: new Show(res.loading, () -> 'Loading...', () -> res()) 
     });
   }
 }
