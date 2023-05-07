@@ -82,6 +82,7 @@ class ObjectComponent extends Component implements ObjectHost {
   public function visitChildren(visitor:(child:Component) -> Bool) {
     if (children == null) return;
     for (child in children.peek()) {
+      if (child == null) continue;
       if (!visitor(child)) return;
     }
   }

@@ -49,7 +49,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
 
         function build() {
           return new pine.ObjectComponent({
-            createObject: (adaptor, attrs) -> adaptor.createCustomObject($v{tag.name}, attrs),
+            createObject: (adaptor, attrs) -> adaptor.createCustomObject($v{tagName}, attrs),
             attributes: {
               var attributes:Map<String, pine.signal.Signal.ReadonlySignal<Any>> = [];
               for (field in Reflect.fields(attrs)) {
@@ -83,7 +83,7 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
 
         function build() {
           return new pine.ObjectComponent({
-            createObject: (adaptor, attrs) -> adaptor.createCustomObject($v{tag.name}, attrs),
+            createObject: (adaptor, attrs) -> adaptor.createCustomObject($v{tagName}, attrs),
             attributes: {
               var attributes:Map<String, pine.signal.Signal.ReadonlySignal<Any>> = [];
               for (field in Reflect.fields(attrs)) {
