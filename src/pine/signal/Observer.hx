@@ -1,8 +1,8 @@
 package pine.signal;
 
 import haxe.Exception;
+import kit.UniqueId;
 import pine.debug.Debug;
-import pine.core.UniqueId;
 import pine.signal.Graph;
 
 enum abstract ObserverStatus(Int) {

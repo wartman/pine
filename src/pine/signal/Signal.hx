@@ -1,7 +1,7 @@
 package pine.signal;
 
+import kit.UniqueId;
 import pine.debug.Debug;
-import pine.core.UniqueId;
 import pine.signal.Computation;
 import pine.signal.Graph;
 
