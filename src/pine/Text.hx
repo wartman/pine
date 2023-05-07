@@ -77,7 +77,7 @@ class TextComponent extends Component implements ObjectHost {
 
   function observeContentChanges() {
     Observer.track(() -> {
-      var text = content.get();
+      var text = content();
       switch componentLifecycleStatus {
         case Mounting | Hydrating(_):
         default:

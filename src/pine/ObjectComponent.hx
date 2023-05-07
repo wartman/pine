@@ -33,6 +33,7 @@ class ObjectComponent extends Component implements ObjectHost {
     switch componentLifecycleStatus {
       case Hydrating(cursor):
         object = cursor.current();
+        if (!hasChildren) cursor.next();
       default:
         object = createObject(getAdaptor(), getInitialAttrs());
         getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
@@ -61,15 +62,15 @@ class ObjectComponent extends Component implements ObjectHost {
 
       var newChildren = children?.get()?.filter(c -> c != null) ?? [];
 
+      componentBuildStatus = Building;
+      
       switch componentLifecycleStatus {
         case Hydrating(cursor):
-          componentBuildStatus = Building;
           var childCursor = cursor.currentChildren();
           prevChildren = hydrateChildren(this, childCursor, newChildren);
           assert(childCursor.current() == null, 'Hydration failed: too many children');
           cursor.next();
         default:
-          componentBuildStatus = Building;
           prevChildren = reconcileChildren(this, prevChildren, newChildren);
       }
 

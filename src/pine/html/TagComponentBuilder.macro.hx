@@ -9,6 +9,8 @@ using Lambda;
 using haxe.macro.Tools;
 using pine.macro.MacroTools;
 
+// @todo: This will be deprecated in favor of the pine.component
+// package.
 function buildGeneric(typeName:String, isSvg:Bool = false) {
   return switch Context.getLocalType() {
     case TInst(cls, [ TInst(_.get() => {kind: KExpr(macro $v{(tag:String)})}, _) ]):
@@ -85,7 +87,6 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
             attributes: {
               var attributes:Map<String, pine.signal.Signal.ReadonlySignal<Any>> = [];
               for (field in Reflect.fields(attrs)) {
-                if (field == 'children') continue;
                 attributes.set(field, Reflect.field(attrs, field));
               }
               attributes;
