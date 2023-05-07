@@ -1,9 +1,8 @@
 package pine;
 
 import pine.Disposable;
-import pine.signal.Signal.ReadonlySignal;
-import pine.signal.*;
 import pine.signal.Graph;
+import pine.signal.Signal;
 
 using Kit;
 

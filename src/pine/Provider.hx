@@ -2,7 +2,7 @@ package pine;
 
 import pine.debug.Debug;
 
-@:genericBuild(pine.ProviderBuilder.buildGeneric())
+@:genericBuild(pine.macro.ProviderBuilder.buildGeneric())
 class Provider<T> {}
 
 abstract class ProviderComponent<T> extends AutoComponent {
