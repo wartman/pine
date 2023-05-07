@@ -27,7 +27,7 @@ function display(message) {
 }
 
 function createConnection(serverUrl:String, roomId:String):Connection {
-  // A real implementation would actually connect to the server
+  // A real implementation would actually connect to a server
   return {
     connect: () -> {
       display('✅ Connecting to "$roomId" room at $serverUrl...');
@@ -41,7 +41,7 @@ function createConnection(serverUrl:String, roomId:String):Connection {
 class Log extends AutoComponent {
   function build() {
     return new Html<'pre'>({
-      style: 'height: 300px;overflow-y:auto;display:block;background:#666;color:#fff',
+      style: 'height: 300px',
       children: [
         displayOutput.map(messages -> messages.join('\n'))
       ]

@@ -16,7 +16,19 @@ class ServerAdaptor implements Adaptor {
     this.options = options ?? { prefixTextWithMarker: true };
   }
 
-  public function createElementObject(name:String, initialAttrs:{}):Dynamic {
+	public function createContainerObject(attrs:{}):Dynamic {
+		return createCustomObject('div', attrs);
+	}
+
+	public function createButtonObject(attrs:{}):Dynamic {
+		return createCustomObject('button', attrs);
+	}
+
+	public function createInputObject(attrs:{}):Dynamic {
+		return createCustomObject('input', attrs);
+	}
+
+  public function createCustomObject(name:String, initialAttrs:{}):Dynamic {
     return new HtmlElementObject(name, initialAttrs);
   }
 
@@ -26,10 +38,6 @@ class ServerAdaptor implements Adaptor {
 
   public function createPlaceholderObject():Dynamic {
     return new HtmlPlaceholderObject();
-  }
-
-  public function createEmptyContainerObject():Dynamic {
-    return createElementObject('div', {});
   }
 
   public function createCursor(object:Dynamic):Cursor {

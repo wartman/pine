@@ -1,100 +1,56 @@
 package pine;
 
 import pine.debug.Debug;
-import pine.internal.Reconcile;
 import pine.internal.*;
-import pine.signal.*;
+import pine.internal.Reconcile;
+import pine.signal.Observer;
 import pine.signal.Signal;
 
-abstract class ObjectComponent extends Component implements ObjectHost {
+@:build(pine.macro.ReactiveObjectBuilder.build())
+class ObjectComponent extends Component implements ObjectHost {
+  final createObject:(adaptor:Adaptor, attrs:{})->Dynamic;
+  final attributes:Map<String, ReadonlySignal<Any>>;
+  final hasChildren:Bool = true;
+  final children:Null<Children> = null;
+
   var object:Null<Dynamic> = null;
-  
+
   public function initialize() {
     initializeObject();
+    observeAttributeChanges();
+    initializeChildren();
   }
 
   function getObject():Dynamic {
+    assert(object != null);
     return object;
   }
 
-  function teardownObject() {
+  function initializeObject() {
+    assert(adaptor != null);
+    assert(object == null);
+
+    switch componentLifecycleStatus {
+      case Hydrating(cursor):
+        object = cursor.current();
+      default:
+        object = createObject(getAdaptor(), getInitialAttrs());
+        getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
+    }
+  }
+
+  function disposeObject() {
     if (object != null) {
       getAdaptor().removeObject(object, slot);
       object = null;
     }
   }
 
-  override function updateSlot(?newSlot:Slot) {
-    if (slot == newSlot) return;
-    var prevSlot = slot;
-    super.updateSlot(newSlot);
-    getAdaptor().moveObject(getObject(), prevSlot, slot, findNearestObjectHostAncestor);
-  }
-
-  override function dispose() {
-    teardownObject();
-    super.dispose();
-  }
-}
-
-@:forward
-abstract Attributes(Map<String, ReadonlySignal<Any>>) from Map<String, ReadonlySignal<Any>> {
-  public inline function new(attributes) {
-    this = attributes;
-  }
-
-  public function getInitialAttrs():{} {
-    var obj:{} = {};
-    for (name => signal in this) {
-      if (signal == null) continue;
-      Reflect.setField(obj, name, signal.peek());
+  function initializeChildren() {
+    if (!hasChildren) {
+      assert(children == null, 'You should not have children if hasChildren is false');
+      return;
     }
-    return obj;
-  }
-
-  public function observeAttributeChanges(component:Component) {
-    inline function applyAttribute(name:String, signal:ReadonlySignal<Any>) {
-      var value = signal.get();
-      switch component.componentLifecycleStatus {
-        case Hydrating(_):
-          component.getAdaptor().updateObjectAttribute(component.getObject(), name, value, true);
-        default:
-          component.getAdaptor().updateObjectAttribute(component.getObject(), name, value);
-      }
-    }
-    for (name => signal in this) {
-      if (signal == null) continue;
-      if (signal.isInactive()) {
-        applyAttribute(name, signal);
-      } else {
-        Observer.track(() -> applyAttribute(name, signal));
-      }
-    }
-  }
-}
-
-abstract class ObjectWithChildrenComponent extends ObjectComponent {
-  abstract function getName():String;
-
-  abstract function getAttributes():Attributes;
-
-  abstract function getChildren():ReadonlySignal<Array<Component>>;
-
-  function initializeObject() {
-    assert(adaptor != null);
-    assert(object == null);
-
-    var attributes = getAttributes(); 
-
-    switch componentLifecycleStatus {
-      case Hydrating(cursor):
-        object = cursor.current();
-      default:
-        object = getAdaptor().createElementObject(getName(), attributes.getInitialAttrs());
-        getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
-    }
-    
-    attributes.observeAttributeChanges(this);
 
     var prevChildren:Array<Component> = [];
     Observer.track(() -> {
@@ -103,7 +59,7 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
 
       if (componentLifecycleStatus == Disposing) return;
 
-      var newChildren = getChildren().get().filter(c -> c != null);
+      var newChildren = children?.get()?.filter(c -> c != null) ?? [];
 
       switch componentLifecycleStatus {
         case Hydrating(cursor):
@@ -123,38 +79,50 @@ abstract class ObjectWithChildrenComponent extends ObjectComponent {
   }
 
   public function visitChildren(visitor:(child:Component) -> Bool) {
-    for (child in getChildren().peek()) {
-      if (child == null) continue;
+    if (children == null) return;
+    for (child in children.peek()) {
       if (!visitor(child)) return;
     }
   }
-}
-
-abstract class ObjectWithoutChildrenComponent extends ObjectComponent {
-  abstract function getName():String;
-
-  abstract function getAttributes():Attributes;
-
-  function initializeObject() {
-    assert(object == null);
-
-    var attributes = getAttributes(); 
-
-    switch componentLifecycleStatus {
-      case Hydrating(cursor):
-        object = cursor.current();
-        attributes.observeAttributeChanges(this);
-        cursor.next();
-      default:
-        object = getAdaptor().createElementObject(getName(), attributes.getInitialAttrs());
-        getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
-        attributes.observeAttributeChanges(this);
+  
+  function getInitialAttrs() {
+    var obj:{} = {};
+    for (name => signal in attributes) {
+      if (signal == null) continue;
+      Reflect.setField(obj, name, signal.peek());
     }
-
-    componentBuildStatus = Built;
+    return obj;
   }
 
-  public function visitChildren(visitor:(child:Component) -> Bool) {
-    // noop
+  function observeAttributeChanges() {
+    inline function applyAttribute(name:String, signal:ReadonlySignal<Any>) {
+      var value = signal.get();
+      switch componentLifecycleStatus {
+        case Hydrating(_):
+          getAdaptor().updateObjectAttribute(getObject(), name, value, true);
+        default:
+          getAdaptor().updateObjectAttribute(getObject(), name, value);
+      }
+    }
+    for (name => signal in attributes) {
+      if (signal == null) continue;
+      if (signal.isInactive()) {
+        applyAttribute(name, signal);
+      } else {
+        Observer.track(() -> applyAttribute(name, signal));
+      }
+    }
+  }
+
+  override function updateSlot(?newSlot:Slot) {
+    if (slot == newSlot) return;
+    var prevSlot = slot;
+    super.updateSlot(newSlot);
+    getAdaptor().moveObject(getObject(), prevSlot, slot, findNearestObjectHostAncestor);
+  }
+
+  override function dispose() {
+    disposeObject();
+    super.dispose();
   }
 }

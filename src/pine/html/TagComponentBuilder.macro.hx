@@ -34,12 +34,30 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
 
   switch tag.kind {
     case TagNormal:
-      var attrs = macro:$props & pine.html.HtmlEvents & { 
-        ?children:pine.Children 
-      };
+      var attrs = macro:$props & pine.html.HtmlEvents;
       builder.add(macro class {
-        public function new(attrs:$attrs) {
-          super($v{tagName}, attrs);
+        final attrs:$attrs;
+        final children:Null<pine.Children>;
+
+        public function new(attrs:$attrs & { ?children:pine.Children }) {
+          this.children = attrs.children;
+          Reflect.deleteField(attrs, 'children');
+          this.attrs = attrs;
+        }
+
+        function build() {
+          return new pine.ObjectComponent({
+            createObject: (adaptor, attrs) -> adaptor.createCustomObject($v{tag.name}, attrs),
+            attributes: {
+              var attributes:Map<String, pine.signal.Signal.ReadonlySignal<Any>> = [];
+              for (field in Reflect.fields(attrs)) {
+                if (field == 'children') continue;
+                attributes.set(field, Reflect.field(attrs, field));
+              }
+              attributes;
+            },
+            children: children
+          });
         }
       });
       Context.defineType({
@@ -47,17 +65,33 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
         name: name,
         pos: pos,
         kind: TDClass({
-          pack: [ 'pine', 'html' ],
-          name: 'HtmlObjectComponent',
-          params: [ TPType(attrs) ]
+          pack: [ 'pine' ],
+          name: 'AutoComponent'
         }),
         fields: builder.export()
       });
     default:
       var attrs = macro:$props & pine.html.HtmlEvents;
       builder.add(macro class {
+        final attrs:$attrs;
+
         public function new(attrs:$attrs) {
-          super($v{tag.name}, attrs);
+          this.attrs = attrs;
+        }
+
+        function build() {
+          return new pine.ObjectComponent({
+            createObject: (adaptor, attrs) -> adaptor.createCustomObject($v{tag.name}, attrs),
+            attributes: {
+              var attributes:Map<String, pine.signal.Signal.ReadonlySignal<Any>> = [];
+              for (field in Reflect.fields(attrs)) {
+                if (field == 'children') continue;
+                attributes.set(field, Reflect.field(attrs, field));
+              }
+              attributes;
+            },
+            hasChildren: false
+          });
         }
       });
       Context.defineType({
@@ -65,10 +99,8 @@ private function buildComponent(baseName:String, tag:TagInfo, isSvg:Bool):Comple
         name: name,
         pos: pos,
         kind: TDClass({
-          pack: [ 'pine', 'html' ],
-          name: 'HtmlObjectComponent',
-          sub: 'HtmlVoidObjectComponent',
-          params: [ TPType(attrs) ]
+          pack: [ 'pine' ],
+          name: 'AutoComponent'
         }),
         fields: builder.export()
       });

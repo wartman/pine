@@ -51,7 +51,7 @@ class Root extends Component implements ObjectHost {
     // noop
   }
 
-  function teardownObject() {
+  function disposeObject() {
     // noop
   }
 }

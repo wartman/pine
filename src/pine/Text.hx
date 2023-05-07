@@ -1,8 +1,11 @@
 package pine;
 
+import pine.debug.Debug;
+import pine.internal.ObjectHost;
+import pine.internal.Slot;
 import pine.signal.Computation;
-import pine.signal.Signal;
 import pine.signal.Observer;
+import pine.signal.Signal;
 
 abstract Text(TextComponent) to TextComponent to Component to Child {
   @:from public inline static function ofString(content:String) {
@@ -46,14 +49,20 @@ abstract Text(TextComponent) to TextComponent to Component to Child {
   }
 }
 
-class TextComponent extends ObjectComponent {
+class TextComponent extends Component implements ObjectHost {
   final content:ReadonlySignal<String>;
+  var object:Null<Dynamic> = null;
 
   public function new(content) {
     this.content = content;
   }
 
-	function initializeObject() {
+  public function initialize() {
+    initializeObject();
+    observeContentChanges();
+  }
+
+  function initializeObject() {
     var adaptor = getAdaptor();
 
     switch componentLifecycleStatus {
@@ -64,7 +73,9 @@ class TextComponent extends ObjectComponent {
         object = adaptor.createTextObject(content.peek());
         adaptor.insertObject(object, slot, findNearestObjectHostAncestor);
     }
+  }
 
+  function observeContentChanges() {
     Observer.track(() -> {
       var text = content.get();
       switch componentLifecycleStatus {
@@ -75,5 +86,29 @@ class TextComponent extends ObjectComponent {
     });
   }
 
-	public function visitChildren(visitor:(child:Component) -> Bool) {}
+  public function visitChildren(visitor:(child:Component) -> Bool) {}
+
+  public function getObject():Dynamic {
+    assert(object != null);
+    return object;
+  }
+
+  function disposeObject() {
+    if (object != null) {
+      getAdaptor().removeObject(object, slot);
+      object = null;
+    }
+  }
+
+  override function updateSlot(?newSlot:Slot) {
+    if (slot == newSlot) return;
+    var prevSlot = slot;
+    super.updateSlot(newSlot);
+    getAdaptor().moveObject(getObject(), prevSlot, slot, findNearestObjectHostAncestor);
+  }
+
+  override function dispose() {
+    disposeObject();
+    super.dispose();
+  }
 }

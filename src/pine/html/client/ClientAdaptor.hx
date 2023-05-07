@@ -13,7 +13,19 @@ inline extern final svgNamespace = 'http://www.w3.org/2000/svg';
 class ClientAdaptor implements Adaptor {
   public function new() {}
 
-  public function createElementObject(name:String, initialAttrs:{}):Dynamic {
+	public function createContainerObject(attrs:{}):Dynamic {
+		return createCustomObject('div', attrs);
+	}
+
+	public function createButtonObject(attrs:{}):Dynamic {
+		return createCustomObject('button', attrs);
+	}
+
+	public function createInputObject(attrs:{}):Dynamic {
+		return createCustomObject('input', attrs);
+	}
+
+  public function createCustomObject(name:String, initialAttrs:{}):Dynamic {
     return name.startsWith('svg:')
       ? Browser.document.createElementNS(svgNamespace, name.substr(4)) 
       : Browser.document.createElement(name);
@@ -25,10 +37,6 @@ class ClientAdaptor implements Adaptor {
 
   public function createPlaceholderObject():Dynamic {
     return createTextObject('');
-  }
-
-  public function createEmptyContainerObject():Dynamic {
-    return createElementObject('div', {});
   }
 
   public function createCursor(object:Dynamic):Cursor {

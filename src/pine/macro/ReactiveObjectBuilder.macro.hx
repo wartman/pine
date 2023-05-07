@@ -119,11 +119,16 @@ private function createSignalField(field:Field, isReadonly:Bool):FieldBuilder {
         }
         field.access.push(AFinal);
       }
-      
-      var type = isReadonly 
-        ? macro:pine.signal.Signal.ReadonlySignal<$t>
-        : macro:pine.signal.Signal<$t>;
 
+      var type = switch t {
+        case macro:Null<$t>: isReadonly 
+          ? macro:Null<pine.signal.Signal.ReadonlySignal<$t>>
+          : macro:Null<pine.signal.Signal<$t>>;
+        default: isReadonly 
+          ? macro:pine.signal.Signal.ReadonlySignal<$t>
+          : macro:pine.signal.Signal<$t>;
+      }
+      
       field.kind = FVar(type, e);
 
       {

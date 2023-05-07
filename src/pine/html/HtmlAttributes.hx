@@ -31,8 +31,7 @@ typedef GlobalAttr = AriaAttributes & {
   var ?lang:ReadonlySignal<String>;
   var ?dir:ReadonlySignal<String>;
   var ?contentEditable:ReadonlySignal<Bool>;
-  var ?inputmode:ReadonlySignal<Bool>;
-
+  var ?inputMode:ReadonlySignal<Bool>;
   var ?hidden:ReadonlySignal<Bool>;
   var ?tabIndex:ReadonlySignal<Int>;
   var ?accessKey:ReadonlySignal<String>;

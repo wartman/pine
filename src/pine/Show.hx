@@ -1,6 +1,6 @@
 package pine;
 
-class Show extends AutoComponent {
+final class Show extends AutoComponent {
   @:observable final condition:Bool;
   final then:()->Child;
   final otherwise:Null<()->Child>;

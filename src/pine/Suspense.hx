@@ -12,7 +12,7 @@ enum SuspenseStatus {
   Ready;
 }
 
-class Suspense extends Component {
+final class Suspense extends Component {
   public static function from(context:Component) {
     return maybeFrom(context).orThrow('No Suspense found');
   }
@@ -103,7 +103,7 @@ class Suspense extends Component {
     // in its hidden branch, which is what we want.
     var marker = new Placeholder();
     var root = new Root(
-      getAdaptor().createEmptyContainerObject(),
+      getAdaptor().createContainerObject({}),
       () -> marker,
       getAdaptor()
     );
