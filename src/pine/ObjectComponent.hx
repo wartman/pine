@@ -27,16 +27,17 @@ class ObjectComponent extends Component implements ObjectHost {
   }
 
   function initializeObject() {
-    assert(adaptor != null);
     assert(object == null);
+
+    var adaptor = getAdaptor();
 
     switch componentLifecycleStatus {
       case Hydrating(cursor):
         object = cursor.current();
         if (!hasChildren) cursor.next();
       default:
-        object = createObject(getAdaptor(), getInitialAttrs());
-        getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
+        object = createObject(adaptor, getInitialAttrs());
+        adaptor.insertObject(object, slot, findNearestObjectHostAncestor);
     }
   }
 
