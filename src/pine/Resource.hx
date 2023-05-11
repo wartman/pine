@@ -18,6 +18,21 @@ typedef ResourceOptions<T, E> = {
     ensuring that hydration will work properly.
   **/
   public final ?hydrate:()->T;
+  
+  /**
+    A callback triggered when the Resource starts loading.
+  **/
+  public final ?loading:()->Void;
+
+  /**
+    A callback triggered when the Resource has loaded.
+  **/
+  public final ?loaded:(value:T)->Void;
+
+  /**
+    A callback triggered when the Resource errors out.
+  **/
+  public final ?errored:(error:E)->Void;
 }
 
 @:forward
@@ -47,14 +62,14 @@ class ResourceObject<T, E = kit.Error> implements Disposable {
   
   final context:Component;
   final fetch:()->Task<T, E>;
-  final hydrate:Null<()->T>;
+  final options:ResourceOptions<T, E>;
   
   var link:Null<Cancellable>;
 
   public function new(context, fetch, ?options:ResourceOptions<T, E>) {
     this.context = context;
     this.fetch = fetch;
-    hydrate = options?.hydrate;
+    this.options = options ?? {};
     data = new Signal(Loading);
     loading = data.map(status -> status == Loading);
 
@@ -76,21 +91,24 @@ class ResourceObject<T, E = kit.Error> implements Disposable {
     if (link != null) link.cancel();
 
     if (context.isComponentHydrating()) {
-      if (hydrate != null) {
-        data.set(Loaded(hydrate()));
+      if (options.hydrate != null) {
+        data.set(Loaded(options.hydrate()));
         return;
       }
       // @todo: Throw if we try to hydrate and we don't have a sync
       // way of getting data?
     }
 
+    if (options.loading != null) options.loading();
     data.set(Loading);
     var task = fetch();
     Suspense.maybeFrom(context).unwrap()?.await(task);
     link = task.handle(result -> switch result {
       case Ok(value):
+        if (options.loaded != null) options.loaded(value);
         data.set(Loaded(value));
       case Error(error):
+        if (options.errored != null) options.errored(error);
         data.set(Error(error));
     });
   }

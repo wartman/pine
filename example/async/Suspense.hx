@@ -89,7 +89,10 @@ class Target extends AutoComponent {
     var resource = Resource.from(this).fetch(() -> new Task(activate -> {
       Timer.delay(() -> activate(Ok(message)), delay);
     }), {
-      hydrate: () -> message
+      hydrate: () -> message,
+      loading: () -> trace('Loading started...'),
+      loaded: value -> trace('$value loaded'),
+      errored: error -> trace(error.message)
     });
     return new Html<'div'>({
       children: [
