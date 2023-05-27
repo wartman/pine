@@ -1,6 +1,7 @@
 package pine;
 
 import pine.Disposable;
+import pine.signal.*;
 import pine.signal.Graph;
 import pine.signal.Signal;
 
@@ -36,12 +37,13 @@ typedef ResourceOptions<T, E> = {
 }
 
 @:forward
-abstract Resource<T, E = kit.Error>(ResourceObject<T, E>)
-  from ResourceObject<T, E>
-  to Disposable
-{
+abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) to Disposable {
   public inline static function from(context:Component) {
     return new ResourceFactory(context);
+  }
+
+  public inline static function collect<T, E>(...resources:Resource<T, E>) {
+    return new ResourceCollection(...resources);
   }
 
   public inline function new(context, fetch, ?options) {
@@ -54,21 +56,58 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>)
   }
 }
 
+abstract ResourceCollection<T, E>(Computation<ResourceStatus<Array<T>, E>>) to Computation<ResourceStatus<Array<T>, E>> to ReadonlySignal<ResourceStatus<Array<T>, E>> {
+  public var loading(get, never):Bool;
+  inline function get_loading() {
+    return this.get() == Loading;
+  }
+
+  public var data(get, never):ReadonlySignal<ResourceStatus<Array<T>, E>>;
+  inline function get_data() {
+    return this;
+  }
+  
+  public function new(...resources:Resource<T, E>) {
+    this = new Computation(() -> {
+      var status:ResourceStatus<Array<T>, E> = Loaded([]);
+      for (res in resources) switch res.data() {
+        case Loading: status = Loading;
+        case Loaded(value): switch status {
+          case Loaded(values): values.push(value);
+          default:
+        }
+        case Error(e): switch status {
+          case Error(_):
+          default: status = Error(e);
+        }
+      }
+      return status;
+    });
+  }
+
+  @:op(a())
+  public inline function sure() {
+    this.get().extract(Loaded(values));
+    return values;
+  }
+}
+
 // @todo: Add features like mutation and using stale values 
 // until a new value is fetched.
-class ResourceObject<T, E = kit.Error> implements Disposable {
+private class ResourceObject<T, E = kit.Error> implements Disposable {
   public final data:Signal<ResourceStatus<T, E>>;
   public final loading:ReadonlySignal<Bool>;
   
   final context:Component;
-  final fetch:()->Task<T, E>;
+  final fetch:Computation<Task<T, E>>;
   final options:ResourceOptions<T, E>;
+  final disposables:DisposableCollection = new DisposableCollection();
   
   var link:Null<Cancellable>;
 
   public function new(context, fetch, ?options:ResourceOptions<T, E>) {
     this.context = context;
-    this.fetch = fetch;
+    this.fetch = new Computation(fetch);
     this.options = options ?? {};
     data = new Signal(Loading);
     loading = data.map(status -> status == Loading);
@@ -79,7 +118,7 @@ class ResourceObject<T, E = kit.Error> implements Disposable {
       case None:
     }
 
-    refetch();
+    withOwner(disposables, () -> Observer.track(process));
   }
 
   public function sure():T {
@@ -87,7 +126,7 @@ class ResourceObject<T, E = kit.Error> implements Disposable {
     return value;
   }
 
-  public function refetch() {
+  function process() {
     if (link != null) link.cancel();
 
     if (context.isComponentHydrating()) {
@@ -114,6 +153,7 @@ class ResourceObject<T, E = kit.Error> implements Disposable {
   }
 
   public function dispose() {
+    disposables.dispose();
     if (link != null) {
       link.cancel();
       link = null;

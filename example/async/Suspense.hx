@@ -86,9 +86,13 @@ class Target extends AutoComponent {
   final delay:Int;
 
   function build():Component {
-    var resource = Resource.from(this).fetch(() -> new Task(activate -> {
-      Timer.delay(() -> activate(Ok(message)), delay);
-    }), {
+    var trigger:Signal<Bool> = false;
+    var resource = Resource.from(this).fetch(() -> {
+      trigger();
+      new Task(activate -> {
+        Timer.delay(() -> activate(Ok(message)), delay);
+      });
+    }, {
       hydrate: () -> message,
       loading: () -> trace('Loading started...'),
       loaded: value -> trace('$value loaded'),
@@ -103,7 +107,7 @@ class Target extends AutoComponent {
         }),
         ' ',
         new Html<'button'>({
-          onClick: _ -> resource.refetch(),
+          onClick: _ -> trigger.update(value -> !value),
           disabled: resource.data.map(status -> switch status {
             case Loaded(_): false;
             default: true;
