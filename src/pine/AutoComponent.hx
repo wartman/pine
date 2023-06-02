@@ -6,8 +6,8 @@ import pine.internal.Slot;
 
 @:autoBuild(pine.macro.ReactiveObjectBuilder.build())
 abstract class AutoComponent extends Component {
-  var childComponent:Null<Component> = null;
-  var onMountEffects:Array<()->Void> = [];
+  @:noCompletion var childComponent:Null<Component> = null;
+  @:noCompletion var onMountEffects:Array<()->Void> = [];
 
   abstract function build():Component;
 
