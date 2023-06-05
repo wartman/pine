@@ -34,10 +34,12 @@ class ObjectComponent extends Component implements ObjectHost {
     switch componentLifecycleStatus {
       case Hydrating(cursor):
         object = cursor.current();
+        assert(object != null, 'Hydration failed');
         if (!hasChildren) cursor.next();
       default:
         object = createObject(adaptor, getInitialAttrs());
         adaptor.insertObject(object, slot, findNearestObjectHostAncestor);
+        assert(object != null, 'Object was not created');
     }
   }
 

@@ -1,5 +1,6 @@
 package pine;
 
+import pine.signal.Graph;
 import pine.signal.Computation;
 
 class Scope extends AutoComponent {
@@ -13,6 +14,11 @@ class Scope extends AutoComponent {
 
   function build():Component {
     if (options.untrack) return childWithContext(this);
-    return new Fragment(new Computation(() -> [ childWithContext(this) ]));
+    return new Fragment(new Computation(() -> {
+      var prev = setCurrentOwner(Some(this));
+      var result = [ childWithContext(this) ];
+      setCurrentOwner(prev);
+      result;
+    }));
   }
 }

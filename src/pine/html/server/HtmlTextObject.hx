@@ -6,11 +6,11 @@ using StringTools;
 
 class HtmlTextObject extends Object {
   var content:String;
-  final prefixWithComment:Bool;
+  final raw:Bool;
 
-  public function new(content, prefixWithComment = true) {
+  public function new(content, raw = true) {
     this.content = content;
-    this.prefixWithComment = prefixWithComment;
+    this.raw = raw;
   }
 
   public function updateContent(content) {
@@ -22,7 +22,11 @@ class HtmlTextObject extends Object {
     // Important: we prefix all strings with a comment to ensure
     // that text components are split up during hydration. On the
     // client side comments will be ignored, but should still ensure
-    // text nodes are properly delimited.  
-    return prefixWithComment ? '<!--#-->' + content.htmlEscape() : content.htmlEscape();
+    // text nodes are properly delimited.
+    //
+    // You can use the `raw` option to output the text directly. Use this
+    // sparingly -- it's intended only for things like outputting
+    // JSON, CSS or JS in a script or style tag. 
+    return raw ? '<!--#-->' + content.htmlEscape() : content;
   }
 }

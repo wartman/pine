@@ -1,9 +1,15 @@
 package pine;
 
+import pine.signal.Computation;
 import pine.signal.Signal;
 
 @:forward
 abstract Child(Component) from Text from Component to Component {
+  @:from
+  public inline static function ofComputationString(content:Computation<String>):Child {
+    return new Text(content);
+  }
+
   @:from
   public inline static function ofReadonlySignalString(content:ReadonlySignal<String>):Child {
     return new Text(content);
