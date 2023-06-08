@@ -1,5 +1,7 @@
 package pine.signal;
 
+import pine.Disposable.DisposableCollection;
+import pine.Disposable.DisposableHost;
 import haxe.Exception;
 import kit.UniqueId;
 import pine.debug.Debug;
@@ -30,6 +32,7 @@ class Observer implements ConsumerNode {
   public final id:UniqueId = new UniqueId();
   final handler:()->Void;
   final producers:Map<UniqueId, DependencyLink> = [];
+  final disposables:DisposableCollection = new DisposableCollection();
   var version:NodeVersion = new NodeVersion();
   var status:ObserverStatus = Pending;
 
@@ -71,13 +74,14 @@ class Observer implements ConsumerNode {
       default:
     }
 
-    var prev = setCurrentConsumer(Some(this));
+    var prevConsumer = setCurrentConsumer(Some(this));
+    var prevOwner = setCurrentOwner(Some(disposables));
     var err:Null<Exception> = null;
 
     status = Validating;
 
     unbindAll();
-    
+
     try {
       handler();
     } catch (e) {
@@ -86,7 +90,8 @@ class Observer implements ConsumerNode {
 
     status = Valid;
     version.increment();
-    setCurrentConsumer(prev);
+    setCurrentConsumer(prevConsumer);
+    setCurrentOwner(prevOwner);
 
     if (err != null) throw err;
   }
@@ -122,6 +127,7 @@ class Observer implements ConsumerNode {
 
   public function dispose() {
     if (isInactive()) return;
+    disposables.dispose();
     status = Inactive;
     unbindAll();
   }

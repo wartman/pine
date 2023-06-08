@@ -31,9 +31,9 @@ enum ComponentLifecycleStatus {
 abstract class Component implements Disposable implements DisposableHost {
   final disposables:DisposableCollection = new DisposableCollection();
 
-  var parent:Null<Component> = null;
-  var slot:Null<Slot> = null;
-  var adaptor:Null<Adaptor> = null;
+  @:noCompletion var parent:Null<Component> = null;
+  @:noCompletion var slot:Null<Slot> = null;
+  @:noCompletion var adaptor:Null<Adaptor> = null;
   var componentLifecycleStatus:ComponentLifecycleStatus = Pending;
   var componentBuildStatus:ComponentBuildStatus = Pending;
 
