@@ -39,6 +39,7 @@ typedef GlobalAttr = AriaAttributes & {
   var ?spellcheck:ReadonlySignal<Bool>;
   var ?style:ReadonlySignal<String>;
   var ?role:ReadonlySignal<String>;
+  var ?dataset:ReadonlySignal<Map<String, String>>;
 }
 
 typedef DetailsAttr = GlobalAttr & {

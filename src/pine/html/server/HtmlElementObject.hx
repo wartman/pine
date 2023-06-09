@@ -62,6 +62,10 @@ class HtmlElementObject extends Object {
         // noop
       } else if (key == 'className') {
         out.set('class', value);
+      } else if (key == 'dataset') {
+        for (name => value in (value:Map<String, String>)) {
+          out.set('data-${kebabCase(name)}', value);
+        }
       } else if (value == true) {
         out.set(key, key);
       } else {
@@ -71,4 +75,19 @@ class HtmlElementObject extends Object {
 
     return out;
   }
+}
+
+// @todo: Probably should just use a RegExp here but whatever.
+function kebabCase(str:String) {
+  var out = '';
+  var i = 0;
+  while (i < str.length) {
+    var c = str.charAt(i++);
+    if (c > 'A' && c < 'Z') {
+      out += '-' + c.toLowerCase();
+    } else {
+      out += c;
+    }
+  }
+  return out;
 }

@@ -31,6 +31,9 @@ class Counter extends AutoComponent {
 
   function build() {
     return new Html<'div'>({
+      dataset: [
+        'fooBar' => 'bar'
+      ],
       children: [
         'This is some',
         ' text',

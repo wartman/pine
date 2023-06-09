@@ -75,6 +75,15 @@ class ClientAdaptor implements Adaptor {
         js.Syntax.code('{0}[{1}] = {2}', el, name, value);
       case _ if (!isSvg && js.Syntax.code('{0} in {1}', name, el)):
         js.Syntax.code('{0}[{1}] = {2}', el, name, value);
+      case 'dataset':
+        var map:Map<String, String> = value;
+        for (key => value in map) {
+          if (value == null) {
+            Reflect.deleteField(el.dataset, key);  
+          } else {
+            Reflect.setField(el.dataset, key, value);
+          }
+        }
       default:
         name = getHtmlName(name);
         // @todo: Setting events this way feels questionable.
