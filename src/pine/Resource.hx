@@ -141,7 +141,9 @@ private class ResourceObject<T, E = kit.Error> implements Disposable {
     if (options.loading != null) options.loading();
     data.set(Loading);
     var task = fetch();
-    Suspense.maybeFrom(context).unwrap()?.await(task);
+    Suspense
+      .maybeFrom(context)
+      .ifExtract(Some(suspense), suspense.await(task));
     link = task.handle(result -> switch result {
       case Ok(value):
         if (options.loaded != null) options.loaded(value);

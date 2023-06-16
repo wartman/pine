@@ -45,7 +45,9 @@ final class Suspense extends Component {
 
   public function await<T, E>(task:Task<T, E>) {
     if (propagateSuspension) {
-      Suspense.maybeFrom(this).unwrap()?.await(task);
+      Suspense
+        .maybeFrom(this)
+        .ifExtract(Some(suspense), suspense.await(task));
     }
 
     switch status.peek() {
@@ -68,8 +70,7 @@ final class Suspense extends Component {
       default:
     });
     addDisposable(() -> {
-      if (link == null) return;
-      link.cancel();
+      link?.cancel();
       link = null;
     });
   }

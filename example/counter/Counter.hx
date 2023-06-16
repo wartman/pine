@@ -2,7 +2,7 @@ package counter;
 
 import js.Browser;
 import pine.*;
-import pine.component.*;
+import pine.html.*;
 import pine.html.client.Client;
 
 function counter() {
@@ -16,17 +16,17 @@ class Counter extends AutoComponent {
   @:signal final count:Int = 0;
 
   function build() {
-    return new Box({
-      styles: 'counter',
+    return new Html<'div'>({
+      className: 'counter',
       children: [
-        new Box({
+        new Html<'div'>({
           children: [ 'Current count:', count.map(Std.string) ]
         }),
-        new Button({
+        new Html<'button'>({
           onClick: _ -> if (count.peek() > 0) count.update(i -> i - 1),
           children: '-'
         }),
-        new Button({
+        new Html<'button'>({
           onClick: _ -> count.update(i -> i + 1),
           children: '+'
         })
