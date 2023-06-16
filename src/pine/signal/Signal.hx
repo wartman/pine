@@ -135,14 +135,6 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>)
   @:from public inline static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
     return signal;
   }
-  
-  @:from public inline static function ofNullSignal<T>(signal:Null<Signal<T>>):Null<ReadonlySignal<T>> {
-    return signal;
-  }
-
-  @:from public inline static function ofNullReadonlySignal<T>(signal:Null<ReadonlySignal<T>>):Null<ReadonlySignal<T>> {
-    return signal;
-  }
 
   @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
     return new StaticSignal(value);
