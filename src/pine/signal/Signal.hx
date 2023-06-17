@@ -136,6 +136,12 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>)
     return signal;
   }
 
+  @:from public inline static function ofReadonlySignal<T>(signal:ReadonlySignal<T>):ReadonlySignal<T> {
+    // This seems daft, but we need this method to ensure `ofValue` doesn't 
+    // get used incorrectly.
+    return signal;
+  }
+
   @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
     return new StaticSignal(value);
   }
