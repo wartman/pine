@@ -1,5 +1,6 @@
 package pine;
 
+import pine.Component;
 import pine.Disposable;
 import pine.signal.*;
 import pine.signal.Graph;
@@ -162,14 +163,12 @@ private class ResourceObject<T, E = kit.Error> implements Disposable {
   }
 }
 
-private class ResourceFactory {
-  final context:Component;
-
-  public function new(context) {
-    this.context = context;
+abstract ResourceFactory(Component) {
+  public inline function new(context) {
+    this = context;
   }
 
-  public function fetch<T, E>(fetch:()->Task<T, E>, ?options:ResourceOptions<T, E>):Resource<T, E> {
-    return new Resource(context, fetch, options);
+  public inline function fetch<T, E>(fetch:()->Task<T, E>, ?options:ResourceOptions<T, E>):Resource<T, E> {
+    return new Resource(this, fetch, options);
   }
 }

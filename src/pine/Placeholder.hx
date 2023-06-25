@@ -19,9 +19,8 @@ class Placeholder extends Component implements ObjectHost {
   }
 
   function initializeObject() {
-    assert(adaptor != null);
-    object = adaptor?.createPlaceholderObject();
-    adaptor?.insertObject(object, slot, findNearestObjectHostAncestor);
+    object = getAdaptor().createPlaceholderObject();
+    getAdaptor().insertObject(object, slot, findNearestObjectHostAncestor);
   }
 
   function disposeObject() {

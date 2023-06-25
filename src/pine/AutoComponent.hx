@@ -69,7 +69,7 @@ abstract class AutoComponent extends Component {
     if (childComponent != null) visitor(childComponent);
   }
 
-  inline function onMount(handler:()->Void) {
+  function onMount(handler:()->Void) {
     onMountEffects.push(handler);
   }
 

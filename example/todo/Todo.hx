@@ -316,7 +316,7 @@ class TodoInput extends AutoComponent {
     return new Html<'input'>({
       className: className,
       placeholder: 'What needs doing?',
-      autofocus: true,
+      // autofocus: true,
       value: value == null ? '' : value,
       name: className,
       onInput: e -> {
