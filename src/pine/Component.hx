@@ -177,6 +177,10 @@ abstract class Component implements Disposable implements DisposableHost {
   public function addDisposable(disposable:DisposableItem) {
     disposables.addDisposable(disposable);
   }
+  
+  public function removeDisposable(disposable:DisposableItem) {
+    disposables.removeDisposable(disposable);
+  }
 
   public function dispose() {
     if (componentLifecycleStatus == Disposed || componentLifecycleStatus == Disposing) return;

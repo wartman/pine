@@ -6,6 +6,7 @@ interface Disposable {
 
 interface DisposableHost {
   public function addDisposable(disposable:DisposableItem):Void;
+  public function removeDisposable(disposable:DisposableItem):Void;
 }
 
 @:forward
@@ -40,6 +41,10 @@ final class DisposableCollection implements Disposable implements DisposableHost
       return;
     }
     disposables.add(disposable);
+  }
+
+  public function removeDisposable(disposable:DisposableItem) {
+    disposables.remove(disposable);
   }
 
   public function dispose() {

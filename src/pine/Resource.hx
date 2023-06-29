@@ -1,6 +1,5 @@
 package pine;
 
-import haxe.macro.Context;
 import pine.debug.Debug;
 import pine.Component;
 import pine.Disposable;
@@ -46,7 +45,7 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
   }
 
   public inline static function defer<T, E>(fetch, ?options):Resource<T, E> {
-    return new DeferredResourceObject(fetch, options);
+    return new SingleResourceObject(null, fetch, options);
   }
 
   public inline static function collect<T, E>(...resources:Resource<T, E>):Resource<Array<T>, E> {
@@ -54,7 +53,7 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
   }
 
   public inline function new(context, fetch, ?options) {
-    this = new SimpleResourceObject(context, fetch, options);
+    this = new SingleResourceObject(context, fetch, options);
   }
 
   @:op(a())
@@ -110,83 +109,36 @@ class ResourceCollectionObject<T, E = kit.Error> implements ResourceObject<Array
   }
 }
 
-class DeferredResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
-  public final data:ReadonlySignal<ResourceStatus<T, E>>;
-  public final loading:ReadonlySignal<Bool>;
-
-  final fetch:()->Task<T, E>;
-  final options:ResourceOptions<T, E>;
-  final resource:Signal<Maybe<Resource<T, E>>>;
-  final disposables:DisposableCollection = new DisposableCollection();
-
-  public function new(fetch, ?options) {
-    this.fetch = fetch;
-    this.options = options ?? {};
-
-    var prevOwner = setCurrentOwner(Some(disposables));
-
-    resource = new Signal(None);
-    data = resource.map(res -> switch res {
-      case Some(resource): resource.data();
-      case None: Loading;
-    });
-    loading = data.map(status -> status == Loading);
-
-    setCurrentOwner(prevOwner);
-  }
-  
-  public function activate(context:Component):Resource<T, E> {
-    switch resource.peek() {
-      case None:
-        context.addDisposable(this);
-        withOwner(disposables, () -> {
-          resource.set(Some(new Resource<T, E>(context, fetch, options)));
-        });
-      case Some(_):
-    }
-    return this;
-  }
-
-  public function sure():T {
-    resource.peek().extract(Some(res));
-    return res.sure();
-  }
-
-  public function dispose() {
-    disposables.dispose();
-    resource.set(None);
-  }
-}
-
-class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
+class SingleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
   public final data:Signal<ResourceStatus<T, E>>;
   public final loading:ReadonlySignal<Bool>;
   
-  final context:Component;
   final fetch:Computation<Task<T, E>>;
   final options:ResourceOptions<T, E>;
   final disposables:DisposableCollection = new DisposableCollection();
-  
-  var link:Null<Cancellable>;
 
-  public function new(context, fetch, ?options:ResourceOptions<T, E>) {
-    this.context = context;
+  var context:Signal<Null<Component>> = new Signal(null);
+  var link:Null<Cancellable> = null;
+
+  public function new(context:Null<Component>, fetch, ?options:ResourceOptions<T, E>) {
     this.fetch = new Computation(fetch);
     this.options = options ?? {};
 
     data = new Signal(Loading);
     loading = data.map(status -> status == Loading);
 
-    switch getCurrentOwner() {
-      case Some(owner): 
-        owner.addDisposable(this);
-      case None:
-    }
+    if (context != null) activate(context);
 
     withOwner(disposables, () -> Observer.track(process));
   }
 
-  public function activate(context:Component):Resource<T, E> {
+  public function activate(newContext:Component):Resource<T, E> {
+    if (context.peek() == newContext) return this;
+    
+    context.peek()?.removeDisposable(this);
+    newContext.addDisposable(this);
+    context.set(newContext);
+
     return this;
   }
 
@@ -197,6 +149,9 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
 
   function process() {
     if (link != null) link.cancel();
+    
+    var context = this.context.get();
+    if (context == null) return;
 
     if (context.isComponentHydrating()) {
       if (options.hydrate != null) {
