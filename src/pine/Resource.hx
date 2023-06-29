@@ -1,5 +1,7 @@
 package pine;
 
+import haxe.macro.Context;
+import pine.debug.Debug;
 import pine.Component;
 import pine.Disposable;
 import pine.signal.*;
@@ -37,18 +39,22 @@ typedef ResourceOptions<T, E> = {
   public final ?errored:(error:E)->Void;
 }
 
-@:forward
-abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) to Disposable {
+@:forward(data, loading, activate, dispose)
+abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T, E> to Disposable {
   public inline static function from(context:Component) {
     return new ResourceFactory(context);
   }
 
-  public inline static function collect<T, E>(...resources:Resource<T, E>) {
-    return new ResourceCollection(...resources);
+  public inline static function defer<T, E>(fetch, ?options):Resource<T, E> {
+    return new DeferredResourceObject(fetch, options);
+  }
+
+  public inline static function collect<T, E>(...resources:Resource<T, E>):Resource<Array<T>, E> {
+    return new ResourceCollectionObject(...resources);
   }
 
   public inline function new(context, fetch, ?options) {
-    this = new ResourceObject(context, fetch, options);
+    this = new SimpleResourceObject(context, fetch, options);
   }
 
   @:op(a())
@@ -57,19 +63,21 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) to Disposable {
   }
 }
 
-abstract ResourceCollection<T, E>(Computation<ResourceStatus<Array<T>, E>>) to Computation<ResourceStatus<Array<T>, E>> to ReadonlySignal<ResourceStatus<Array<T>, E>> {
-  public var loading(get, never):Bool;
-  inline function get_loading() {
-    return this.get() == Loading;
-  }
+interface ResourceObject<T, E = kit.Error> extends Disposable {
+  public final data:ReadonlySignal<ResourceStatus<T, E>>;
+  public final loading:ReadonlySignal<Bool>;
+  public function sure():T;
+  public function activate(context:Component):Resource<T, E>;
+}
 
-  public var data(get, never):ReadonlySignal<ResourceStatus<Array<T>, E>>;
-  inline function get_data() {
-    return this;
-  }
-  
+class ResourceCollectionObject<T, E = kit.Error> implements ResourceObject<Array<T>, E> {
+  public final data:ReadonlySignal<ResourceStatus<Array<T>, E>>;
+  public final loading:ReadonlySignal<Bool>;
+  final resources:Array<Resource<T, E>>;
+
   public function new(...resources:Resource<T, E>) {
-    this = new Computation(() -> {
+    this.resources = resources.toArray();
+    data = new Computation(() -> {
       var status:ResourceStatus<Array<T>, E> = Loaded([]);
       for (res in resources) switch res.data() {
         case Loading: status = Loading;
@@ -84,18 +92,73 @@ abstract ResourceCollection<T, E>(Computation<ResourceStatus<Array<T>, E>>) to C
       }
       return status;
     });
+    loading = data.map(status -> status == Loading);
   }
 
-  @:op(a())
-  public inline function sure() {
-    this.get().extract(Loaded(values));
-    return values;
+  public function sure():Array<T> {
+    data.get().extract(Loaded(value));
+    return value;
+  }
+
+  public function dispose() {
+    // noop
+  }
+
+  public function activate(context:Component):Resource<Array<T>, E> {
+    for (res in resources) res.activate(context);
+    return this;
   }
 }
 
-// @todo: Add features like mutation and using stale values 
-// until a new value is fetched.
-private class ResourceObject<T, E = kit.Error> implements Disposable {
+class DeferredResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
+  public final data:ReadonlySignal<ResourceStatus<T, E>>;
+  public final loading:ReadonlySignal<Bool>;
+
+  final fetch:()->Task<T, E>;
+  final options:ResourceOptions<T, E>;
+  final resource:Signal<Maybe<Resource<T, E>>>;
+  final disposables:DisposableCollection = new DisposableCollection();
+
+  public function new(fetch, ?options) {
+    this.fetch = fetch;
+    this.options = options ?? {};
+
+    var prevOwner = setCurrentOwner(Some(disposables));
+
+    resource = new Signal(None);
+    data = resource.map(res -> switch res {
+      case Some(resource): resource.data();
+      case None: Loading;
+    });
+    loading = data.map(status -> status == Loading);
+
+    setCurrentOwner(prevOwner);
+  }
+  
+  public function activate(context:Component):Resource<T, E> {
+    switch resource.peek() {
+      case None:
+        context.addDisposable(this);
+        withOwner(disposables, () -> {
+          resource.set(Some(new Resource<T, E>(context, fetch, options)));
+        });
+      case Some(_):
+    }
+    return this;
+  }
+
+  public function sure():T {
+    resource.peek().extract(Some(res));
+    return res.sure();
+  }
+
+  public function dispose() {
+    disposables.dispose();
+    resource.set(None);
+  }
+}
+
+class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
   public final data:Signal<ResourceStatus<T, E>>;
   public final loading:ReadonlySignal<Bool>;
   
@@ -110,6 +173,7 @@ private class ResourceObject<T, E = kit.Error> implements Disposable {
     this.context = context;
     this.fetch = new Computation(fetch);
     this.options = options ?? {};
+
     data = new Signal(Loading);
     loading = data.map(status -> status == Loading);
 
@@ -120,6 +184,10 @@ private class ResourceObject<T, E = kit.Error> implements Disposable {
     }
 
     withOwner(disposables, () -> Observer.track(process));
+  }
+
+  public function activate(context:Component):Resource<T, E> {
+    return this;
   }
 
   public function sure():T {
