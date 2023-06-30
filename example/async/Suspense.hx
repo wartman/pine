@@ -93,10 +93,10 @@ class Target extends AutoComponent {
         Timer.delay(() -> activate(Ok(message)), delay);
       });
     }, {
-      hydrate: () -> message,
-      loading: () -> trace('Loading started...'),
-      loaded: value -> trace('$value loaded'),
-      errored: error -> trace(error.message)
+      hydrate: _ -> message,
+      loading: _ -> trace('Loading started...'),
+      loaded: (_, value) -> trace('$value loaded'),
+      errored: (_, error) -> trace(error.message)
     });
     return new Html<'div'>({
       children: [

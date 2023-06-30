@@ -1,6 +1,6 @@
 package pine;
 
-import pine.debug.Debug;
+// import pine.debug.Debug;
 import pine.Component;
 import pine.Disposable;
 import pine.signal.*;
@@ -20,22 +20,22 @@ typedef ResourceOptions<T, E> = {
     Get data synchronously if the parent component is hydrating,
     ensuring that hydration will work properly.
   **/
-  public final ?hydrate:()->T;
+  public final ?hydrate:(context:Component)->T;
   
   /**
     A callback triggered when the Resource starts loading.
   **/
-  public final ?loading:()->Void;
+  public final ?loading:(context:Component)->Void;
 
   /**
     A callback triggered when the Resource has loaded.
   **/
-  public final ?loaded:(value:T)->Void;
+  public final ?loaded:(context:Component, value:T)->Void;
 
   /**
     A callback triggered when the Resource errors out.
   **/
-  public final ?errored:(error:E)->Void;
+  public final ?errored:(context:Component, error:E)->Void;
 }
 
 @:forward(data, loading, activate, dispose)
@@ -45,7 +45,7 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
   }
 
   public inline static function defer<T, E>(fetch, ?options):Resource<T, E> {
-    return new SingleResourceObject(null, fetch, options);
+    return new SimpleResourceObject(null, fetch, options);
   }
 
   public inline static function collect<T, E>(...resources:Resource<T, E>):Resource<Array<T>, E> {
@@ -53,7 +53,7 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
   }
 
   public inline function new(context, fetch, ?options) {
-    this = new SingleResourceObject(context, fetch, options);
+    this = new SimpleResourceObject(context, fetch, options);
   }
 
   @:op(a())
@@ -109,7 +109,7 @@ class ResourceCollectionObject<T, E = kit.Error> implements ResourceObject<Array
   }
 }
 
-class SingleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
+class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
   public final data:Signal<ResourceStatus<T, E>>;
   public final loading:ReadonlySignal<Bool>;
   
@@ -155,24 +155,24 @@ class SingleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
 
     if (context.isComponentHydrating()) {
       if (options.hydrate != null) {
-        data.set(Loaded(options.hydrate()));
+        data.set(Loaded(options.hydrate(context)));
         return;
       }
       // @todo: Throw if we try to hydrate and we don't have a sync
       // way of getting data?
     }
 
-    if (options.loading != null) options.loading();
+    if (options.loading != null) options.loading(context);
     
     data.set(Loading);
     var task = fetch();
     Suspense.maybeFrom(context).ifExtract(Some(suspense), suspense.await(task));
     link = task.handle(result -> switch result {
       case Ok(value):
-        if (options.loaded != null) options.loaded(value);
+        if (options.loaded != null) options.loaded(context, value);
         data.set(Loaded(value));
       case Error(error):
-        if (options.errored != null) options.errored(error);
+        if (options.errored != null) options.errored(context, error);
         data.set(Error(error));
     });
   }
