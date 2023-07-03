@@ -1,5 +1,6 @@
 package pine;
 
+import pine.Disposable.DisposableItem;
 import pine.debug.Debug;
 import pine.internal.Slot;
 import pine.signal.Observer;
@@ -69,6 +70,9 @@ final class Suspense extends Component {
         }
       default:
     });
+    // @todo: This will probably end up adding too many disposables.
+    // We should update things so that links are removed whenever a 
+    // Task completes.
     addDisposable(() -> {
       link?.cancel();
       link = null;

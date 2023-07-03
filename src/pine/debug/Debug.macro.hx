@@ -10,7 +10,7 @@ using haxe.macro.ExprTools;
 function warn(e) {
   if (Compiler.getConfiguration().debug) {
     // @todo: Come up with a better way to trace things
-    return macro trace($e);
+    return macro @:pos(e.pos) trace($e);
   }
   return macro null;
 }

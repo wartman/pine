@@ -1,7 +1,6 @@
 package pine.signal;
 
-import pine.Disposable.DisposableCollection;
-import pine.Disposable.DisposableHost;
+import pine.Disposable;
 import haxe.Exception;
 import kit.UniqueId;
 import pine.debug.Debug;
@@ -66,7 +65,7 @@ class Observer implements ConsumerNode {
     switch status {
       case Validating:
         throw new PineException('Cycle detected');
-      case Inactive | Valid: 
+      case Inactive | Valid:
         return;
       case Invalid if (!pollProducers()):
         status = Valid;

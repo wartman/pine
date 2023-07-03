@@ -1,5 +1,7 @@
 package pine;
 
+import pine.signal.Graph;
+
 final class Show extends AutoComponent {
   @:observable final condition:Bool;
   final then:()->Child;
@@ -13,9 +15,9 @@ final class Show extends AutoComponent {
 
   function build():Component {
     return new Scope(_ -> if (condition()) {
-      then();
+      untrackValue(then);
     } else if (otherwise != null) {
-      otherwise();
+      untrackValue(otherwise);
     } else {
       new Placeholder();
     });

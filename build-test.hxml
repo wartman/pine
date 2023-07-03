@@ -1,0 +1,12 @@
+-cp src
+-cp test
+
+-lib kit.spec
+
+--debug
+
+-main Run
+
+-js dist/test.js
+
+--cmd node dist/test

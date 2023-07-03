@@ -1,6 +1,5 @@
 package pine;
 
-// import pine.debug.Debug;
 import pine.Component;
 import pine.Disposable;
 import pine.signal.*;
@@ -44,21 +43,25 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
     return new ResourceFactory(context);
   }
 
-  public inline static function defer<T, E>(fetch, ?options):Resource<T, E> {
-    return new SimpleResourceObject(null, fetch, options);
+  public inline static function share<T, E>(fetch):Resource<T, E> {
+    return new SharedResourceObject<T, E>(fetch);
   }
 
   public inline static function collect<T, E>(...resources:Resource<T, E>):Resource<Array<T>, E> {
-    return new ResourceCollectionObject(...resources);
+    return new ResourceCollectionObject<T, E>(...resources);
   }
 
   public inline function new(context, fetch, ?options) {
-    this = new SimpleResourceObject(context, fetch, options);
+    this = new SimpleResourceObject<T, E>(context, fetch, options);
   }
 
   @:op(a())
   public inline function sure() {
     return this.sure();
+  }
+
+  public function createChild(context:Component, ?options):Resource<T, E> {
+    return new InheritedResourceObject<T, E>(this, context, options);
   }
 }
 
@@ -66,15 +69,18 @@ interface ResourceObject<T, E = kit.Error> extends Disposable {
   public final data:ReadonlySignal<ResourceStatus<T, E>>;
   public final loading:ReadonlySignal<Bool>;
   public function sure():T;
-  public function activate(context:Component):Resource<T, E>;
 }
 
 class ResourceCollectionObject<T, E = kit.Error> implements ResourceObject<Array<T>, E> {
   public final data:ReadonlySignal<ResourceStatus<Array<T>, E>>;
   public final loading:ReadonlySignal<Bool>;
+
+  final disposables:DisposableCollection = new DisposableCollection();
   final resources:Array<Resource<T, E>>;
 
   public function new(...resources:Resource<T, E>) {
+    var previousOwner = setCurrentOwner(Some(disposables));
+  
     this.resources = resources.toArray();
     data = new Computation(() -> {
       var status:ResourceStatus<Array<T>, E> = Loaded([]);
@@ -92,6 +98,15 @@ class ResourceCollectionObject<T, E = kit.Error> implements ResourceObject<Array
       return status;
     });
     loading = data.map(status -> status == Loading);
+
+    setCurrentOwner(previousOwner);
+    
+    switch getCurrentOwner() {
+      case Some(owner):
+        owner.addDisposable(this);
+      case None:
+        // noop
+    }
   }
 
   public function sure():Array<T> {
@@ -100,12 +115,7 @@ class ResourceCollectionObject<T, E = kit.Error> implements ResourceObject<Array
   }
 
   public function dispose() {
-    // noop
-  }
-
-  public function activate(context:Component):Resource<Array<T>, E> {
-    for (res in resources) res.activate(context);
-    return this;
+    disposables.dispose();
   }
 }
 
@@ -116,30 +126,24 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
   final fetch:Computation<Task<T, E>>;
   final options:ResourceOptions<T, E>;
   final disposables:DisposableCollection = new DisposableCollection();
+  final context:Component;
 
-  var context:Signal<Null<Component>> = new Signal(null);
   var link:Null<Cancellable> = null;
 
-  public function new(context:Null<Component>, fetch, ?options:ResourceOptions<T, E>) {
-    this.fetch = new Computation(fetch);
+  public function new(context:Component, fetch, ?options:ResourceOptions<T, E>) {
+    var previousOwner = setCurrentOwner(Some(disposables));
+
+    this.context = context;
     this.options = options ?? {};
+    this.fetch = new Computation(fetch);
+    this.data = new Signal(Loading);
+    this.loading = data.map(data -> data == Loading);
 
-    data = new Signal(Loading);
-    loading = data.map(status -> status == Loading);
+    Observer.track(process);
 
-    if (context != null) activate(context);
+    setCurrentOwner(previousOwner);
 
-    withOwner(disposables, () -> Observer.track(process));
-  }
-
-  public function activate(newContext:Component):Resource<T, E> {
-    if (context.peek() == newContext) return this;
-    
-    context.peek()?.removeDisposable(this);
-    newContext.addDisposable(this);
-    context.set(newContext);
-
-    return this;
+    context.addDisposable(this);
   }
 
   public function sure():T {
@@ -149,9 +153,6 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
 
   function process() {
     if (link != null) link.cancel();
-    
-    var context = this.context.get();
-    if (context == null) return;
 
     if (context.isComponentHydrating()) {
       if (options.hydrate != null) {
@@ -161,10 +162,11 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
       // @todo: Throw if we try to hydrate and we don't have a sync
       // way of getting data?
     }
+    
+    data.set(Loading);
 
     if (options.loading != null) options.loading(context);
     
-    data.set(Loading);
     var task = fetch();
     Suspense.maybeFrom(context).ifExtract(Some(suspense), suspense.await(task));
     link = task.handle(result -> switch result {
@@ -179,12 +181,116 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
 
   public function dispose() {
     disposables.dispose();
-    if (link != null) {
-      link.cancel();
-      link = null;
-    }
+    link?.cancel();
+    link = null;
   }
 }
+
+class SharedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
+  public final data:Signal<ResourceStatus<T, E>>;
+  public final loading:ReadonlySignal<Bool>;
+  
+  final fetch:Computation<Task<T, E>>;
+  final disposables:DisposableCollection = new DisposableCollection();
+  
+  var link:Null<Cancellable> = null;
+
+  public function new(fetch) {
+    var previousOwner = setCurrentOwner(Some(disposables));
+
+    this.fetch = new Computation(fetch);
+    this.data = new Signal(Loading);
+    this.loading = data.map(data -> data == Loading);
+
+    Observer.track(process);
+
+    setCurrentOwner(previousOwner);
+
+    switch getCurrentOwner() {
+      case Some(owner):
+        owner.addDisposable(this);
+      case None:
+        // noop
+    }
+  }
+
+  public function sure():T {
+    data.get().extract(Loaded(value));
+    return value;
+  }
+  
+  function process() {
+    if (link != null) link.cancel();
+    data.set(Loading);
+    var task = fetch();
+    link = task.handle(result -> switch result {
+      case Ok(value):
+        data.set(Loaded(value));
+      case Error(error):
+        data.set(Error(error));
+    });
+  }
+
+  public function dispose() {
+    disposables.dispose();
+    link?.cancel();
+    link = null;
+  }
+}
+
+class InheritedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
+  public final data:ReadonlySignal<ResourceStatus<T, E>>;
+  public final loading:ReadonlySignal<Bool>;
+
+  final options:ResourceOptions<T, E>;
+  final context:Component;
+  final disposables:DisposableCollection = new DisposableCollection();
+
+  public function new(parent:Resource<T, E>, context:Component, ?options) {
+    var previousOwner = setCurrentOwner(Some(disposables));
+
+    this.options = options = options ?? {};
+    this.context = context;
+    this.data = new Computation(() -> switch parent.data() {
+      case Loading if (options.hydrate != null && context.isComponentHydrating()):
+        Loaded(options.hydrate(context));
+      case Loading:
+        if (options.loading != null) options.loading(context);
+
+        // // @todo: This is very dicey and likely to explode.
+        // Suspense.maybeFrom(context).ifExtract(Some(suspense), suspense.await(new Task(activate -> {
+        //   Observer.track(() -> switch parent.data() {
+        //     case Loaded(value): activate(Ok(value));
+        //     case Error(e): activate(Error(e));
+        //     case Loading: // noop
+        //   });
+        // })));
+
+        Loading;
+      case Loaded(value):
+        if (options.loaded != null) options.loaded(context, value);
+        Loaded(value);
+      case Error(e):
+        if (options.errored != null) options.errored(context, e);
+        Error(e);
+    });
+    this.loading = this.data.map(data -> data == Loading);
+
+    setCurrentOwner(previousOwner);
+
+    context.addDisposable(this);
+  }
+
+  public function sure():T {
+    data.get().extract(Loaded(value));
+    return value;
+  }
+
+  public function dispose() {
+    disposables.dispose();
+  }
+}
+
 
 abstract ResourceFactory(Component) {
   public inline function new(context) {

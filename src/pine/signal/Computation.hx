@@ -35,7 +35,7 @@ class ComputationObject<T> extends Observer implements ProducerNode {
     super(() -> {
       var newValue = computation();
       switch value {
-        case Some(oldValue) if (this.equals(oldValue, newValue)): 
+        case Some(oldValue) if (this.equals(oldValue, newValue)):
           // noop
         case Some(_):
           version.increment();

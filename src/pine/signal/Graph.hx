@@ -113,7 +113,7 @@ function batch(compute:()->Void) {
 
 function untrack(compute:()->Void) {
   var prev = setCurrentConsumer(None);
-  batch(compute);
+  compute();
   setCurrentConsumer(prev);
 }
 
