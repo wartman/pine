@@ -1,6 +1,5 @@
 package pine;
 
-import pine.Disposable.DisposableItem;
 import pine.debug.Debug;
 import pine.internal.Slot;
 import pine.signal.Observer;
@@ -9,7 +8,7 @@ import pine.signal.Signal;
 using Kit;
 
 enum SuspenseStatus {
-  Suspended(remaining:Array<Task<Any, Any>>);
+  Suspended(remaining:Array<{}>);
   Ready;
 }
 
@@ -44,25 +43,26 @@ final class Suspense extends Component {
     this.propagateSuspension = props.propagateSuspension ?? true;
   }
 
-  public function await<T, E>(task:Task<T, E>) {
+  public function await(item:SuspenseLink) {
     if (propagateSuspension) {
       Suspense
         .maybeFrom(this)
-        .ifExtract(Some(suspense), suspense.await(task));
+        .ifExtract(Some(suspense), suspense.await(item));
     }
 
     switch status.peek() {
-      case Suspended(remaining) if (remaining.contains(task)):
+      case Suspended(remaining) if (remaining.contains(item.value)):
         return;
       case Suspended(remaining):
-        status.set(Suspended(remaining.concat([task])));
+        status.set(Suspended(remaining.concat([item.value])));
       case Ready:
         if (onSuspended != null) onSuspended();
-        status.set(Suspended([task]));
+        status.set(Suspended([item.value]));
     }
-    var link:Null<Cancellable> = task.handle(_ -> switch status.peek() {
-      case Suspended(remaining) if (remaining.contains(task)):
-        var remaining = remaining.filter(o -> o != task);
+
+    var link:Null<Cancellable> = item.subscribe(() -> switch status.peek() {
+      case Suspended(remaining) if (remaining.contains(item.value)):
+        var remaining = remaining.filter(o -> o != item.value);
         if (remaining.length == 0) {
           status.set(Ready);  
         } else {
@@ -194,5 +194,24 @@ final class Suspense extends Component {
     if (!child.isComponentDisposed()) {
       child.dispose();
     }
+  }
+}
+
+typedef SuspenseLinkObject = {
+  public final value:{};
+  public final subscribe:(done:()->Void)->Cancellable;
+}
+
+@:forward
+abstract SuspenseLink(SuspenseLinkObject) from SuspenseLinkObject {
+  @:from public static function ofTask(task:Task<Any, Any>) {
+    return new SuspenseLink(task, done -> task.handle(_ -> done()));
+  }
+
+  public function new(value, subscribe) {
+    this = {
+      value: value,
+      subscribe: subscribe
+    };
   }
 }

@@ -1,10 +1,10 @@
 package pine.signal;
 
-import kit.UniqueId;
 import pine.debug.Debug;
 import pine.signal.Computation;
 import pine.signal.Graph;
 
+using Kit;
 using Lambda;
 
 @:forward

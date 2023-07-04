@@ -202,7 +202,17 @@ class SharedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
     this.data = new Signal(Loading);
     this.loading = data.map(data -> data == Loading);
 
-    Observer.track(process);
+    Observer.track(() -> {
+      link?.cancel();
+      data.set(Loading);
+      var task = fetch();
+      link = task.handle(result -> switch result {
+        case Ok(value):
+          data.set(Loaded(value));
+        case Error(error):
+          data.set(Error(error));
+      });
+    });
 
     setCurrentOwner(previousOwner);
 
@@ -247,7 +257,8 @@ class InheritedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> 
   final disposables:DisposableCollection = new DisposableCollection();
 
   public function new(parent:Resource<T, E>, context:Component, ?options) {
-    var previousOwner = setCurrentOwner(Some(disposables));
+    final previousOwner = setCurrentOwner(Some(disposables));
+    final id = new UniqueId();
 
     this.options = options = options ?? {};
     this.context = context;
@@ -256,16 +267,18 @@ class InheritedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> 
         Loaded(options.hydrate(context));
       case Loading:
         if (options.loading != null) options.loading(context);
-
-        // // @todo: This is very dicey and likely to explode.
-        // Suspense.maybeFrom(context).ifExtract(Some(suspense), suspense.await(new Task(activate -> {
-        //   Observer.track(() -> switch parent.data() {
-        //     case Loaded(value): activate(Ok(value));
-        //     case Error(e): activate(Error(e));
-        //     case Loading: // noop
-        //   });
-        // })));
-
+        Suspense.maybeFrom(context).ifExtract(Some(suspense), suspense.await({
+          value: id,
+          subscribe: done -> {
+            var observer = Observer.transient(cancel -> switch parent.data() {
+              case Loaded(_) | Error(_):
+                cancel();
+                done();
+              default:
+            });
+            () -> observer.dispose(); 
+          }
+        }));
         Loading;
       case Loaded(value):
         if (options.loaded != null) options.loaded(context, value);

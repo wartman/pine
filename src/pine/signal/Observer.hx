@@ -24,6 +24,10 @@ class Observer implements ConsumerNode {
     return new Observer(handler);
   }
 
+  public static function transient(handler) {
+    return new TransientObserver(handler);
+  }
+
   public static inline function untrack(handler) {
     pine.signal.Graph.untrack(handler);
   }
@@ -129,5 +133,12 @@ class Observer implements ConsumerNode {
     disposables.dispose();
     status = Inactive;
     unbindAll();
+  }
+}
+
+// @todo: Maybe implement this in some other way?
+private class TransientObserver extends Observer {
+  public function new(handler:(cancel:()->Void)->Void) {
+    super(() -> handler(this.dispose));
   }
 }
