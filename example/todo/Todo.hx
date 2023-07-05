@@ -39,14 +39,8 @@ enum abstract TodoVisibility(String) from String to String {
   final Active;
 }
 
-typedef TodoProvider = Provider<TodoStore>;
-
-class TodoStore extends Record {
+class TodoStore extends Record implements Providable {
   static inline final storageId = 'pine-todo-store';
-
-  public inline static function from(context:Component) {
-    return TodoProvider.from(context);
-  }
 
   public static function load() {
     var data = js.Browser.window.localStorage.getItem(storageId);
@@ -82,7 +76,8 @@ class TodoStore extends Record {
   @:computed public final total:Int = todos().length;
   @:computed public final completed:Int = total() - todos().filter(todo -> !todo.isCompleted()).length;
   @:computed public final remaining:Int = total() - todos().filter(todo -> todo.isCompleted()).length;
-  
+
+  @:action
   public function addTodo(description:String) {
     uid.update(id -> id + 1);
     todos.update(todos -> [ new Todo({
@@ -93,10 +88,12 @@ class TodoStore extends Record {
     }) ].concat(todos));
   }
 
+  @:action
   public function removeTodo(todo:Todo) {
     todos.update(todos -> todos.filter(t -> t != todo));
   }
 
+  @:action
   public function removeCompletedTodos() {
     todos.update(todos -> todos.filter(t -> !t.isCompleted.peek()));
   }
@@ -112,7 +109,7 @@ class TodoStore extends Record {
 
 class TodoApp extends AutoComponent {
   function build() {
-    return new TodoProvider({
+    return TodoStore.provide({
       value: TodoStore.load(),
       child: store -> new Html<'div'>({
         className: 'todomvc-wrapper',
