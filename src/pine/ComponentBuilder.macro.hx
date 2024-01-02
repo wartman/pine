@@ -51,7 +51,7 @@ class ComponentBuilder implements Builder {
       var name = prop.name;
       var field = builder.findField(name).orThrow();
       switch field.kind {
-        case FVar(_, _) if (!field.access.contains(AFinal) && !!field.access.contains(AStatic)):
+        case FVar(_, _) if (!field.access.contains(AFinal) && !field.access.contains(AStatic)):
           var withName = 'with' + name.charAt(0).toUpperCase() + name.substr(1);
           builder.add(macro class {
             public function $withName(value) {

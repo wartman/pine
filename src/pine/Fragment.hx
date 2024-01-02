@@ -2,7 +2,7 @@ package pine;
 
 import pine.view.IteratorView.IteratorSlot;
 
-class Fragment implements Builder {
+class Fragment implements ViewBuilder {
   public inline static function of(children) {
     return new Fragment(children);
   }
@@ -11,13 +11,13 @@ class Fragment implements Builder {
     return new Fragment([]);
   }
 
-  var children:Array<Builder>;
+  var children:Array<ViewBuilder>;
 
   public function new(children) {
     this.children = children;
   }
 
-  public function append(...child:Builder) {
+  public function append(...child:ViewBuilder) {
     children = children.concat(child.toArray());
     return this;
   }
@@ -28,7 +28,7 @@ class Fragment implements Builder {
 }
 
 class FragmentView extends View {
-  final children:Array<Builder>;
+  final children:Array<ViewBuilder>;
   final marker:View;
   
   var views:Array<View> = [];
@@ -41,7 +41,7 @@ class FragmentView extends View {
     var previous = marker;
 
     for (index => child in children) {
-      var view = child.createView(this, new IteratorSlot(this.slot.index, index, previous));
+      var view = child.createView(this, new IteratorSlot(this.slot.index, index, previous.getPrimitive()));
       views.push(view);
       previous = view;
     }
@@ -68,7 +68,7 @@ class FragmentView extends View {
     marker.setSlot(slot);
     var previous = marker;
     for (index => child in views) {
-      child.setSlot(new IteratorSlot(slot.index, index, previous));
+      child.setSlot(new IteratorSlot(slot.index, index, previous.getPrimitive()));
       previous = child;
     }
   }

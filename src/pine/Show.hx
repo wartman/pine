@@ -3,7 +3,7 @@ package pine;
 import pine.signal.Signal;
 import pine.view.TrackedProxyView;
 
-class Show implements Builder {
+class Show implements ViewBuilder {
   public static inline function when(condition, successBranch) {
     return new Show(condition, successBranch);
   }

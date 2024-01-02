@@ -4,7 +4,7 @@ import pine.Disposable;
 
 using Lambda;
 
-class Provider<T:Disposable> implements Builder {
+class Provider<T:Disposable> implements ViewBuilder {
   public inline static function provide<T:Disposable>(value:T):Provider<T> {
     return new Provider(value);
   } 
@@ -30,7 +30,7 @@ class ProviderView<T:Disposable> extends View {
   final value:T;
   final child:View;
 
-  public function new(parent, adaptor, slot, children:Array<Builder>, value) {
+  public function new(parent, adaptor, slot, children:Array<ViewBuilder>, value) {
     super(parent, adaptor, slot);
     this.value = value;
     this.child = Fragment.of(children).createView(this, slot);

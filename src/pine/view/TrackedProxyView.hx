@@ -7,7 +7,7 @@ class TrackedProxyView extends View {
   
   var child:Null<View> = null;
   
-  public function new(parent, adaptor, slot, render:(context:Context)->Builder) {
+  public function new(parent, adaptor, slot, render:(context:Context)->ViewBuilder) {
     super(parent, adaptor, slot);
     link = new Observer(() -> {
       child?.dispose();

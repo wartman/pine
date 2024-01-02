@@ -7,7 +7,7 @@ class UntrackedProxyView extends View {
   final child:View;
   final disposables = new DisposableCollection();
   
-  public function new(parent, adaptor, slot, render:(context:Context)->Builder) {
+  public function new(parent, adaptor, slot, render:(context:Context)->ViewBuilder) {
     super(parent, adaptor, slot);
     child = withOwnedValue(disposables, () -> {
       untrackValue(() -> render(this).createView(this, this.slot));

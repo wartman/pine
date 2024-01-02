@@ -2,12 +2,12 @@ package pine;
 
 import pine.view.TrackedProxyView;
 
-final class Scope implements Builder {
+final class Scope implements ViewBuilder {
   public static inline function wrap(render) {
     return new Scope(render);
   }
 
-  final render:(context:Context)->Builder;
+  final render:(context:Context)->ViewBuilder;
 
   public function new(render) {
     this.render = render;

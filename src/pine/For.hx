@@ -3,13 +3,13 @@ package pine;
 import pine.view.IteratorView;
 import pine.signal.Signal.ReadOnlySignal;
 
-class For<T:{}> implements Builder {
+class For<T:{}> implements ViewBuilder {
   public static inline function each<T:{}>(items, render) {
     return new For<T>(items, render);
   }
 
   final items:ReadOnlySignal<Array<T>>;
-  final render:(item:T, context:Context)->Builder;
+  final render:(item:T, context:Context)->ViewBuilder;
 
   public function new(items, render) {
     this.items = items;

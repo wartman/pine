@@ -11,7 +11,7 @@ using Lambda;
 // @todo: Add an efficient template-based solution we can
 // use with macro-parsed xml. See what Solid is doing. 
 
-class Html implements Builder {
+class Html implements ViewBuilder {
   public static inline function build(tag:String) {
     return new Html(tag);
   }
@@ -19,7 +19,7 @@ class Html implements Builder {
   final tag:String;
   final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
   
-  var views:Array<Builder> = [];
+  var views:Array<ViewBuilder> = [];
   var refCallback:Null<(primitive:Dynamic)->Void> = null;
 
   public function new(tag) {
@@ -78,7 +78,7 @@ class HtmlView extends View {
     slot,
     tag,
     attributes,
-    children:Array<Builder>,
+    children:Array<ViewBuilder>,
     ref:Null<(primitive:Dynamic)->Void>
   ) {
     super(parent, adaptor, slot);
@@ -95,7 +95,7 @@ class HtmlView extends View {
     
     var previous:Null<View> = null;
     for (index => child in children) {
-      var childView = child.createView(this, new Slot(index, previous));
+      var childView = child.createView(this, new Slot(index, previous?.getPrimitive()));
       this.children.push(childView);
       previous = childView;
     }

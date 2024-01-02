@@ -2,7 +2,7 @@ package pine;
 
 import pine.Text.TextView;
 
-class Placeholder implements Builder {
+class Placeholder implements ViewBuilder {
   public inline static function build() {
     return new Placeholder();
   }

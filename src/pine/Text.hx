@@ -4,7 +4,7 @@ import pine.signal.Computation;
 import pine.signal.Observer;
 import pine.signal.Signal;
 
-abstract Text(TextBuilder) to Builder to Child {
+abstract Text(TextBuilder) to ViewBuilder to Child {
   public inline static function build(content) {
     return new Text(content);
   }
@@ -50,7 +50,7 @@ abstract Text(TextBuilder) to Builder to Child {
   }
 }
 
-class TextBuilder implements Builder {
+class TextBuilder implements ViewBuilder {
   final content:ReadOnlySignal<String>;
 
   public function new(content) {

@@ -3,6 +3,7 @@ package pine.html.client;
 import js.Browser;
 import js.html.Element;
 import pine.debug.Debug;
+import pine.template.*;
 
 using StringTools;
 
@@ -11,17 +12,17 @@ inline extern final svgNamespace = 'http://www.w3.org/2000/svg';
 class ClientAdaptor implements Adaptor {
   public function new() {}
 
-	public function createContainerPrimitive():Dynamic {
-		return createPrimitive('div');
-	}
+  public function createContainerPrimitive():Dynamic {
+    return createPrimitive('div');
+  }
 
-	public function createButtonPrimitive():Dynamic {
-		return createPrimitive('button');
-	}
+  public function createButtonPrimitive():Dynamic {
+    return createPrimitive('button');
+  }
 
-	public function createInputPrimitive():Dynamic {
-		return createPrimitive('input');
-	}
+  public function createInputPrimitive():Dynamic {
+    return createPrimitive('input');
+  }
 
   public function createPrimitive(name:String):Dynamic {
     return name.startsWith('svg:')
@@ -128,7 +129,7 @@ class ClientAdaptor implements Adaptor {
   public function insertPrimitive(primitive:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
     var el:js.html.Element = primitive;
     if (slot != null && slot.previous != null) {
-      var relative:js.html.Element = slot.previous.getPrimitive();
+      var relative:js.html.Element = slot.previous;
       relative.after(el);
     } else {
       var parent:js.html.Element = findParent();
@@ -158,12 +159,20 @@ class ClientAdaptor implements Adaptor {
       return;
     }
 
-    var relative:js.html.Element = to.previous.getPrimitive();
+    var relative:js.html.Element = to.previous;
     assert(relative != null);
     relative.after(el);
   }
 
   public function removePrimitive(primitive:Dynamic, slot:Null<Slot>) {
     (primitive:Element).remove();
+  }
+
+  public function createTemplate(html:String):Template {
+    return new ClientTemplate(html);
+  }
+
+  public function createCursor(primitive:Dynamic):Cursor {
+    return new ClientCursor(primitive);
   }
 }

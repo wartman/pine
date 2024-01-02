@@ -2,7 +2,7 @@ package pine;
 
 class Slot {
   public final index:Int;
-  public final previous:Null<View>;
+  public final previous:Null<Dynamic>;
 
   public function new(index, previous) {
     this.index = index;

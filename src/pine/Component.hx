@@ -3,7 +3,7 @@ package pine;
 import pine.view.UntrackedProxyView;
 
 @:autoBuild(pine.ComponentBuilder.build())
-abstract class Component<Result:Builder = Builder> implements Builder {
+abstract class Component<Result:ViewBuilder = ViewBuilder> implements ViewBuilder {
   var plugins:Array<(builder:Result)->Result> = [];
 
   public function addPlugin<T:Component<Result>>(plugin:(builder:Result)->Result):T {

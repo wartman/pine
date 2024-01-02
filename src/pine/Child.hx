@@ -3,11 +3,11 @@ package pine;
 import pine.signal.Computation;
 import pine.signal.Signal;
 
-abstract Child(Builder) 
+abstract Child(ViewBuilder) 
   from Text
   from Component 
-  from Builder
-  to Builder 
+  from ViewBuilder
+  to ViewBuilder 
 {
   @:from
   public inline static function ofComputationString(content:Computation<String>):Child {

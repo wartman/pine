@@ -5,7 +5,7 @@ import pine.signal.Signal;
 
 class IteratorView<T:{}> extends View {
   final items:ReadOnlySignal<Array<T>>;
-  final render:(item:T, context:Context)->Builder;
+  final render:(item:T, context:Context)->ViewBuilder;
   final marker:View;
   final itemToViewsMap:Map<T, View> = [];
   final link:Disposable;
@@ -35,10 +35,10 @@ class IteratorView<T:{}> extends View {
       for (index => item in items) {
         var view = itemToViewsMap.get(item);
         if (view == null) {
-          view = render(item, this).createView(this, new IteratorSlot(this.slot.index, index, previous));
+          view = render(item, this).createView(this, new IteratorSlot(this.slot.index, index, previous.getPrimitive()));
           itemToViewsMap.set(item, view);
         } else {
-          view.setSlot(new IteratorSlot(this.slot.index, index, previous));
+          view.setSlot(new IteratorSlot(this.slot.index, index, previous.getPrimitive()));
         }
         next.push(view);
         previous = view;
@@ -69,7 +69,7 @@ class IteratorView<T:{}> extends View {
     marker.setSlot(slot);
     var previous = marker;
     for (index => child in children) {
-      child.setSlot(new IteratorSlot(slot.index, index, previous));
+      child.setSlot(new IteratorSlot(slot.index, index, previous.getPrimitive()));
       previous = child;
     }
   }

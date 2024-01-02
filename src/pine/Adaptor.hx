@@ -1,5 +1,7 @@
 package pine;
 
+import pine.template.*;
+
 interface Adaptor {
   public function createContainerPrimitive():Dynamic;
   public function createPrimitive(name:String):Dynamic;
@@ -11,4 +13,6 @@ interface Adaptor {
   public function insertPrimitive(primitive:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic):Void;
   public function movePrimitive(primitive:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic):Void;
   public function removePrimitive(primitive:Dynamic, slot:Null<Slot>):Void;
+  public function createTemplate(raw:String):Template;
+  public function createCursor(primitive:Dynamic):Cursor;
 }

@@ -9,7 +9,7 @@ class Root {
 
   final target:Dynamic;
   final adaptor:Adaptor;
-  final render:(context:Context)->Builder;
+  final render:(context:Context)->ViewBuilder;
 
   public function new(target, adaptor, render) {
     this.target = target;
@@ -28,7 +28,7 @@ class RootView extends View {
 
   var child:Null<View> = null;
   
-  public function new(adaptor, target, render:(context:Context)->Builder) {
+  public function new(adaptor, target, render:(context:Context)->ViewBuilder) {
     super(null, adaptor, new Slot(0, null));
     this.target = target;
     this.link = Observer.root(() -> {

@@ -4,8 +4,8 @@ import pine.signal.Computation;
 import pine.signal.Signal;
 
 @:forward
-abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<Builder> {
-  @:from public inline static function ofBuilder(child:Builder):Children {
+abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<ViewBuilder> {
+  @:from public inline static function ofBuilder(child:ViewBuilder):Children {
     return [ child ];
   }
 
