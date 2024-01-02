@@ -119,14 +119,24 @@ class Target extends AutoComponent {
   }
 }
 
+final globalResource = Resource.share(() -> new Task(activate -> {
+  Timer.delay(() -> activate(Ok('Loaded')), 1000);
+}));
+
 class OtherFeatures extends AutoComponent {
   function build() {
-    var res = Resource.from(this).fetch(() -> new Task(activate -> {
-      Timer.delay(() -> activate(Ok('Loaded')), 1000);
-    }));
     return new Suspense({
       propagateSuspension: false,
-      child: new Show(res.loading, () -> 'Loading...', () -> res()) 
+      onSuspended: () -> {
+        trace('Suspended');
+      },
+      onComplete: () -> {
+        trace('Loaded');
+      },
+      child: new Scope(context -> {
+        var res = globalResource.bind(context);
+        return new Show(res.loading, () -> 'Loading...', () -> res()); 
+      }, { untrack: true })
     });
   }
 }

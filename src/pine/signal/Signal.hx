@@ -10,7 +10,7 @@ using Lambda;
 @:forward
 abstract Signal<T>(SignalObject<T>)
   from SignalObject<T>
-  to ReadonlySignal<T> 
+  to ReadOnlySignal<T> 
 {
   @:from public static function ofValue<T>(value:T):Signal<T> {
     return new Signal(value);
@@ -42,7 +42,7 @@ class SignalObject<T> implements ProducerNode {
         owner.addDisposable(this);
       case None:
         // This should be fine for Signals -- if there is
-        // no Owner, we can assume that this is a Global signal.
+        // no Owner, we can assume that this is a global signal.
     }
   }
 
@@ -89,7 +89,7 @@ class SignalObject<T> implements ProducerNode {
     return value;
   }
 
-  public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
+  public inline function map<R>(transform:(value:T)->R):ReadOnlySignal<R> {
     return new Computation(() -> transform(get()));
   }
 
@@ -127,30 +127,30 @@ class SignalObject<T> implements ProducerNode {
 }
 
 @:forward
-abstract ReadonlySignal<T>(ReadonlySignalObject<T>) 
-  from ReadonlySignalObject<T>
+abstract ReadOnlySignal<T>(ReadOnlySignalObject<T>) 
+  from ReadOnlySignalObject<T>
   from SignalObject<T>
   from ComputationObject<T>
 {
-  @:from public inline static function ofSignal<T>(signal:Signal<T>):ReadonlySignal<T> {
+  @:from public inline static function ofSignal<T>(signal:Signal<T>):ReadOnlySignal<T> {
     return signal;
   }
 
-  @:from public inline static function ofReadonlySignal<T>(signal:ReadonlySignal<T>):ReadonlySignal<T> {
+  @:from public inline static function ofReadOnlySignal<T>(signal:ReadOnlySignal<T>):ReadOnlySignal<T> {
     // This seems daft, but we need this method to ensure `ofValue` doesn't 
     // get used incorrectly.
     return signal;
   }
 
-  @:from public inline static function ofValue<T>(value:T):ReadonlySignal<T> {
-    return new StaticSignal(value);
+  @:from public inline static function ofValue<T>(value:T):ReadOnlySignal<T> {
+    return new Signal(value);
   }
 
   public inline function new(value:T) {
     this = new SignalObject(value);
   }
   
-  public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
+  public inline function map<R>(transform:(value:T)->R):ReadOnlySignal<R> {
     return new Computation(() -> transform(get()));
   }
 
@@ -160,28 +160,8 @@ abstract ReadonlySignal<T>(ReadonlySignalObject<T>)
   }
 }
 
-typedef ReadonlySignalObject<T> = {
+typedef ReadOnlySignalObject<T> = {
   public function get():T;
   public function peek():T;
   public function isInactive():Bool;
-}
-
-class StaticSignal<T> {
-  final value:T;
-
-  public function new(value) {
-    this.value = value;
-  }
-
-  public function get() {
-    return value;
-  }
-
-  public function peek() {
-    return value;
-  }
-
-  public function isInactive() {
-    return true;
-  }
 }

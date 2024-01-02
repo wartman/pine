@@ -4,16 +4,27 @@ import pine.signal.Computation;
 import pine.signal.Signal;
 
 @:forward
-abstract Children(ReadonlySignal<Array<Child>>) 
-  from ReadonlySignal<Array<Child>>
-  from Computation<Array<Child>>
-  to ReadonlySignal<Array<Child>> 
-{
-  @:from public inline static function ofArray(children:Array<Child>):Children {
-    return new ReadonlySignal(children);
+abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<Builder> {
+  @:from public inline static function ofBuilder(child:Builder):Children {
+    return [ child ];
   }
-  
-  @:from public inline static function ofComponent(child:Component):Children {
+
+  @:from
+  public inline static function ofComputationString(content:Computation<String>):Children {
+    return [ content ];
+  }
+
+  @:from
+  public inline static function ofReadOnlySignalString(content:ReadOnlySignal<String>):Children {
+    return [ content ];
+  }
+
+  @:from
+  public inline static function ofSignalString(content:Signal<String>):Children {
+    return [ content ];
+  }
+
+  @:from public inline static function ofText(child:Text):Children {
     return [ child ];
   }
 
@@ -23,13 +34,5 @@ abstract Children(ReadonlySignal<Array<Child>>)
 
   @:from public inline static function ofString(content:String):Children {
     return [ new Text(content) ];
-  }
-
-  @:to public inline function toArray():Array<Component> {
-    return this.peek();
-  }
-
-  @:op(a()) public inline function get() {
-    return this.get();
   }
 }

@@ -62,6 +62,16 @@ function withOwner(owner:DisposableHost, cb:()->Void) {
   setCurrentOwner(prev);
 }
 
+function withOwnedValue<T>(owner:DisposableHost, cb:()->T) {
+  var prev = setCurrentOwner(Some(owner));
+  var value = try cb() catch (e) {
+    setCurrentOwner(prev);
+    throw e;
+  }
+  setCurrentOwner(prev);
+  return value;
+}
+
 inline function getCurrentOwner() {
   return currentOwner;
 }

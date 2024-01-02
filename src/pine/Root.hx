@@ -1,57 +1,62 @@
 package pine;
 
-import pine.debug.Debug;
 import pine.signal.Observer;
-import pine.internal.ObjectHost;
 
-class Root extends Component implements ObjectHost {
-  final object:Dynamic;
-  final build:()->Component;
-  var child:Null<Component>;
-  
-  public function new(object:Dynamic, build, adaptor) {
-    this.object = object;
-    this.build = build;
+class Root {
+  public inline static function build(target, adaptor, render) {
+    return new Root(target, adaptor, render);
+  }
+
+  final target:Dynamic;
+  final adaptor:Adaptor;
+  final render:(context:Context)->Builder;
+
+  public function new(target, adaptor, render) {
+    this.target = target;
     this.adaptor = adaptor;
+    this.render = render;
   }
 
-  public function getObject():Dynamic {
-    return object;
+  public function create():View {
+    return new RootView(adaptor, target, render);
   }
+}
 
-  public function visitChildren(visitor:(child:Component) -> Bool) {
-    if (child != null) visitor(child);
-  }
+class RootView extends View {
+  final target:Dynamic;
+  final link:Disposable;
 
-  public function initialize() {
-    Observer.untrack(() -> {
-      assert(componentBuildStatus != Building);
-      assert(componentLifecycleStatus != Disposed);
-      assert(child == null);
-
-      if (componentLifecycleStatus == Disposing) return;
-
-      switch componentLifecycleStatus {
-        case Hydrating(cursor):
-          componentBuildStatus = Building;
-          child = build();
-          child.hydrate(this, cursor.currentChildren(), slot ?? createSlot(0, null));
-          cursor.next();
-        default:
-          componentBuildStatus = Building;
-          child = build();
-          child.mount(this, slot ?? createSlot(0, null));
-      }
-
-      componentBuildStatus = Built;
+  var child:Null<View> = null;
+  
+  public function new(adaptor, target, render:(context:Context)->Builder) {
+    super(null, adaptor, new Slot(0, null));
+    this.target = target;
+    this.link = Observer.root(() -> {
+      child?.dispose();
+      child = render(this).createView(this, this.slot);
     });
   }
 
-  function initializeObject() {
-    // noop
+  public function findNearestPrimitive():Dynamic {
+    return target;
   }
 
-  function disposeObject() {
-    // noop
+  override function get<T>(type:Class<T>):Null<T> {
+    return null;
+  }
+
+  public function getPrimitive():Dynamic {
+    return target;
+  }
+
+  public function getSlot():Null<Slot> {
+    return slot;
+  }
+
+  public function setSlot(slot:Null<Slot>) {}
+
+  public function dispose() {
+    link.dispose();
+    child?.dispose();
   }
 }

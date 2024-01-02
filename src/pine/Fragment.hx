@@ -1,103 +1,81 @@
 package pine;
 
-import pine.debug.Debug;
-import pine.internal.Reconcile;
-import pine.internal.Slot;
-import pine.signal.Observer;
+import pine.view.IteratorView.IteratorSlot;
 
-class Fragment extends Component {
-  var marker:Null<Component> = null;
-  final children:Children;
+class Fragment implements Builder {
+  public inline static function of(children) {
+    return new Fragment(children);
+  }
+
+  public inline static function empty() {
+    return new Fragment([]);
+  }
+
+  var children:Array<Builder>;
 
   public function new(children) {
     this.children = children;
   }
 
-  public function getObject():Dynamic {
-    var currentChildren = children.peek();
-    var currentLen = currentChildren.length;
-    if (currentLen == 0) {
-      var obj = marker?.getObject();
-      if (obj == null) {
-        error('No object found');
-      }
-      return obj;
-    }
-    return currentChildren[currentLen - 1].getObject();
+  public function append(...child:Builder) {
+    children = children.concat(child.toArray());
+    return this;
   }
 
-  public function initialize() {
-    marker = new Placeholder();
-    marker.mount(this, new FragmentSlot(slot?.index ?? 0, -1, slot?.previous));
-    addDisposable(() -> {
-      marker?.dispose();
-      marker = null;
-    });
-
-    var prevChildren:Array<Component> = [];
-    Observer.track(() -> {
-      assert(componentBuildStatus != Building);
-      assert(componentLifecycleStatus != Disposed);
-
-      if (componentLifecycleStatus == Disposing) return;
-
-      var newChildren = children.get().filter(c -> c != null);
-      
-      componentBuildStatus = Building;
-      
-      switch componentLifecycleStatus {
-        case Hydrating(cursor):
-          prevChildren = hydrateChildren(this, cursor, newChildren);
-        default:
-          prevChildren = reconcileChildren(this, prevChildren, newChildren);
-      }
-
-      componentBuildStatus = Built;
-    });
-
-    addDisposable(() -> prevChildren.resize(0));
-  }
-
-  override function updateSlot(?newSlot:Slot) {
-    super.updateSlot(newSlot);
-    if (marker != null && newSlot != null) {
-      marker.updateSlot(new FragmentSlot(newSlot.index, -1, newSlot.previous));
-      var previous = marker;
-      for (i => child in children.peek()) {
-        child.updateSlot(createSlot(i, previous));
-        previous = child;
-      }
-    }
-  }
-
-  override function createSlot(localIndex:Int, previous:Null<Component>):Slot {
-    var index = slot?.index ?? 0;
-    if (previous == null) previous = marker;
-    return new FragmentSlot(index, localIndex + 1, previous);
-  }
-
-  public function visitChildren(visitor:(child:Component) -> Bool) {
-    for (child in children.peek()) {
-      if (!visitor(child)) break;
-    }
+  public function createView(parent:View, slot:Null<Slot>):View {
+    return new FragmentView(parent, parent.adaptor, slot, children);
   }
 }
 
-class FragmentSlot extends Slot {
-  public final localIndex:Int;
+class FragmentView extends View {
+  final children:Array<Builder>;
+  final marker:View;
+  
+  var views:Array<View> = [];
+  
+  public function new(parent, adaptor, slot, children) {
+    super(parent, adaptor, slot);
+    this.children = children;
+    this.marker = Placeholder.build().createView(this, slot);
 
-  public function new(index, localIndex, previous) {
-    super(index, previous);
-    this.localIndex = localIndex;
+    var previous = marker;
+
+    for (index => child in children) {
+      var view = child.createView(this, new IteratorSlot(this.slot.index, index, previous));
+      views.push(view);
+      previous = view;
+    }
   }
 
-  override function indexChanged(other:Slot):Bool {
-    if (other.index != index)
-      return true;
-    if (other is FragmentSlot) {
-      var otherFragment:FragmentSlot = cast other;
-      return localIndex != otherFragment.localIndex;
+  public function findNearestPrimitive():Dynamic {
+    return parent.findNearestPrimitive();
+  }
+
+  public function getPrimitive():Dynamic {
+    if (views.length == 0) return marker.getPrimitive();
+    return views[views.length - 1].getPrimitive();
+  }
+
+  public function getSlot():Null<Slot> {
+    return slot;
+  }
+
+  public function setSlot(slot:Null<Slot>) {
+    this.slot = slot;
+
+    if (this.slot == null) return;
+
+    marker.setSlot(slot);
+    var previous = marker;
+    for (index => child in views) {
+      child.setSlot(new IteratorSlot(slot.index, index, previous));
+      previous = child;
     }
-    return false;
+  }
+
+  public function dispose() {
+    marker.dispose();
+    for (child in views) child.dispose();
+    views = [];
   }
 }

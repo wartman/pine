@@ -3,15 +3,19 @@ package pine;
 import pine.signal.Computation;
 import pine.signal.Signal;
 
-@:forward
-abstract Child(Component) from Text from Component to Component {
+abstract Child(Builder) 
+  from Text
+  from Component 
+  from Builder
+  to Builder 
+{
   @:from
   public inline static function ofComputationString(content:Computation<String>):Child {
     return new Text(content);
   }
 
   @:from
-  public inline static function ofReadonlySignalString(content:ReadonlySignal<String>):Child {
+  public inline static function ofReadOnlySignalString(content:ReadOnlySignal<String>):Child {
     return new Text(content);
   }
 

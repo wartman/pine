@@ -43,10 +43,6 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
     return new ResourceFactory(context);
   }
 
-  public inline static function share<T, E>(fetch):Resource<T, E> {
-    return new SharedResourceObject<T, E>(fetch);
-  }
-
   public inline static function collect<T, E>(...resources:Resource<T, E>):Resource<Array<T>, E> {
     return new ResourceCollectionObject<T, E>(...resources);
   }
@@ -58,10 +54,6 @@ abstract Resource<T, E = kit.Error>(ResourceObject<T, E>) from ResourceObject<T,
   @:op(a())
   public inline function sure() {
     return this.sure();
-  }
-
-  public function createChild(context:Component, ?options):Resource<T, E> {
-    return new InheritedResourceObject<T, E>(this, context, options);
   }
 }
 
@@ -159,8 +151,6 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
         data.set(Loaded(options.hydrate(context)));
         return;
       }
-      // @todo: Throw if we try to hydrate and we don't have a sync
-      // way of getting data?
     }
     
     data.set(Loading);
@@ -185,125 +175,6 @@ class SimpleResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
     link = null;
   }
 }
-
-class SharedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
-  public final data:Signal<ResourceStatus<T, E>>;
-  public final loading:ReadonlySignal<Bool>;
-  
-  final fetch:Computation<Task<T, E>>;
-  final disposables:DisposableCollection = new DisposableCollection();
-  
-  var link:Null<Cancellable> = null;
-
-  public function new(fetch) {
-    var previousOwner = setCurrentOwner(Some(disposables));
-
-    this.fetch = new Computation(fetch);
-    this.data = new Signal(Loading);
-    this.loading = data.map(data -> data == Loading);
-
-    Observer.track(() -> {
-      link?.cancel();
-      data.set(Loading);
-      var task = fetch();
-      link = task.handle(result -> switch result {
-        case Ok(value):
-          data.set(Loaded(value));
-        case Error(error):
-          data.set(Error(error));
-      });
-    });
-
-    setCurrentOwner(previousOwner);
-
-    switch getCurrentOwner() {
-      case Some(owner):
-        owner.addDisposable(this);
-      case None:
-        // noop
-    }
-  }
-
-  public function sure():T {
-    data.get().extract(Loaded(value));
-    return value;
-  }
-  
-  function process() {
-    if (link != null) link.cancel();
-    data.set(Loading);
-    var task = fetch();
-    link = task.handle(result -> switch result {
-      case Ok(value):
-        data.set(Loaded(value));
-      case Error(error):
-        data.set(Error(error));
-    });
-  }
-
-  public function dispose() {
-    disposables.dispose();
-    link?.cancel();
-    link = null;
-  }
-}
-
-class InheritedResourceObject<T, E = kit.Error> implements ResourceObject<T, E> {
-  public final data:ReadonlySignal<ResourceStatus<T, E>>;
-  public final loading:ReadonlySignal<Bool>;
-
-  final options:ResourceOptions<T, E>;
-  final context:Component;
-  final disposables:DisposableCollection = new DisposableCollection();
-
-  public function new(parent:Resource<T, E>, context:Component, ?options) {
-    final previousOwner = setCurrentOwner(Some(disposables));
-    final id = new UniqueId();
-
-    this.options = options = options ?? {};
-    this.context = context;
-    this.data = new Computation(() -> switch parent.data() {
-      case Loading if (options.hydrate != null && context.isComponentHydrating()):
-        Loaded(options.hydrate(context));
-      case Loading:
-        if (options.loading != null) options.loading(context);
-        Suspense.maybeFrom(context).ifExtract(Some(suspense), suspense.await({
-          value: id,
-          subscribe: done -> {
-            var observer = Observer.transient(cancel -> switch parent.data() {
-              case Loaded(_) | Error(_):
-                cancel();
-                done();
-              default:
-            });
-            () -> observer.dispose(); 
-          }
-        }));
-        Loading;
-      case Loaded(value):
-        if (options.loaded != null) options.loaded(context, value);
-        Loaded(value);
-      case Error(e):
-        if (options.errored != null) options.errored(context, e);
-        Error(e);
-    });
-    this.loading = this.data.map(data -> data == Loading);
-
-    setCurrentOwner(previousOwner);
-
-    context.addDisposable(this);
-  }
-
-  public function sure():T {
-    data.get().extract(Loaded(value));
-    return value;
-  }
-
-  public function dispose() {
-    disposables.dispose();
-  }
-}
-
 
 abstract ResourceFactory(Component) {
   public inline function new(context) {

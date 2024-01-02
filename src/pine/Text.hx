@@ -1,13 +1,14 @@
 package pine;
 
-import pine.debug.Debug;
-import pine.internal.ObjectHost;
-import pine.internal.Slot;
 import pine.signal.Computation;
 import pine.signal.Observer;
 import pine.signal.Signal;
 
-abstract Text(TextComponent) to TextComponent to Component to Child {
+abstract Text(TextBuilder) to Builder to Child {
+  public inline static function build(content) {
+    return new Text(content);
+  }
+
   @:from public inline static function ofString(content:String) {
     return new Text(content);
   }
@@ -20,15 +21,15 @@ abstract Text(TextComponent) to TextComponent to Component to Child {
     return new Text(content + '');
   }
 
-  @:from public inline static function ofStringReadonlySignal(content:ReadonlySignal<String>) {
+  @:from public inline static function ofStringReadOnlySignal(content:ReadOnlySignal<String>) {
     return new Text(content);
   }
 
-  @:from public inline static function ofIntReadonlySignal(content:ReadonlySignal<Int>) {
+  @:from public inline static function ofIntReadOnlySignal(content:ReadOnlySignal<Int>) {
     return new Text(new Computation(() -> content() + ''));
   }
 
-  @:from public inline static function ofFloatReadonlySignal(content:ReadonlySignal<Float>) {
+  @:from public inline static function ofFloatReadOnlySignal(content:ReadOnlySignal<Float>) {
     return new Text(new Computation(() -> content() + ''));
   }
 
@@ -44,71 +45,59 @@ abstract Text(TextComponent) to TextComponent to Component to Child {
     return new Text(new Computation(() -> content() + ''));
   }
 
-  public inline function new(content:ReadonlySignal<String>) {
-    this = new TextComponent(content);
+  public inline function new(content:ReadOnlySignal<String>) {
+    this = new TextBuilder(content);
   }
 }
 
-class TextComponent extends Component implements ObjectHost {
-  final content:ReadonlySignal<String>;
-  var object:Null<Dynamic> = null;
+class TextBuilder implements Builder {
+  final content:ReadOnlySignal<String>;
 
   public function new(content) {
     this.content = content;
   }
 
-  public function initialize() {
-    initializeObject();
-    observeContentChanges();
+  public function createView(parent:View, slot:Null<Slot>):View {
+    return new TextView(parent, parent.adaptor, slot, content);
   }
+}
 
-  function initializeObject() {
-    var adaptor = getAdaptor();
+class TextView extends View {
+  final content:ReadOnlySignal<String>;
+  final primitive:Dynamic;
+  final link:Disposable;
 
-    switch componentLifecycleStatus {
-      case Hydrating(cursor):
-        object = cursor.current();
-        cursor.next();
-      default:
-        object = adaptor.createTextObject(content.peek());
-        adaptor.insertObject(object, slot, findNearestObjectHostAncestor);
-    }
-  }
-
-  function observeContentChanges() {
-    Observer.track(() -> {
-      var text = content();
-      switch componentLifecycleStatus {
-        case Mounting | Hydrating(_):
-        default:
-          getAdaptor().updateTextObject(getObject(), text);
-      }
+  public function new(parent, adaptor, slot, content) {
+    super(parent, adaptor, slot);
+    this.content = content;
+    this.primitive = adaptor.createTextPrimitive(content.peek());
+    this.link = new Observer(() -> {
+      adaptor.updateTextPrimitive(primitive, content());
     });
+
+    adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
   }
 
-  public function visitChildren(visitor:(child:Component) -> Bool) {}
-
-  public function getObject():Dynamic {
-    assert(object != null);
-    return object;
+  public function findNearestPrimitive():Dynamic {
+    return primitive;
   }
 
-  function disposeObject() {
-    if (object != null) {
-      getAdaptor().removeObject(object, slot);
-      object = null;
-    }
+  public function getPrimitive():Dynamic {
+    return primitive;
   }
 
-  override function updateSlot(?newSlot:Slot) {
-    if (slot == newSlot) return;
-    var prevSlot = slot;
-    super.updateSlot(newSlot);
-    getAdaptor().moveObject(getObject(), prevSlot, slot, findNearestObjectHostAncestor);
+  public function getSlot():Null<Slot> {
+    return slot;
   }
 
-  override function dispose() {
-    disposeObject();
-    super.dispose();
+  public function setSlot(slot:Null<Slot>) {
+    var prevSlot = this.slot;
+    this.slot = slot;
+    adaptor.movePrimitive(primitive, prevSlot, slot, parent.findNearestPrimitive);
+  }
+
+  public function dispose() {
+    link.dispose();
+    adaptor.removePrimitive(primitive, slot);
   }
 }

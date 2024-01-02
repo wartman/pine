@@ -4,6 +4,7 @@ import haxe.Json;
 import js.Browser;
 import pine.*;
 import pine.html.*;
+import pine.html.HtmlEvents;
 import pine.html.HtmlAttributes.InputType;
 import pine.html.client.Client;
 import pine.signal.*;
@@ -41,12 +42,8 @@ enum abstract TodoVisibility(String) from String to String {
 
 typedef TodoProvider = Provider<TodoStore>;
 
-class TodoStore extends Record {
+class TodoStore extends Record implements Providable {
   static inline final storageId = 'pine-todo-store';
-
-  public inline static function from(context:Component) {
-    return TodoProvider.from(context);
-  }
 
   public static function load() {
     var data = js.Browser.window.localStorage.getItem(storageId);
@@ -83,6 +80,7 @@ class TodoStore extends Record {
   @:computed public final completed:Int = total() - todos().filter(todo -> !todo.isCompleted()).length;
   @:computed public final remaining:Int = total() - todos().filter(todo -> todo.isCompleted()).length;
   
+  @:action
   public function addTodo(description:String) {
     uid.update(id -> id + 1);
     todos.update(todos -> [ new Todo({
@@ -93,10 +91,12 @@ class TodoStore extends Record {
     }) ].concat(todos));
   }
 
+  @:action
   public function removeTodo(todo:Todo) {
     todos.update(todos -> todos.filter(t -> t != todo));
   }
 
+  @:action
   public function removeCompletedTodos() {
     todos.update(todos -> todos.filter(t -> !t.isCompleted.peek()));
   }
@@ -241,6 +241,11 @@ class TodoContainer extends AutoComponent {
   }
 }
 
+function preventDefault(e:Event) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
 class TodoItem extends AutoComponent {
   @:constant final todo:Todo;
   @:computed final className:String = [
@@ -264,10 +269,7 @@ class TodoItem extends AutoComponent {
             }), 
             new Html<'label'>({
               onDblClick: e -> todo.isEditing.set(true),
-              onClick: e -> {
-                e.preventDefault();
-                e.stopPropagation();
-              },
+              onClick: preventDefault,
               children: [
                 todo.description,
                 new Html<'button'>({

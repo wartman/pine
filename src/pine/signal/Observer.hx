@@ -1,10 +1,10 @@
 package pine.signal;
 
 import pine.Disposable;
-import haxe.Exception;
-import kit.UniqueId;
 import pine.debug.Debug;
 import pine.signal.Graph;
+import haxe.Exception;
+import kit.UniqueId;
 
 enum abstract ObserverStatus(Int) {
   final Pending;
@@ -20,12 +20,22 @@ typedef DependencyLink = {
 } 
 
 class Observer implements ConsumerNode {
-  public static inline function track(handler) {
-    return new Observer(handler);
+  /**
+    Create a root-level Observer. Will return a Disposable
+    that can be used to clean up the observable scope.
+
+    Important: you probably don't need to use this! Prefer
+    `Observer.track` unless you know what you're doing.
+  **/
+  public static inline function root(handler):Disposable {
+    var owner = new DisposableCollection();
+    assert(getCurrentOwner() == None, 'Attempted to use `root` inside an existing scope. Use `track` instead or ensure you are actually calling `root` outside an owner.');
+    withOwner(owner, () -> track(handler));
+    return owner;
   }
 
-  public static function transient(handler) {
-    return new TransientObserver(handler);
+  public static inline function track(handler) {
+    return new Observer(handler);
   }
 
   public static inline function untrack(handler) {
@@ -57,7 +67,7 @@ class Observer implements ConsumerNode {
   public function invalidate() {
     switch status {
       case Validating:
-        throw new PineException('Cycle detected');
+        error('Cycle detected');
       case Invalid | Inactive:
       case Valid | Pending:
         status = Invalid;
@@ -68,7 +78,7 @@ class Observer implements ConsumerNode {
   public function validate() {
     switch status {
       case Validating:
-        throw new PineException('Cycle detected');
+        error('Cycle detected');
       case Inactive | Valid:
         return;
       case Invalid if (!pollProducers()):
@@ -133,12 +143,5 @@ class Observer implements ConsumerNode {
     disposables.dispose();
     status = Inactive;
     unbindAll();
-  }
-}
-
-// @todo: Maybe implement this in some other way?
-private class TransientObserver extends Observer {
-  public function new(handler:(cancel:()->Void)->Void) {
-    super(() -> handler(this.dispose));
   }
 }

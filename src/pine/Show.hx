@@ -1,25 +1,35 @@
 package pine;
 
-import pine.signal.Graph;
+import pine.signal.Signal;
+import pine.view.TrackedProxyView;
 
-final class Show extends AutoComponent {
-  @:observable final condition:Bool;
-  final then:()->Child;
-  final otherwise:Null<()->Child>;
-
-  public function new(condition, then, ?otherwise) {
-    this.condition = condition;
-    this.then = then;
-    this.otherwise = otherwise;
+class Show implements Builder {
+  public static inline function when(condition, successBranch) {
+    return new Show(condition, successBranch);
   }
 
-  function build():Component {
-    return new Scope(_ -> if (condition()) {
-      untrackValue(then);
-    } else if (otherwise != null) {
-      untrackValue(otherwise);
-    } else {
-      new Placeholder();
+  public static inline function unless(condition:ReadOnlySignal<Bool>, successBranch) {
+    return new Show(condition.map(value -> !value), successBranch);
+  }
+
+  final condition:ReadOnlySignal<Bool>;
+  final successBranch:(context:Context)->Child;
+  var failureBranch:Null<(context:Context)->Child> = null;
+
+  public function new(condition, successBranch) {
+    this.condition = condition;
+    this.successBranch = successBranch;
+  }
+
+  public function otherwise(failureBranch) {
+    this.failureBranch = failureBranch;
+    return this;
+  }
+
+  public function createView(parent:View, slot:Null<Slot>):View {
+    return new TrackedProxyView(parent, parent.adaptor, slot, context -> {
+      if (condition()) return successBranch(context);
+      return failureBranch != null ? failureBranch(context) : Placeholder.build();
     });
   }
 }

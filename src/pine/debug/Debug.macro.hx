@@ -17,9 +17,9 @@ function warn(e) {
 
 function error(message:ExprOf<String>) {
   var type = Context.getLocalType();
-  if (Context.unify(type, (macro:pine.Component).toType())) {
-    return macro throw new pine.PineException.PineComponentException($message, this);
-  }
+  // if (Context.unify(type, (macro:pine.Component).toType())) {
+  //   return macro throw new pine.PineException.PineComponentException($message, this);
+  // }
   return macro throw new pine.PineException($message);
 }
 

@@ -1,18 +1,19 @@
 package pine;
 
-import pine.signal.Computation;
+import pine.view.TrackedProxyView;
 
-class Scope extends AutoComponent {
-  final childWithContext:(context:Component)->Component;
-  final options:{ untrack:Bool };
-  
-  public function new(child, ?options) {
-    this.childWithContext = child;
-    this.options = options ?? { untrack: false };
+final class Scope implements Builder {
+  public static inline function wrap(render) {
+    return new Scope(render);
   }
 
-  function build():Component {
-    if (options.untrack) return childWithContext(this);
-    return new Fragment(new Computation(() -> [ childWithContext(this) ]));
+  final render:(context:Context)->Builder;
+
+  public function new(render) {
+    this.render = render;
+  }
+
+  public function createView(parent:View, slot:Null<Slot>):View {
+    return new TrackedProxyView(parent, parent.adaptor, slot, render);
   }
 }

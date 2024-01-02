@@ -1,7 +1,7 @@
 {
   "[haxe]": {
     "editor.formatOnSave": false,
-    "editor.formatOnPaste": false
+    "editor.formatOnPaste": false,
   },
   "cSpell.enableFiletypes": [
     "haxe"

@@ -3,8 +3,6 @@ package pine.html.client;
 import js.Browser;
 import js.html.Element;
 import pine.debug.Debug;
-import pine.internal.*;
-import pine.internal.Slot;
 
 using StringTools;
 
@@ -13,43 +11,43 @@ inline extern final svgNamespace = 'http://www.w3.org/2000/svg';
 class ClientAdaptor implements Adaptor {
   public function new() {}
 
-	public function createContainerObject(attrs:{}):Dynamic {
-		return createCustomObject('div', attrs);
+	public function createContainerPrimitive():Dynamic {
+		return createPrimitive('div');
 	}
 
-	public function createButtonObject(attrs:{}):Dynamic {
-		return createCustomObject('button', attrs);
+	public function createButtonPrimitive():Dynamic {
+		return createPrimitive('button');
 	}
 
-	public function createInputObject(attrs:{}):Dynamic {
-		return createCustomObject('input', attrs);
+	public function createInputPrimitive():Dynamic {
+		return createPrimitive('input');
 	}
 
-  public function createCustomObject(name:String, initialAttrs:{}):Dynamic {
+  public function createPrimitive(name:String):Dynamic {
     return name.startsWith('svg:')
       ? Browser.document.createElementNS(svgNamespace, name.substr(4)) 
       : Browser.document.createElement(name);
   }
 
-  public function createTextObject(value:String):Dynamic {
+  public function createTextPrimitive(value:String):Dynamic {
     return Browser.document.createTextNode(value);
   }
 
-  public function createPlaceholderObject():Dynamic {
-    return createTextObject('');
+  public function createPlaceholderPrimitive():Dynamic {
+    return createTextPrimitive('');
   }
 
-  public function createCursor(object:Dynamic):Cursor {
-    return new ClientCursor(object);
-  }
+  // public function createCursor(primitive:Dynamic):Cursor {
+  //   return new ClientCursor(primitive);
+  // }
 
-  public function updateTextObject(object:Dynamic, value:String) {
-    (object:js.html.Text).textContent = value;
+  public function updateTextPrimitive(primitive:Dynamic, value:String) {
+    (primitive:js.html.Text).textContent = value;
   }
 
   // @todo: Refactor this to be better  
-  public function updateObjectAttribute(object:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool) {
-    var el:Element = object;
+  public function updatePrimitiveAttribute(primitive:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool) {
+    var el:Element = primitive;
     var isSvg = el.namespaceURI == svgNamespace;
     
     if (isHydrating == true) {
@@ -68,12 +66,27 @@ class ClientAdaptor implements Adaptor {
     }
 
     switch name {
-      case 'className':
-        updateObjectAttribute(el, 'class', value);
+      case 'className' | 'class':
+        var oldValue = el.classList.value;
+        var oldNames = Std.string(oldValue ?? '').split(' ').filter(n -> n != null && n != '');
+        var newNames = Std.string(value ?? '').split(' ').filter(n -> n != null && n != '');
+
+        for (name in oldNames) {
+          if (!newNames.contains(name)) {
+            el.classList.remove(name);
+          } else {
+            newNames.remove(name);
+          }
+        }
+
+        if (newNames.length > 0) {
+          el.classList.add(...newNames);
+        }
       case 'xmlns' if (isSvg): // skip
       case 'value' | 'selected' | 'checked' if (!isSvg):
         js.Syntax.code('{0}[{1}] = {2}', el, name, value);
-      case _ if (!isSvg && js.Syntax.code('{0} in {1}', name, el)):
+      // @todo: not sure if this line is a good idea.
+      case _ if (!isSvg && value != null && js.Syntax.code('{0} in {1}', name, el)):
         js.Syntax.code('{0}[{1}] = {2}', el, name, value);
       case 'dataset':
         var map:Map<String, String> = value;
@@ -112,10 +125,10 @@ class ClientAdaptor implements Adaptor {
     return name;
   }
 
-  public function insertObject(object:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
-    var el:js.html.Element = object;
+  public function insertPrimitive(primitive:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
+    var el:js.html.Element = primitive;
     if (slot != null && slot.previous != null) {
-      var relative:js.html.Element = slot.previous.getObject();
+      var relative:js.html.Element = slot.previous.getPrimitive();
       relative.after(el);
     } else {
       var parent:js.html.Element = findParent();
@@ -124,12 +137,12 @@ class ClientAdaptor implements Adaptor {
     }
   }
 
-  public function moveObject(object:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
-    var el:js.html.Element = object;
+  public function movePrimitive(primitive:Dynamic, from:Null<Slot>, to:Null<Slot>, findParent:() -> Dynamic) {
+    var el:js.html.Element = primitive;
 
     if (to == null) {
       if (from != null) {
-        removeObject(object, from);
+        removePrimitive(primitive, from);
       }
       return;
     }
@@ -145,12 +158,12 @@ class ClientAdaptor implements Adaptor {
       return;
     }
 
-    var relative:js.html.Element = to.previous.getObject();
+    var relative:js.html.Element = to.previous.getPrimitive();
     assert(relative != null);
     relative.after(el);
   }
 
-  public function removeObject(object:Dynamic, slot:Null<Slot>) {
-    (object:Element).remove();
+  public function removePrimitive(primitive:Dynamic, slot:Null<Slot>) {
+    (primitive:Element).remove();
   }
 }

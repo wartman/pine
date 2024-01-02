@@ -1,9 +1,9 @@
 package pine.signal;
 
 import pine.Disposable;
-import pine.signal.Signal;
-import pine.signal.Graph;
 import pine.debug.Debug;
+import pine.signal.Graph;
+import pine.signal.Signal;
 
 using Kit;
 using Lambda;
@@ -11,7 +11,7 @@ using Lambda;
 @:forward
 abstract Computation<T>(ComputationObject<T>) 
   from ComputationObject<T> 
-  to ReadonlySignal<T>
+  to ReadOnlySignal<T>
   to Disposable
   to DisposableItem
 {
@@ -66,7 +66,7 @@ class ComputationObject<T> extends Observer implements ProducerNode {
     return resolveValue();
   }
 
-  public inline function map<R>(transform:(value:T)->R):ReadonlySignal<R> {
+  public inline function map<R>(transform:(value:T)->R):ReadOnlySignal<R> {
     return new Computation(() -> transform(get()));
   }
 

@@ -2,6 +2,7 @@
 -cp example
 
 -lib kit
+-lib breeze
 
 -D js-es=6
 -D analyzer-optimize
@@ -9,7 +10,7 @@
 
 --debug
 --dce full
---macro nullSafety("pine")
+# --macro nullSafety("pine")
 
--main Examples
+-main Todo
 -js dist/assets/index.js

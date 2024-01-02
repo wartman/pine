@@ -1,39 +1,65 @@
 package pine;
 
-import pine.debug.Debug;
+import pine.Disposable;
 
-@:genericBuild(pine.macro.ProviderBuilder.buildGeneric())
-class Provider<T> {}
+using Lambda;
 
-abstract class ProviderComponent<T> extends AutoComponent {
-  final childWithValue:(value:T)->Component;
-  final disposeOfValue:(value:T)->Void;
-  var value:Null<T> = null;
+class Provider<T:Disposable> implements Builder {
+  public inline static function provide<T:Disposable>(value:T):Provider<T> {
+    return new Provider(value);
+  } 
 
-  public function new(props:{
-    value:T,
-    child:(value:T) -> Component,
-    dispose:(value:T) -> Void,
-  }) {
-    this.value = props.value;
-    this.childWithValue = props.child;
-    this.disposeOfValue = props.dispose;
+  final value:T;
+  var views:Children = [];
+
+  public function new(value) {
+    this.value = value;
   }
 
-  public function getValue():Null<T> {
-    return value;
+  public function children(...children:Children) {
+    views = views.concat(children.toArray().flatten());
+    return this;
   }
 
-  public function build() {
-    assert(value != null);
-    return childWithValue(value);
+  public function createView(parent:View, slot:Null<Slot>):View {
+    return new ProviderView(parent, parent.adaptor, slot, views, value);
+  }
+}
+
+class ProviderView<T:Disposable> extends View {
+  final value:T;
+  final child:View;
+
+  public function new(parent, adaptor, slot, children:Array<Builder>, value) {
+    super(parent, adaptor, slot);
+    this.value = value;
+    this.child = Fragment.of(children).createView(this, slot);
   }
 
-  override function dispose() {
-    if (value != null) {
-      disposeOfValue(value);
-      value = null;
-    }
-    super.dispose();
+  override function get<T>(type:Class<T>):Null<T> {
+    if (Std.isOfType(value, type)) return cast value;
+    return parent.get(type);
+  }
+
+  public function findNearestPrimitive():Dynamic {
+    return parent.findNearestPrimitive();
+  }
+
+  public function getPrimitive():Dynamic {
+    return child.getPrimitive();
+  }
+
+  public function getSlot():Null<Slot> {
+    return slot;
+  }
+
+  public function setSlot(slot:Null<Slot>) {
+    this.slot = slot;
+    child.setSlot(this.slot);
+  }
+
+  public function dispose() {
+    value.dispose();
+    child.dispose();
   }
 }

@@ -2,58 +2,121 @@ package pine.macro;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Type;
 
 using Kit;
 using Lambda;
+using haxe.macro.Tools;
+
+typedef PropField = {
+  public final name:String;
+  public final type:ComplexType;
+  public final optional:Bool;
+} 
 
 class ClassBuilder {
   public static function fromContext() {
-    return new ClassBuilder(Context.getBuildFields());
+    return new ClassBuilder({
+      type: Context.getLocalType(),
+      fields: Context.getBuildFields(),
+      builders: []
+    });
   }
 
-  var fields:Array<Field>;
-  var newFields:Array<Field> = [];
+  final type:Type;
+  final builders:Array<Builder>;
+  final fields:ClassFieldCollection;
+  
+  var propCollection:Map<String, Array<Field>> = [];
+  var hookCollection:Map<String, Array<Expr>> = [];
 
-  public function new(fields) {
-    this.fields = fields;
+  public function new(options) {
+    this.builders = options.builders;
+    this.fields = new ClassFieldCollection(options.fields);
+    this.type = options.type;
   }
 
-  public function getFields() {
-    return fields;
+  public function getType() {
+    return type;
+  }
+
+  public function getComplexType() {
+    return type.toComplexType();
+  }
+
+  public function getTypePath():TypePath {
+    var cls = getClass();
+    return {
+      pack: cls.pack,
+      name: cls.name
+    };
+  }
+
+  public function getClass() {
+    return switch type {
+      case TInst(t, _): t.get();
+      default: throw 'assert';
+    }
+  }
+
+  public inline function getFields() {
+    return fields.getFields();
   }
 
   public function add(t:TypeDefinition) {
-    mergeFields(t.fields);
+    fields.add(t);
     return this;
   }
 
   public function addField(f:Field) {
-    newFields.push(f);
+    fields.addField(f);
     return this;
   }
 
-  public function mergeFields(fields:Array<Field>) {
-    newFields = newFields.concat(fields);
-    return this;
+  public function addHook(key:String, ...exprs:Expr) {
+    var hooks = hookCollection.get(key) ?? [];
+    hooks = hooks.concat(exprs);
+    hookCollection.set(key, hooks);
   }
 
-  public function merge(builder:ClassBuilder) {
-    mergeFields(builder.newFields);
-    return this;
+  public function addProp(key:String, ...newFields:PropField) {
+    var pos = (macro null).pos;
+    var props = propCollection.get(key) ?? [];
+    var fields:Array<Field> = newFields.toArray().map(f -> ({
+      name: f.name,
+      kind: FVar(f.type),
+      meta: f.optional ? [{name: ':optional', pos: pos}] : [],
+      pos: pos
+    }:Field));
+    props = props.concat(fields);
+    propCollection.set(key, props);
   }
 
-  public function export() {
-    return fields.concat(newFields);
+  public function getHook(key) {
+    return hookCollection.get(key) ?? [];
+  }
+
+  public function getProps(key) {
+    return propCollection.get(key) ?? [];
   }
 
   public function findField(name:String):Maybe<Field> {
-    return switch fields.find(f -> f.name == name) {
-      case null: None;
-      case field: Some(field);
-    }
+    return fields.findField(name);
   }
 
-  public function findFieldsByMeta(name:String) {
-    return fields.filter(f -> f.meta.exists(m -> m.name == name));
+  public function findFieldsByMeta(name:String):Array<Field> {
+    return fields.findFieldsByMeta(name);
+  }
+
+  public function export() {
+    apply(Before);
+    apply(Normal);
+    apply(Late);
+    return fields.export();
+  }
+
+  function apply(priority:BuilderPriority) {
+    var selected = builders.filter(b -> b.priority == priority);
+    for (builder in selected) builder.apply(this);
   }
 }
