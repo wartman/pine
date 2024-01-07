@@ -3,7 +3,6 @@ package pine.html.client;
 import js.Browser;
 import js.html.Element;
 import pine.debug.Debug;
-import pine.template.*;
 
 using StringTools;
 
@@ -38,10 +37,6 @@ class ClientAdaptor implements Adaptor {
     return createTextPrimitive('');
   }
 
-  // public function createCursor(primitive:Dynamic):Cursor {
-  //   return new ClientCursor(primitive);
-  // }
-
   public function updateTextPrimitive(primitive:Dynamic, value:String) {
     (primitive:js.html.Text).textContent = value;
   }
@@ -52,7 +47,7 @@ class ClientAdaptor implements Adaptor {
     var isSvg = el.namespaceURI == svgNamespace;
     
     if (isHydrating == true) {
-      name = getHtmlName(name);
+      // name = getHtmlName(name);
       // Only bind events.
       // @todo: Setting events this way feels questionable.
       if (name.startsWith('on')) {
@@ -99,7 +94,7 @@ class ClientAdaptor implements Adaptor {
           }
         }
       default:
-        name = getHtmlName(name);
+        // name = getHtmlName(name);
         // @todo: Setting events this way feels questionable.
         if (name.startsWith('on')) {
           var name = name.toLowerCase();
@@ -108,9 +103,9 @@ class ClientAdaptor implements Adaptor {
           } else {
             Reflect.setField(el, name, value);
           }
-        } else if (value == null || (Std.is(value, Bool) && value == false)) {
+        } else if (value == null || (value is Bool && value == false)) {
           el.removeAttribute(name);
-        } else if (Std.is(value, Bool) && value == true) {
+        } else if (value is Bool && value == true) {
           el.setAttribute(name, name);
         } else {
           el.setAttribute(name, value);
@@ -118,13 +113,12 @@ class ClientAdaptor implements Adaptor {
     }
   }
 
-  // @todo: Figure out how to use the @:html attributes for this instead.
-  function getHtmlName(name:String) {
-    if (name.startsWith('aria')) {
-      return 'aria-' + name.substr(4).toLowerCase();
-    }
-    return name;
-  }
+  // function getHtmlName(name:String) {
+  //   if (name.startsWith('aria')) {
+  //     return 'aria-' + name.substr(4).toLowerCase();
+  //   }
+  //   return name;
+  // }
 
   public function insertPrimitive(primitive:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
     var el:js.html.Element = primitive;
@@ -166,13 +160,5 @@ class ClientAdaptor implements Adaptor {
 
   public function removePrimitive(primitive:Dynamic, slot:Null<Slot>) {
     (primitive:Element).remove();
-  }
-
-  public function createTemplate(html:String):Template {
-    return new ClientTemplate(html);
-  }
-
-  public function createCursor(primitive:Dynamic):Cursor {
-    return new ClientCursor(primitive);
   }
 }

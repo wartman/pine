@@ -53,7 +53,7 @@ Maybe instead of `el` we return a cursor? And, for static targets, we include so
 ```haxe
 function render(_) {
   static __template$0 = this.adaptor.createTemplate('<div><p>Hello World! <!--@SLOT-->></p><!--@SLOT--><p>Bye world</p></div>');
-  return new HtmlTemplateView(__template$0.clone(), (tpl, cursor) -> {
+  return new TemplateView(__template$0.clone(), (tpl, cursor) -> {
     var adaptor = tpl.adaptor;
     var el = cursor.current();
     var cursor_child = cursor.child();

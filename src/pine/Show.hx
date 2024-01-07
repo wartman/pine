@@ -4,6 +4,17 @@ import pine.signal.Signal;
 import pine.view.TrackedProxyView;
 
 class Show implements ViewBuilder {
+  @:fromMarkup
+  public static inline function fromMarkup(props:{
+    public final when:ReadOnlySignal<Bool>;
+    public final ?fallback:(context:Context)->Child;
+    @:children public final children:(context:Context)->Child;
+  }) {
+    var show = Show.when(props.when, props.children);
+    if (props.fallback != null) return show.otherwise(props.fallback);
+    return show;
+  }
+
   public static inline function when(condition, successBranch) {
     return new Show(condition, successBranch);
   }

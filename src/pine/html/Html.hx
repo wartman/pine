@@ -1,17 +1,14 @@
 package pine.html;
 
-import pine.Disposable;
+import pine.Primitive;
 import pine.html.HtmlEvents;
-import pine.signal.Graph;
-import pine.signal.Observer;
 import pine.signal.Signal;
 
 using Lambda;
 
-// @todo: Add an efficient template-based solution we can
-// use with macro-parsed xml. See what Solid is doing. 
-
 class Html implements ViewBuilder {
+  public macro static function template(e);
+
   public static inline function build(tag:String) {
     return new Html(tag);
   }
@@ -26,7 +23,7 @@ class Html implements ViewBuilder {
     this.tag = tag;
   }
   
-  public function attr(name:String, value:ReadOnlySignal<Dynamic>) {
+  public function attr(name:HtmlAttributeName, value:ReadOnlySignal<Dynamic>) {
     // @todo: Something better than this:
     if (attributes.exists(name) && name == 'class') {
       var prev = attributes.get(name);
@@ -38,7 +35,7 @@ class Html implements ViewBuilder {
     return this;
   }
 
-  public function on(event:String, value:ReadOnlySignal<EventListener>) {
+  public function on(event:HtmlEventName, value:ReadOnlySignal<EventListener>) {
     attributes.set('on' + event, value);
     return this;
   }
@@ -54,7 +51,7 @@ class Html implements ViewBuilder {
   }
 
   public function createView(parent:View, slot:Null<Slot>):View {
-    return new HtmlView(
+    return new PrimitiveView(
       parent,
       parent.adaptor,
       slot,
@@ -66,68 +63,9 @@ class Html implements ViewBuilder {
   }
 }
 
-class HtmlView extends View {
-  final primitive:Dynamic;
-  final disposables:DisposableCollection = new DisposableCollection();
-  final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
-  final children:Array<View>;
-  
-  public function new(
-    parent, 
-    adaptor,
-    slot,
-    tag,
-    attributes,
-    children:Array<ViewBuilder>,
-    ref:Null<(primitive:Dynamic)->Void>
-  ) {
-    super(parent, adaptor, slot);
-    
-    this.primitive = adaptor.createPrimitive(tag);
-    this.attributes = attributes;
-    this.children = [];
-  
-    var previousOwner = setCurrentOwner(Some(disposables));
+@:build(pine.html.Html.buildAttributeEnum())
+enum abstract HtmlAttributeName(String) from String to String {}
 
-    for (name => value in attributes) Observer.track(() -> {
-      adaptor.updatePrimitiveAttribute(primitive, name, value());
-    });
-    
-    var previous:Null<View> = null;
-    for (index => child in children) {
-      var childView = child.createView(this, new Slot(index, previous?.getPrimitive()));
-      this.children.push(childView);
-      previous = childView;
-    }
+@:build(pine.html.Html.buildEventEnum())
+enum abstract HtmlEventName(String) to String {}
 
-    setCurrentOwner(previousOwner);
-
-    if (ref != null) ref(primitive);
-
-    adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
-  }
-
-  public function getSlot() {
-    return slot;
-  }
-
-  public function setSlot(slot:Null<Slot>) {
-    var prevSlot = this.slot;
-    this.slot = slot;
-    adaptor.movePrimitive(primitive, prevSlot, slot, parent.findNearestPrimitive);
-  }
-
-  public function findNearestPrimitive():Dynamic {
-    return primitive;
-  }
-
-  public function getPrimitive():Dynamic {
-    return primitive;
-  }
-
-  public function dispose() {
-    adaptor.removePrimitive(primitive, slot);
-    disposables.dispose();
-    for (child in children) child.dispose();
-  }
-}

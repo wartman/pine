@@ -1,11 +1,11 @@
 import Breeze;
+import haxe.Json;
 import js.Browser;
 import js.html.InputElement;
 import pine.*;
 import pine.html.*;
 import pine.html.client.ClientRoot;
 import pine.signal.*;
-import haxe.Json;
 
 using BreezePlugin;
 
@@ -89,45 +89,73 @@ class TodoStore extends Model {
 class TodoApp extends Component {
   function render(context) {
     var store = TodoStore.load();
+    return Html.template(<Provider value=store>
+      <main class={Breeze.compose(
+        Flex.display(),
+        Flex.justify('center'),
+        Spacing.pad(10),
+      )}>
+        <div class={Breeze.compose(
+          Sizing.width('full'),
+          Border.radius(2),
+          Border.width(.5),
+          Breakpoint.viewport('700px', Sizing.width('700px'))
+        )}>
+          <TodoHeader />
+          <TodoList />
+          <TodoFooter />
+        </div>
+      </main>
+    </Provider>);
 
-    return Provider.provide(store).children(
-      Html.build('main')
-        .style(Breeze.compose(
-          Flex.display(),
-          Flex.justify('center'),
-          Spacing.pad(10),
-        ))
-        .children(
-          Html.build('div')
-            .style(Breeze.compose(
-              Sizing.width('full'),
-              Border.radius(2),
-              Border.width(.5),
-              Breakpoint.viewport('700px', Sizing.width('700px'))
-            ))
-            .children([
-              TodoHeader.build({}),
-              TodoList.build({}),
-              TodoFooter.build({})
-            ])
-        )
-    );
+    // return Provider.provide(store).children(
+    //   Html.build('main')
+    //     .style(Breeze.compose(
+    //       Flex.display(),
+    //       Flex.justify('center'),
+    //       Spacing.pad(10),
+    //     ))
+    //     .children(
+    //       Html.build('div')
+    //         .style(Breeze.compose(
+    //           Sizing.width('full'),
+    //           Border.radius(2),
+    //           Border.width(.5),
+    //           Breakpoint.viewport('700px', Sizing.width('700px'))
+    //         ))
+    //         .children([
+    //           TodoHeader.build({}),
+    //           TodoList.build({}),
+    //           TodoFooter.build({})
+    //         ])
+    //     )
+    // );
   }
 }
 
 class TodoList extends Component {
   function render(context:Context) {
     final store = context.get(TodoStore);
-    return Html.build('ul')
-      .style(Breeze.compose(
-        Flex.display(),
-        Flex.gap(3),
-        Flex.direction('column'),
-        Spacing.pad(3)
-      ))
-      .children(
-        For.each(store.visibleTodos, (todo, _) -> TodoItem.build({ todo: todo }))
-      );
+    return Html.template(<ul class={Breeze.compose(
+      Flex.display(),
+      Flex.gap(3),
+      Flex.direction('column'),
+      Spacing.pad(3)
+    )} ref={el -> trace(el)}>
+      <For each={store.visibleTodos}>
+        {(todo, _) -> <TodoItem todo=todo />}
+      </For>
+    </ul>);
+    // return Html.build('ul')
+    //   .style(Breeze.compose(
+    //     Flex.display(),
+    //     Flex.gap(3),
+    //     Flex.direction('column'),
+    //     Spacing.pad(3)
+    //   ))
+    //   .children(
+    //     For.each(store.visibleTodos, (todo, _) -> TodoItem.build({ todo: todo }))
+    //   );
   }
 }
 
@@ -204,63 +232,107 @@ class TodoHeader extends Component {
   }
 }
 
-class TodoItem extends Component<Html> {
+class TodoItem extends Component<Primitive> {
   @:attribute final todo:Todo;
   
   function render(context:Context) {
     var store = context.get(TodoStore);
 
-    return Html.build('li')
-      .style(new Computation(() -> Breeze.compose(
-        Flex.display(),
-        Flex.gap(3),
-        Flex.alignItems('center'),
-        Spacing.pad('y', 3),
-        Border.width('bottom', .5),
-        Border.color('gray', 300),
-        Select.child('last', Border.style('bottom', 'none')),
-        if (todo.isCompleted() && !todo.isEditing()) Typography.textColor('gray', 500) else null
-      )))
-      .attr('id', 'todo-${todo.id}')
-      .on('dblclick', _ -> todo.isEditing.set(true))
-      .children(
-        Show.unless(todo.isEditing, _ -> Fragment.of([
-            Html.build('input')
-              .attr('class', 'toggle')
-              .attr('type', 'checkbox')
-              .attr('checked', todo.isCompleted)
-              .on('click', _ -> todo.isCompleted.update(status -> !status)),
-            Html.build('div')
-              .style(Spacing.margin('right', 'auto'))
-              .children(todo.description),
-            Button.build({
-              action: () -> todo.isEditing.set(true),
-              child: 'Edit'
-            }),
-            Button.build({
-              action: () -> store.removeTodo(todo),
-              child: 'Remove'
-            })
-          ])
-        ).otherwise(_ -> Fragment.of([
-          TodoInput.build({
-            name: 'edit',
-            value: todo.description,
-            isEditing: todo.isEditing,
-            onCancel: () -> todo.isEditing.set(false),
-            // Note: Using `Action` is not required, but it can help
-            // ensure changes are batched.
-            onSubmit: data -> Action.run(() -> {
+    return Html.template(<li class={new Computation(() -> Breeze.compose(
+      Flex.display(),
+      Flex.gap(3),
+      Flex.alignItems('center'),
+      Spacing.pad('y', 3),
+      Border.width('bottom', .5),
+      Border.color('gray', 300),
+      Select.child('last', Border.style('bottom', 'none')),
+      if (todo.isCompleted() && !todo.isEditing()) Typography.textColor('gray', 500) else null
+    ))} id='todo-${todo.id}' onDblClick={_ -> todo.isEditing.set(true)}>
+      <Show 
+        when={todo.isEditing}
+        fallback={_ -> <>
+          <input 
+            class="toggle" 
+            checked={todo.isCompleted}
+            type={pine.html.HtmlAttributes.InputType.Checkbox}
+            onClick={_ -> todo.isCompleted.update(status -> !status)}
+          />
+          <div class={Spacing.margin('right', 'auto')}>
+            {todo.description}
+          </div>
+          <Button action={() -> todo.isEditing.set(true)}>'Edit'</Button>
+          <Button action={() -> store.removeTodo(todo)}>'Remove'</Button>
+        </>}
+        children={_ -> <>
+          // This is a bit of a hack to get extensions working,
+          // but it does work! We should think up some sort
+          // of syntax to actually implement it.
+          {(<TodoInput 
+            name='edit'
+            value={todo.description}
+            isEditing={todo.isEditing}
+            onCancel={() -> todo.isEditing.set(false)}
+            onSubmit={data -> Action.run(() -> {
               todo.description.set(data);
               todo.isEditing.set(false);
-            })
-          }).withStyle(Sizing.width('full')),
-          Button.build({
-            action: () -> todo.isEditing.set(false),
-            child: 'Cancel'
-          })
-        ]))
-      );
+            })}
+          />).withStyle(Sizing.width('full'))}
+          <Button action={() -> todo.isEditing.set(false)}>'Cancel'</Button>
+        </>}
+      />
+    </li>);
+
+    // return Html.build('li')
+    //   .style(new Computation(() -> Breeze.compose(
+    //     Flex.display(),
+    //     Flex.gap(3),
+    //     Flex.alignItems('center'),
+    //     Spacing.pad('y', 3),
+    //     Border.width('bottom', .5),
+    //     Border.color('gray', 300),
+    //     Select.child('last', Border.style('bottom', 'none')),
+    //     if (todo.isCompleted() && !todo.isEditing()) Typography.textColor('gray', 500) else null
+    //   )))
+    //   .attr(Id, 'todo-${todo.id}')
+    //   .on(DblClick, _ -> todo.isEditing.set(true))
+    //   .children(
+    //     Show.unless(todo.isEditing, _ -> Fragment.of([
+    //         Html.build('input')
+    //           .attr(ClassName, 'toggle')
+    //           .attr('type', 'checkbox')
+    //           .attr('checked', todo.isCompleted)
+    //           .on(Click, _ -> todo.isCompleted.update(status -> !status)),
+    //         Html.build('div')
+    //           .style(Spacing.margin('right', 'auto'))
+    //           .children(todo.description),
+    //         Button.build({
+    //           action: () -> todo.isEditing.set(true),
+    //           child: 'Edit'
+    //         }),
+    //         Button.build({
+    //           action: () -> store.removeTodo(todo),
+    //           child: 'Remove'
+    //         })
+    //       ])
+    //     ).otherwise(_ -> Fragment.of([
+    //       TodoInput.build({
+    //         name: 'edit',
+    //         value: todo.description,
+    //         isEditing: todo.isEditing,
+    //         onCancel: () -> todo.isEditing.set(false),
+    //         // Note: Using `Action` is not required, but it can help
+    //         // ensure changes are batched.
+    //         onSubmit: data -> Action.run(() -> {
+    //           todo.description.set(data);
+    //           todo.isEditing.set(false);
+    //         })
+    //       }).withStyle(Sizing.width('full')),
+    //       Button.build({
+    //         action: () -> todo.isEditing.set(false),
+    //         child: 'Cancel'
+    //       })
+    //     ]))
+    //   );
   }
 }
 
@@ -295,12 +367,12 @@ class TodoInput extends Component<Html> {
       .attr('name', name)
       .attr('value', value)
       .attr('placeholder', 'What needs doing?')
-      .on('input', e -> {
+      .on(Input, e -> {
         var target:js.html.InputElement = cast e.target;
         currentValue.set(target.value);
       })
-      .on('blur', _ -> onCancel())
-      .on('keydown', e -> {
+      .on(Blur, _ -> onCancel())
+      .on(KeyDown, e -> {
         var ev:js.html.KeyboardEvent = cast e;
         if (ev.key == 'Enter') {
           onSubmit(currentValue.peek());
@@ -329,7 +401,7 @@ class VisibilityControl extends Component<Html> {
 class Button extends Component<Html> {
   @:observable final selected:Bool = false;
   @:attribute final action:()->Void;
-  @:attribute var child:Child;
+  @:children @:attribute var child:Child;
 
   function render(_) {
     return Html.build('button')
@@ -350,7 +422,7 @@ class Button extends Component<Html> {
           )
         )
       ]))
-      .on('click', _ -> action())
+      .on(Click, _ -> action())
       .children(child);
   }
 }

@@ -4,6 +4,7 @@ import pine.signal.Computation;
 import pine.signal.Observer;
 import pine.signal.Signal;
 
+@:forward
 abstract Text(TextBuilder) to ViewBuilder to Child {
   public inline static function build(content) {
     return new Text(content);

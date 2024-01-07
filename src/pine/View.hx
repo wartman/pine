@@ -2,7 +2,7 @@ package pine;
 
 abstract class View implements Disposable implements Context {
   public final parent:Null<View>;
-  public final adaptor:Adaptor;  
+  public final adaptor:Adaptor;
   
   var slot:Null<Slot>;
 

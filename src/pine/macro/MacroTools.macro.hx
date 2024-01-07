@@ -123,6 +123,13 @@ function extractFunction(e:Expr):Function {
   }
 }
 
+function extractString(e:Expr):String {
+  return switch e.expr {
+    case EConst(CString(s, _)): s;
+    default: Context.error('Expected a string', e.pos);
+  }
+}
+
 function isModel(t:ComplexType) {
   return Context.unify(t.toType(), (macro:pine.Model).toType());
 }

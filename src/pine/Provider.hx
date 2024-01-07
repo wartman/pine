@@ -5,6 +5,15 @@ import pine.Disposable;
 using Lambda;
 
 class Provider<T:Disposable> implements ViewBuilder {
+  @:fromMarkup
+  @:noCompletion
+  public inline static function fromMarkup<T:Disposable>(props:{
+    public final value:T;
+    @:children public final views:Children;
+  }) {
+    return new Provider(props.value).children(props.views);
+  }
+
   public inline static function provide<T:Disposable>(value:T):Provider<T> {
     return new Provider(value);
   } 
