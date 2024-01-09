@@ -8,7 +8,6 @@ using pine.macro.MacroTools;
 using Lambda;
 
 final factory = new ClassBuilderFactory([
-  new ActionFieldBuilder(),
   new AttributeFieldBuilder(),
   new ObservableFieldBuilder(),
   new ConstructorBuilder({}),

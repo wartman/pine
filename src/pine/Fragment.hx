@@ -11,7 +11,7 @@ class Fragment implements ViewBuilder {
     return new Fragment([]);
   }
 
-  var children:Array<ViewBuilder>;
+  var children:Children;
 
   public function new(children) {
     this.children = children;

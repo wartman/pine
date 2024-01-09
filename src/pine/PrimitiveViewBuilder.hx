@@ -5,13 +5,13 @@ import pine.signal.Graph;
 import pine.signal.Observer;
 import pine.signal.Signal;
 
-class Primitive implements ViewBuilder {
+class PrimitiveViewBuilder implements ViewBuilder {
   final tag:String;
   final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
   final views:Children = [];
   final refCallback:Null<(primitive:Dynamic)->Void> = null;
 
-  public function new(tag, attributes, views, refCallback) {
+  public function new(tag, attributes, views:Children, refCallback) {
     this.tag = tag;
     this.attributes = attributes;
     this.views = views;
@@ -43,12 +43,12 @@ class PrimitiveView extends View {
     slot,
     tag,
     attributes,
-    children:Array<ViewBuilder>,
+    children:Children,
     ref:Null<(primitive:Dynamic)->Void>
   ) {
     super(parent, adaptor, slot);
     
-    this.primitive = adaptor.createPrimitive(tag);
+    this.primitive = adaptor.createPrimitive(tag, slot, parent.findNearestPrimitive);
     this.attributes = attributes;
     this.children = [];
   

@@ -3,6 +3,7 @@ package pine;
 import pine.signal.Computation;
 import pine.signal.Signal;
 
+@:forward
 abstract Child(ViewBuilder) 
   from Text
   from Component 

@@ -1,3 +1,5 @@
+package ex;
+
 import Breeze;
 import pine.Component;
 import pine.html.Html;

@@ -12,5 +12,5 @@
 --dce full
 # --macro nullSafety("pine")
 
--main Todo
+-main Examples
 -js dist/assets/index.js

@@ -1,3 +1,5 @@
+package todo;
+
 import Breeze;
 import haxe.Json;
 import js.Browser;
@@ -7,9 +9,9 @@ import pine.html.*;
 import pine.html.client.ClientRoot;
 import pine.signal.*;
 
-using BreezePlugin;
+using ex.BreezePlugin;
 
-function main() {
+function todoRoot() {
   mount(Browser.document.getElementById('todo-root'), _ -> TodoApp.build({}));
 }
 
@@ -77,7 +79,7 @@ class TodoStore extends Model {
   @:action
   public function removeCompletedTodos() {
     todos.update(todos -> todos.filter(todo -> {
-      if (todo.isCompleted.peek()) {
+      if (todo.isCompleted()) {
         todo.dispose();
         return false;
       }
@@ -143,7 +145,7 @@ class TodoList extends Component {
       Spacing.pad(3)
     )} ref={el -> trace(el)}>
       <For each={store.visibleTodos}>
-        {(todo, _) -> <TodoItem todo=todo />}
+        {todo -> <TodoItem todo=todo />}
       </For>
     </ul>);
     // return Html.build('ul')
@@ -168,7 +170,7 @@ class TodoFooter extends Component {
         Typography.textColor('white', 0),
         Spacing.pad(3)
       ))
-      .attr('style', store.total.map(total -> if (total == 0) 'display: none' else null))
+      .attr(Style, store.total.map(total -> if (total == 0) 'display: none' else null))
       .children(
         Html.build('span').children(
           Html.build('strong').children(store.remaining.map(remaining -> switch remaining {
@@ -208,8 +210,13 @@ class TodoHeader extends Component {
             TodoInput.build({
               name: 'create',
               value: placeholder,
-              onSubmit: data -> store.addTodo(data),
-              onCancel: () -> placeholder.set('')
+              onSubmit: data -> {
+                store.addTodo(data);
+                placeholder.set('');
+              },
+              onCancel: () -> {
+                placeholder.set('');
+              }
             })
             .withStyle(Breeze.compose(
               Sizing.width('70%')
@@ -232,7 +239,7 @@ class TodoHeader extends Component {
   }
 }
 
-class TodoItem extends Component<Primitive> {
+class TodoItem extends Component {
   @:attribute final todo:Todo;
   
   function render(context:Context) {

@@ -82,7 +82,7 @@ class SignalObject<T> implements ProducerNode {
   }
 
   public function update(updater:(value:T)->T) {
-    return set(updater(peek()));
+    return set(untrackValue(() -> updater(peek())));
   }
 
   public function peek() {

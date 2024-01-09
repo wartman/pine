@@ -6,30 +6,18 @@ import haxe.macro.Context;
 using Lambda;
 using pine.parse.ParseTools;
 
-enum TagContextKind {
-  Root;
-  Child(parent:TagContext);
-}
-
 class TagContext {
   final tags:Map<String, Tag> = [];
   final primitives:Array<String>;
-  final kind:TagContextKind;
 
   var primitivesLoaded:Bool = false;
 
-  public function new(kind, primitives) {
-    this.kind = kind;
+  public function new(primitives) {
     this.primitives = primitives;
   }
 
   function getPrimitives() {
-    return switch kind {
-      case Root: 
-        primitives;
-      case Child(parent):
-        parent.getPrimitives().concat(primitives);
-    }
+    return primitives;
   }
 
   public function resolve(name:Located<String>):Tag {

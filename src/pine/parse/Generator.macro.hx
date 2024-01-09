@@ -18,11 +18,13 @@ class Generator {
 
   public function generate(nodes:Array<Node>) {
     var exprs = [ for (node in nodes) generateNode(node) ];
-    return switch exprs {
+    var out = switch exprs {
       case []: macro null;
       case [expr]: expr;
       case exprs: macro pine.Fragment.of([ $a{exprs} ]);
     }
+    trace(haxe.macro.ExprTools.toString(out));
+    return out;
   }
 
   public function generateNode(node:Node):Expr {
@@ -51,7 +53,8 @@ class Generator {
               case Field(_) if (nodeChildren == null):
                 macro [];
               case Field(_):
-                generate(nodeChildren);
+                var exprs = [ for (child in nodeChildren) generateNode(child) ];
+                macro [ $a{exprs} ];
             }
             var ref = switch attributes.find(attr -> attr.name.value == 'ref') {
               case null:
@@ -72,7 +75,7 @@ class Generator {
               var expr = macro @:pos(attr.value.pos) (${attr.value}:pine.signal.Signal.ReadOnlySignal<$attrType>);
               macro $v{name} => $expr;
             } ];
-            macro @:pos(name.pos) new pine.Primitive(
+            macro @:pos(name.pos) new pine.PrimitiveViewBuilder(
               $v{tag.name},
               [ $a{attrExprs} ],
               $children,

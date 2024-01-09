@@ -1,40 +1,73 @@
 package pine.html.client;
 
+import js.html.Node;
 import js.Browser;
 import js.html.Element;
 import pine.debug.Debug;
 
 using StringTools;
 
-inline extern final svgNamespace = 'http://www.w3.org/2000/svg';
+inline extern final svgNamespace = 'http://www.w3.org/2000/svg'; 
 
 class ClientAdaptor implements Adaptor {
+  var isHydrating:Bool = false;
+
   public function new() {}
-
-  public function createContainerPrimitive():Dynamic {
-    return createPrimitive('div');
+  
+  public function hydrate(scope:()->Void) {
+    isHydrating = true;
+    scope();
+    isHydrating = false;
   }
 
-  public function createButtonPrimitive():Dynamic {
-    return createPrimitive('button');
+  // Note: This hydration method is extremely fragile right now.
+  // Need to look into some ways to add verification.
+  //
+  // That said, it *should* work so long as the client and server HTML
+  // is identical.
+  function hydrateNearestPrimitive(slot:Slot, findParent:()->Dynamic):Dynamic {
+    var prev:Null<Node> = slot.previous;
+    if (prev == null) {
+      return skipComments((findParent():Node).firstChild);
+    }
+    return skipComments(prev.nextSibling);
   }
 
-  public function createInputPrimitive():Dynamic {
-    return createPrimitive('input');
+  function skipComments(node:Null<Node>) {
+    // We're using comments to mark where string nodes start and end,
+    // which is probably quite fragile.
+    //
+    // A better method might be to have *all* components use 
+    // comment markers, perhaps even sending their hydration data
+    // next to them. This will take some more thinking, but would 
+    // open up stuff like Islands.
+    if (node == null) return null;
+    if (node.nodeType == Node.COMMENT_NODE) {
+      return skipComments(node.nextSibling);
+    }
+    return node;
   }
 
-  public function createPrimitive(name:String):Dynamic {
+  public function createContainerPrimitive(slot:Slot, findParent:()->Dynamic):Dynamic {
+    return createPrimitive('div', slot, findParent);
+  }
+
+  public function createPrimitive(name:String, slot:Slot, findParent:()->Dynamic):Dynamic {
+    if (isHydrating) {
+      // @todo: some validation here.
+      return hydrateNearestPrimitive(slot, findParent);
+    }
     return name.startsWith('svg:')
       ? Browser.document.createElementNS(svgNamespace, name.substr(4)) 
       : Browser.document.createElement(name);
   }
 
-  public function createTextPrimitive(value:String):Dynamic {
+  public function createTextPrimitive(value:String, slot:Slot, findParent:()->Dynamic):Dynamic {
+    if (isHydrating) {
+      // @todo: some validation here.
+      return hydrateNearestPrimitive(slot, findParent);
+    }
     return Browser.document.createTextNode(value);
-  }
-
-  public function createPlaceholderPrimitive():Dynamic {
-    return createTextPrimitive('');
   }
 
   public function updateTextPrimitive(primitive:Dynamic, value:String) {
@@ -42,11 +75,11 @@ class ClientAdaptor implements Adaptor {
   }
 
   // @todo: Refactor this to be better  
-  public function updatePrimitiveAttribute(primitive:Dynamic, name:String, value:Dynamic, ?isHydrating:Bool) {
+  public function updatePrimitiveAttribute(primitive:Dynamic, name:String, value:Dynamic) {
     var el:Element = primitive;
     var isSvg = el.namespaceURI == svgNamespace;
     
-    if (isHydrating == true) {
+    if (isHydrating) {
       // name = getHtmlName(name);
       // Only bind events.
       // @todo: Setting events this way feels questionable.
@@ -121,6 +154,7 @@ class ClientAdaptor implements Adaptor {
   // }
 
   public function insertPrimitive(primitive:Dynamic, slot:Null<Slot>, findParent:() -> Dynamic) {
+    if (isHydrating) return;
     var el:js.html.Element = primitive;
     if (slot != null && slot.previous != null) {
       var relative:js.html.Element = slot.previous;

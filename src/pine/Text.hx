@@ -71,7 +71,7 @@ class TextView extends View {
   public function new(parent, adaptor, slot, content) {
     super(parent, adaptor, slot);
     this.content = content;
-    this.primitive = adaptor.createTextPrimitive(content.peek());
+    this.primitive = adaptor.createTextPrimitive(content.peek(), slot, parent.findNearestPrimitive);
     this.link = new Observer(() -> {
       adaptor.updateTextPrimitive(primitive, content());
     });

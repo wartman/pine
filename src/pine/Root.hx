@@ -3,7 +3,7 @@ package pine;
 import pine.signal.Observer;
 
 class Root {
-  public inline static function build(target, adaptor, render) {
+  public inline static function build(target:Dynamic, adaptor, render) {
     return new Root(target, adaptor, render);
   }
 
@@ -17,32 +17,44 @@ class Root {
     this.render = render;
   }
 
-  public function create():View {
-    return new RootView(adaptor, target, render);
+  public function create(?parent):View {
+    return new RootView(parent, adaptor, target, render);
+  }
+
+  public function hydrate(?parent):View {
+    return new RootView(parent, adaptor, target, render, true);
   }
 }
 
 class RootView extends View {
   final target:Dynamic;
-  final link:Disposable;
 
+  var link:Null<Disposable> = null;
   var child:Null<View> = null;
   
-  public function new(adaptor, target, render:(context:Context)->ViewBuilder) {
-    super(null, adaptor, new Slot(0, null));
-    this.target = target;
-    this.link = Observer.root(() -> {
+  public function new(parent:Null<View>, adaptor, target, render:(context:Context)->ViewBuilder, hydrate = false) {
+    super(parent, adaptor, new Slot(0, null));
+
+    var doRender = () -> {
       child?.dispose();
       child = render(this).createView(this, this.slot);
-    });
+    };
+
+    this.target = target;
+
+    if (hydrate) adaptor.hydrate(() -> {
+      this.link = parent == null 
+        ? Observer.root(doRender) 
+        : Observer.track(doRender);
+    }) else {
+      this.link = parent == null 
+        ? Observer.root(doRender) 
+        : Observer.track(doRender);
+    }
   }
 
   public function findNearestPrimitive():Dynamic {
     return target;
-  }
-
-  override function get<T>(type:Class<T>):Null<T> {
-    return null;
   }
 
   public function getPrimitive():Dynamic {
@@ -56,7 +68,7 @@ class RootView extends View {
   public function setSlot(slot:Null<Slot>) {}
 
   public function dispose() {
-    link.dispose();
+    link?.dispose();
     child?.dispose();
   }
 }

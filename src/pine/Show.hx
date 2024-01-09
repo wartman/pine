@@ -5,6 +5,7 @@ import pine.view.TrackedProxyView;
 
 class Show implements ViewBuilder {
   @:fromMarkup
+  @:noCompletion
   public static inline function fromMarkup(props:{
     public final when:ReadOnlySignal<Bool>;
     public final ?fallback:(context:Context)->Child;

@@ -1,6 +1,6 @@
 package pine.html;
 
-import pine.Primitive;
+import pine.PrimitiveViewBuilder;
 import pine.html.HtmlEvents;
 import pine.signal.Signal;
 
@@ -62,10 +62,3 @@ class Html implements ViewBuilder {
     );
   }
 }
-
-@:build(pine.html.Html.buildAttributeEnum())
-enum abstract HtmlAttributeName(String) from String to String {}
-
-@:build(pine.html.Html.buildEventEnum())
-enum abstract HtmlEventName(String) to String {}
-

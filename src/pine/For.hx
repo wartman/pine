@@ -8,9 +8,9 @@ class For<T:{}> implements ViewBuilder {
   @:noCompletion
   public inline static function fromMarkup<T:{}>(props:{
     public final each:ReadOnlySignal<Array<T>>;
-    @:children public final render:(item:T, context:Context)->ViewBuilder;
+    @:children public final child:(item:T)->Child;
   }) {
-    return For.each(props.each, props.render);
+    return For.each(props.each, props.child);
   }
 
   public static inline function each<T:{}>(items, render) {
@@ -18,7 +18,7 @@ class For<T:{}> implements ViewBuilder {
   }
 
   final items:ReadOnlySignal<Array<T>>;
-  final render:(item:T, context:Context)->ViewBuilder;
+  final render:(item:T)->Child;
 
   public function new(items, render) {
     this.items = items;

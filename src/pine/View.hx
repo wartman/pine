@@ -13,7 +13,7 @@ abstract class View implements Disposable implements Context {
   }
 
   public function get<T>(type:Class<T>):Null<T> {
-    return parent.get(type);
+    return parent?.get(type);
   }
 
   abstract public function findNearestPrimitive():Dynamic;
