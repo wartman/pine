@@ -22,7 +22,6 @@ class For<T:{}> extends View {
   final render:(item:T)->Child;
   final itemToViewsMap:Map<T, View> = [];
   
-  var children:Null<Array<View>> = null;
   var reconciler:Null<Reconciler> = null;
   var link:Null<Disposable> = null;
   var marker:Null<View> = null;
@@ -37,6 +36,8 @@ class For<T:{}> extends View {
   }
 
   public function getPrimitive():Dynamic {
+    var children = reconciler?.getCurrentChildren();
+
     assert(children != null);
     assert(marker != null);
 
@@ -52,18 +53,19 @@ class For<T:{}> extends View {
 
     marker.mount(this, getAdaptor(), slot);
 
+    // @todo: There may be a more efficient way to iterate
+    // over all of this?
     link = new Observer(() -> {
       var items = items();
 
       for (item => _ in itemToViewsMap) {
         if (!items.contains(item)) {
           itemToViewsMap.remove(item);
-          // child.dispose();
         }
       }
 
       var next:Array<View> = [];
-      
+
       for (item in items) {
         var view = itemToViewsMap.get(item);
         if (view == null) {
@@ -73,33 +75,17 @@ class For<T:{}> extends View {
         next.push(view);
       }
 
-      // I'm actually not sure if this reconciler is *faster* than
-      // just looping over the map, but we'll use it.
-      children = reconciler.reconcile(next);
-
-      // var previous:View = this.marker;
-
-      // for (index => item in items) {
-      //   var view = itemToViewsMap.get(item);
-      //   if (view == null) {
-      //     view = render(item);
-      //     view.mount(this, getAdaptor(), new FragmentSlot(this.slot.index, index, previous.getPrimitive()));
-      //     itemToViewsMap.set(item, view);
-      //   } else {
-      //     view.setSlot(new FragmentSlot(this.slot.index, index, previous.getPrimitive()));
-      //   }
-      //   next.push(view);
-      //   previous = view;
-      // }
-
-      // children = next;
+      reconciler.reconcile(next);
     });
   }
 
   function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
     if (newSlot == null) return;
     marker.setSlot(newSlot);
+    
     var previous = marker;
+    var children = reconciler?.getCurrentChildren() ?? [];
+    
     for (index => child in children) {
       child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
       previous = child;
@@ -107,13 +93,11 @@ class For<T:{}> extends View {
   }
 
   function __dispose() {
-    reconciler?.dispose();
-    reconciler = null;
     link?.dispose();
     link = null;
     marker?.dispose();
     marker = null;
-    if (children != null) for (child in children) child.dispose();
-    children = null;
+    reconciler?.dispose();
+    reconciler = null;
   }
 }

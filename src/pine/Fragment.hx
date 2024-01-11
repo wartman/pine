@@ -78,7 +78,6 @@ class TrackedFragment extends View {
 
   final children:ReadOnlySignal<Children>;
   
-  var currentChildren:Null<Array<View>> = null;
   var reconciler:Null<Reconciler> = null;
   var marker:Null<View> = null;
   var link:Null<Disposable> = null;
@@ -97,9 +96,7 @@ class TrackedFragment extends View {
 
     marker.mount(this, adaptor, slot);
 
-    link = Observer.track(() -> {
-      currentChildren = reconciler.reconcile(children());
-    });
+    link = Observer.track(() -> reconciler.reconcile(children()));
   }
 
   public function findNearestPrimitive():Dynamic {
@@ -107,6 +104,8 @@ class TrackedFragment extends View {
   }
 
   public function getPrimitive():Dynamic {
+    var currentChildren = reconciler?.getCurrentChildren();
+
     assert(marker != null);
     assert(currentChildren != null);
 
@@ -117,7 +116,10 @@ class TrackedFragment extends View {
   function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
     if (newSlot == null) return;
     marker.setSlot(newSlot);
+
     var previous = marker;
+    var currentChildren = reconciler?.getCurrentChildren() ?? [];
+
     for (index => child in currentChildren) {
       child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
       previous = child;
@@ -127,11 +129,9 @@ class TrackedFragment extends View {
   function __dispose() {
     link?.dispose();
     link = null;
-    reconciler?.dispose();
-    reconciler = null;
     marker?.dispose();
     marker = null;
-    for (child in currentChildren) child.dispose();
-    currentChildren = [];
+    reconciler?.dispose();
+    reconciler = null;
   }
 }
