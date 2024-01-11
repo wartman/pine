@@ -1,30 +1,46 @@
 package pine;
 
-import pine.view.UntrackedProxyView;
+import pine.Disposable;
+import pine.debug.Debug;
+import pine.signal.Graph;
 
 @:autoBuild(pine.ComponentBuilder.build())
-abstract class Component<Result:ViewBuilder = ViewBuilder> implements ViewBuilder {
-  var plugins:Array<(builder:Result)->Result> = [];
+abstract class Component extends View implements DisposableHost {
+  final __disposables = new DisposableCollection();
+  var __child:Null<View> = null;
 
-  public function addPlugin<T:Component<Result>>(plugin:(builder:Result)->Result):T {
-    plugins.push(plugin);
-    return cast this;
+  abstract public function render():Child;
+
+  public function addDisposable(disposable:DisposableItem):Void {
+    __disposables.addDisposable(disposable);
   }
 
-  abstract public function render(context:Context):Result;
+  public function removeDisposable(disposable:DisposableItem):Void {
+    __disposables.removeDisposable(disposable);
+  }
+  
+  function __initialize() {
+    __child = withOwnedValue(__disposables, () -> untrackValue(render));
+    __child.mount(this, getAdaptor(), slot);
+  }
 
-  public function createView(parent:View, slot:Null<Slot>):View {
-    var renderCallback = this.render;
+  public function findNearestPrimitive():Dynamic {
+    return ensureParent().findNearestPrimitive();
+  }
 
-    if (plugins.length > 0) {
-      var mainRender = renderCallback;
-      renderCallback = (context:Context) -> {
-        var builder = mainRender(context);
-        for (plugin in plugins) builder = plugin(builder);
-        return builder;
-      }
-    }
+  public function getPrimitive():Dynamic {
+    var primitive = __child?.getPrimitive();
+    assert(primitive != null);
+    return primitive;
+  }
 
-    return new UntrackedProxyView(parent, parent.adaptor, slot, renderCallback);
+  function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>):Void {
+    __child?.setSlot(newSlot);
+  }
+
+  function __dispose():Void {
+    __disposables.dispose();
+    __child?.dispose();
+    __child = null;
   }
 }

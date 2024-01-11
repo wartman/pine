@@ -1,23 +1,73 @@
 package pine;
 
-abstract class View implements Disposable implements Context {
-  public final parent:Null<View>;
-  public final adaptor:Adaptor;
-  
-  var slot:Null<Slot>;
+import pine.debug.Debug;
 
-  public function new(parent, adaptor, slot) {
-    this.parent = parent;
-    this.adaptor = adaptor;
+enum ViewStatus {
+  Pending;
+  Mounted(parent:Null<View>, adaptor:Adaptor);
+  Disposed;
+}
+
+abstract class View implements Disposable {
+  var __status:ViewStatus = Pending;
+  var slot:Null<Slot> = null;
+
+  public function mount(parent, adaptor, slot) {
+    assert(__status == Pending);
+    __status = Mounted(parent, adaptor);
     this.slot = slot;
+    __initialize();
   }
 
+  abstract function __initialize():Void;
+
   public function get<T>(type:Class<T>):Null<T> {
-    return parent?.get(type);
+    return getParent()?.get(type);
+  }
+
+  public function getParent() {
+    return switch __status {
+      case Mounted(parent, _):
+        parent;
+      default: 
+        error('Attempted to get a parent from an unmounted or disposed view');
+    }
+  }
+
+  public function ensureParent():View {
+    var parent = getParent();
+    assert(parent != null);
+    return parent;
+  }
+
+  public function getAdaptor() {
+    return switch __status {
+      case Mounted(_, adaptor):
+        adaptor;
+      default: 
+        error('Attempted to get an adaptor from an unmounted or disposed view');
+    }
   }
 
   abstract public function findNearestPrimitive():Dynamic;
   abstract public function getPrimitive():Dynamic;
-  abstract public function getSlot():Null<Slot>;
-  abstract public function setSlot(slot:Null<Slot>):Void;
+
+  public function getSlot():Null<Slot> {
+    return slot;
+  }
+
+  public function setSlot(slot:Null<Slot>):Void {
+    var previousSlot = this.slot;
+    this.slot = slot;
+    __updateSlot(previousSlot, this.slot);
+  }
+
+  abstract function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>):Void;
+
+  public function dispose() {
+    __dispose();
+    __status = Disposed;
+  }
+
+  abstract function __dispose():Void;
 }

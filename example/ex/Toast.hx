@@ -23,35 +23,33 @@ class ToastManager extends Model {
 class Toast extends Component {
   @:children @:attribute final children:Children;
   
-  function render(context:Context) {
+  function render():Child {
     var manager = new ToastManager({ messages: [] });
+    var target = js.Browser.document.getElementById('portal');
     var hasMessages = manager.messages.map(messages -> messages.length > 0); 
 
     return Provider.provide(manager).children(
-      Show.when(hasMessages, _ -> {
-        Portal.into(
-          js.Browser.document.getElementById('portal'),
-          Html.build('div')
-            .style(Breeze.compose(
-              Flex.display()
-            ))
-            .children(
-              For.each(manager.messages, message -> ToastItem.build({ message: message }))
-            )
-        );
+      Show.when(hasMessages, () -> {
+        Portal.into(target, () -> {
+          Html.div().style(Breeze.compose(
+            Flex.display()
+          )).children(
+            For.each(manager.messages, message -> ToastItem.build({ message: message }))
+          );
+        });
       }),
       children
     );
   }
 }
 
-class ToastItem extends Component<Html> {
+class ToastItem extends Component {
   @:attribute final message:String;
 
-  function render(context:Context) {
-    var manager = context.get(ToastManager);
+  function render():Child {
+    var manager = get(ToastManager);
 
-    return Html.build('div')
+    return Html.div()
       .style(Breeze.compose(
         Sizing.height('min', 5),
         Spacing.pad(3),
@@ -62,7 +60,7 @@ class ToastItem extends Component<Html> {
         Flex.display()
       ))
       .children(
-        Html.build('div').children(message),
+        Html.div().children(message),
         Button.build({
           action: () -> manager?.removeMessage(message),
           child: 'Close'

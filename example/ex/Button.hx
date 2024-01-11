@@ -7,13 +7,13 @@ import pine.signal.*;
 
 using ex.BreezePlugin;
 
-class Button extends Component<Html> {
+class Button extends Component {
   @:observable final selected:Bool = false;
   @:attribute final action:()->Void;
   @:children @:attribute var child:Child;
 
-  function render(_) {
-    return Html.build('button')
+  public function render():Child {
+    return Html.button()
       .style(new Computation<ClassName>(() -> [
         Spacing.pad('x', 3),
         Spacing.pad('y', 1),

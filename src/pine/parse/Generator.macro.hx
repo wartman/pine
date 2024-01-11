@@ -18,20 +18,18 @@ class Generator {
 
   public function generate(nodes:Array<Node>) {
     var exprs = [ for (node in nodes) generateNode(node) ];
-    var out = switch exprs {
+    return switch exprs {
       case []: macro null;
       case [expr]: expr;
       case exprs: macro pine.Fragment.of([ $a{exprs} ]);
     }
-    trace(haxe.macro.ExprTools.toString(out));
-    return out;
   }
 
   public function generateNode(node:Node):Expr {
     return switch node.value {
       case NFragment(children):
         var components = children.map(generateNode);
-        macro pine.Fragment.of([ $a{components} ]);
+        macro @:pos(node.pos) pine.Fragment.of([ $a{components} ]);
       case NNode(name, attributes, nodeChildren):
         var tag = context.resolve(name);
         var expr:Expr = switch tag.kind {
@@ -75,7 +73,7 @@ class Generator {
               var expr = macro @:pos(attr.value.pos) (${attr.value}:pine.signal.Signal.ReadOnlySignal<$attrType>);
               macro $v{name} => $expr;
             } ];
-            macro @:pos(name.pos) new pine.PrimitiveViewBuilder(
+            macro @:pos(name.pos) new pine.PrimitiveView(
               $v{tag.name},
               [ $a{attrExprs} ],
               $children,

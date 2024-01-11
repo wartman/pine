@@ -4,23 +4,20 @@ import pine.signal.Computation;
 import pine.signal.Signal;
 
 @:forward
-abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<ViewBuilder> {
-  @:from public inline static function ofBuilder(child:ViewBuilder):Children {
+abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<View> {
+  @:from public inline static function ofBuilder(child:View):Children {
     return [ child ];
   }
 
-  @:from
-  public inline static function ofComputationString(content:Computation<String>):Children {
+  @:from public inline static function ofComputationString(content:Computation<String>):Children {
     return [ content ];
   }
 
-  @:from
-  public inline static function ofReadOnlySignalString(content:ReadOnlySignal<String>):Children {
+  @:from public inline static function ofReadOnlySignalString(content:ReadOnlySignal<String>):Children {
     return [ content ];
   }
 
-  @:from
-  public inline static function ofSignalString(content:Signal<String>):Children {
+  @:from public inline static function ofSignalString(content:Signal<String>):Children {
     return [ content ];
   }
 

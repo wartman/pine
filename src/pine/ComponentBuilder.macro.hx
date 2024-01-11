@@ -10,6 +10,9 @@ using Lambda;
 final factory = new ClassBuilderFactory([
   new AttributeFieldBuilder(),
   new ObservableFieldBuilder(),
+  new SignalFieldBuilder(),
+  new ComputedFieldBuilder(),
+  new ActionFieldBuilder(),
   new ConstructorBuilder({}),
   new ComponentBuilder()
 ]);
@@ -31,7 +34,8 @@ class ComponentBuilder implements Builder {
     var propType:ComplexType = TAnonymous(props);
     var constructors = macro class {
       @:fromMarkup
-      @:noUsing public inline static function build(props:$propType) {
+      @:noUsing 
+      public inline static function build(props:$propType) {
         return new $tp(props);
       }
     }
@@ -60,20 +64,20 @@ class ComponentBuilder implements Builder {
       .unwrap()
       .applyParameters(params));
 
-    for (prop in props) {
-      var name = prop.name;
-      var field = builder.findField(name).orThrow();
-      switch field.kind {
-        case FVar(_, _) if (!field.access.contains(AFinal) && !field.access.contains(AStatic)):
-          var withName = 'with' + name.charAt(0).toUpperCase() + name.substr(1);
-          builder.add(macro class {
-            public function $withName(value) {
-              this.$name = value;
-              return this;
-            }
-          });
-        default:
-      }
-    }
+    // for (prop in props) {
+    //   var name = prop.name;
+    //   var field = builder.findField(name).orThrow();
+    //   switch field.kind {
+    //     case FVar(_, _) if (!field.access.contains(AFinal) && !field.access.contains(AStatic)):
+    //       var withName = 'with' + name.charAt(0).toUpperCase() + name.substr(1);
+    //       builder.add(macro class {
+    //         public function $withName(value) {
+    //           this.$name = value;
+    //           return this;
+    //         }
+    //       });
+    //     default:
+    //   }
+    // }
   }
 }

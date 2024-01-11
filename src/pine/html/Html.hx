@@ -1,29 +1,53 @@
 package pine.html;
 
-import pine.PrimitiveViewBuilder;
 import pine.html.HtmlEvents;
 import pine.signal.Signal;
 
 using Lambda;
 
-class Html implements ViewBuilder {
+@:build(pine.html.HtmlBuilder.build())
+class Html {
   public macro static function template(e);
 
   public static inline function build(tag:String) {
-    return new Html(tag);
+    return new HtmlTagBuilder(tag);
+  }
+}
+
+@:forward
+abstract HtmlTagBuilder(HtmlTagBuilderImpl) from HtmlTagBuilderImpl {
+  public inline function new(tag) {
+    this = new HtmlTagBuilderImpl(tag);
   }
 
+  @:to(View)
+  public inline function toView():View {
+    return this.createView();
+  }
+
+  @:to(Child)
+  public inline function toChild():Child {
+    return this.createView();
+  }
+
+  @:to(Children)
+  public inline function toChildren():Children {
+    return this.createView();
+  }
+}
+
+class HtmlTagBuilderImpl {
   final tag:String;
   final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
   
-  var views:Array<ViewBuilder> = [];
+  var views:Children = [];
   var refCallback:Null<(primitive:Dynamic)->Void> = null;
 
   public function new(tag) {
     this.tag = tag;
   }
   
-  public function attr(name:HtmlAttributeName, value:ReadOnlySignal<Dynamic>) {
+  public function attr(name:HtmlAttributeName, value:ReadOnlySignal<Dynamic>):HtmlTagBuilder {
     // @todo: Something better than this:
     if (attributes.exists(name) && name == 'class') {
       var prev = attributes.get(name);
@@ -35,26 +59,23 @@ class Html implements ViewBuilder {
     return this;
   }
 
-  public function on(event:HtmlEventName, value:ReadOnlySignal<EventListener>) {
+  public function on(event:HtmlEventName, value:ReadOnlySignal<EventListener>):HtmlTagBuilder {
     attributes.set('on' + event, value);
     return this;
   }
 
-  public function ref(cb) {
+  public function ref(cb):HtmlTagBuilder {
     refCallback = cb;
     return this;
   }
 
-  public function children(...views:Children) {
+  public function children(...views:Children):HtmlTagBuilder {
     this.views = this.views.concat(views.toArray().flatten());
     return this; 
   }
 
-  public function createView(parent:View, slot:Null<Slot>):View {
+  public function createView():View {
     return new PrimitiveView(
-      parent,
-      parent.adaptor,
-      slot,
       tag,
       attributes,
       views,

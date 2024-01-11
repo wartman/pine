@@ -13,21 +13,20 @@ function hydrateRoot() {
   // as a string, insert it into the HTML, and *then* hydrate it --
   // but it should give you an idea of how it all works.
 
-  var state = new CounterState({ count: 0 });
   // Pretend we've created this HTML on a server and sent it
   // to the client:
-  var html = ServerRoot.render(_ -> Html.template(<div id="hydrate-root">
-    <Counter state=state/>
+  var html = ServerRoot.render(() -> Html.template(<div id="hydrate-root">
+    <Counter count={0}/>
   </div>));
 
   Browser.document.body.querySelector('#hydrate-display').innerText = html;
   Browser.document.body.querySelector('#hydrate-target').innerHTML = html;
 
   var root = Browser.document.getElementById('hydrate-root');
-  ClientRoot.hydrate(root, _ -> Counter.build({ state: state }));
+  ClientRoot.hydrate(root, () -> Counter.build({ count:0 }));
 }
 
-class CounterState extends Model {
+class Counter extends Component {
   @:signal public final count:Int;
   @:computed public final display:String = Std.string(count());
 
@@ -40,18 +39,14 @@ class CounterState extends Model {
   public function increment() {
     count.update(i -> i + 1);
   }
-}
 
-class Counter extends Component {
-  @:attribute final state:CounterState;
-
-  function render(context:Context) {
+  function render() {
     return Html.template(<div dataset={[ 'fooBar' => 'bar' ]}>
       'This is some'
       ' text'
-      <div>'Current count: ' {state.display}</div>
-      <Button action={state.decrement}>'-'</Button>
-      <Button action={state.increment}>'+'</Button>
+      <div>'Current count: ' display</div>
+      <Button action=decrement>'-'</Button>
+      <Button action=increment>'+'</Button>
     </div>);
   }
 }

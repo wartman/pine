@@ -9,7 +9,7 @@ class Root {
 
   final target:Dynamic;
   final adaptor:Adaptor;
-  final render:(context:Context)->ViewBuilder;
+  final render:()->Child;
 
   public function new(target, adaptor, render) {
     this.target = target;
@@ -26,21 +26,30 @@ class Root {
   }
 }
 
-class RootView extends View {
+private class RootView extends View {
   final target:Dynamic;
+  final render:()->Child;
+  final hydrate:Bool;
 
   var link:Null<Disposable> = null;
   var child:Null<View> = null;
-  
-  public function new(parent:Null<View>, adaptor, target, render:(context:Context)->ViewBuilder, hydrate = false) {
-    super(parent, adaptor, new Slot(0, null));
 
+  public function new(parent, adaptor, target, render, hydrate = false) {
+    this.target = target;
+    this.hydrate = hydrate;
+    this.render = render;
+
+    mount(parent, adaptor, new Slot(0, null));
+  }
+
+  function __initialize() {
+    var parent = getParent();
+    var adaptor = getAdaptor();
     var doRender = () -> {
       child?.dispose();
-      child = render(this).createView(this, this.slot);
+      child = render();
+      child.mount(this, adaptor, slot);
     };
-
-    this.target = target;
 
     if (hydrate) adaptor.hydrate(() -> {
       this.link = parent == null 
@@ -61,14 +70,12 @@ class RootView extends View {
     return target;
   }
 
-  public function getSlot():Null<Slot> {
-    return slot;
-  }
+  function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {}
 
-  public function setSlot(slot:Null<Slot>) {}
-
-  public function dispose() {
-    link?.dispose();
+  function __dispose() {
     child?.dispose();
+    child = null;
+    link?.dispose();
+    link = null;
   }
 }

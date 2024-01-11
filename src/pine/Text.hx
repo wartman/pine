@@ -5,7 +5,7 @@ import pine.signal.Observer;
 import pine.signal.Signal;
 
 @:forward
-abstract Text(TextBuilder) to ViewBuilder to Child {
+abstract Text(TextView) to View to Child {
   public inline static function build(content) {
     return new Text(content);
   }
@@ -47,34 +47,26 @@ abstract Text(TextBuilder) to ViewBuilder to Child {
   }
 
   public inline function new(content:ReadOnlySignal<String>) {
-    this = new TextBuilder(content);
-  }
-}
-
-class TextBuilder implements ViewBuilder {
-  final content:ReadOnlySignal<String>;
-
-  public function new(content) {
-    this.content = content;
-  }
-
-  public function createView(parent:View, slot:Null<Slot>):View {
-    return new TextView(parent, parent.adaptor, slot, content);
+    this = new TextView(content);
   }
 }
 
 class TextView extends View {
   final content:ReadOnlySignal<String>;
-  final primitive:Dynamic;
-  final link:Disposable;
+  
+  var primitive:Null<Dynamic> = null;
+  var link:Null<Disposable> = null;
 
-  public function new(parent, adaptor, slot, content) {
-    super(parent, adaptor, slot);
+  public function new(content) {
     this.content = content;
-    this.primitive = adaptor.createTextPrimitive(content.peek(), slot, parent.findNearestPrimitive);
-    this.link = new Observer(() -> {
-      adaptor.updateTextPrimitive(primitive, content());
-    });
+  }
+
+  function __initialize() {
+    var adaptor = getAdaptor();
+    var parent = ensureParent();
+
+    primitive = adaptor.createTextPrimitive(content.peek(), slot, parent.findNearestPrimitive);
+    link = new Observer(() -> adaptor.updateTextPrimitive(primitive, content()));
 
     adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
   }
@@ -87,18 +79,18 @@ class TextView extends View {
     return primitive;
   }
 
-  public function getSlot():Null<Slot> {
-    return slot;
+  function __updateSlot(prevSlot:Null<Slot>, newSlot:Null<Slot>) {
+    var adaptor = getAdaptor();
+    var parent = ensureParent();
+
+    adaptor.movePrimitive(primitive, prevSlot, newSlot, parent.findNearestPrimitive);
   }
 
-  public function setSlot(slot:Null<Slot>) {
-    var prevSlot = this.slot;
-    this.slot = slot;
-    adaptor.movePrimitive(primitive, prevSlot, slot, parent.findNearestPrimitive);
-  }
+  function __dispose() {
+    var adaptor = getAdaptor();
 
-  public function dispose() {
-    link.dispose();
+    link?.dispose();
+    link = null;
     adaptor.removePrimitive(primitive, slot);
   }
 }

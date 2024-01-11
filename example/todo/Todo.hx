@@ -12,7 +12,7 @@ import pine.signal.*;
 using ex.BreezePlugin;
 
 function todoRoot() {
-  mount(Browser.document.getElementById('todo-root'), _ -> TodoApp.build({}));
+  mount(Browser.document.getElementById('todo-root'), () -> TodoApp.build({}));
 }
 
 class Todo extends Model {
@@ -89,7 +89,7 @@ class TodoStore extends Model {
 }
 
 class TodoApp extends Component {
-  function render(context) {
+  function render():Child {
     var store = TodoStore.load();
     return Html.template(<Provider value=store>
       <main class={Breeze.compose(
@@ -136,8 +136,8 @@ class TodoApp extends Component {
 }
 
 class TodoList extends Component {
-  function render(context:Context) {
-    final store = context.get(TodoStore);
+  function render():Child {
+    final store = get(TodoStore);
     return Html.template(<ul class={Breeze.compose(
       Flex.display(),
       Flex.gap(3),
@@ -162,9 +162,9 @@ class TodoList extends Component {
 }
 
 class TodoFooter extends Component {
-  function render(context:Context) {
-    var store = context.get(TodoStore);
-    return Html.build('footer')
+  function render():Child {
+    var store = get(TodoStore);
+    return Html.footer()
       .style(Breeze.compose(
         Background.color('black', 0),
         Typography.textColor('white', 0),
@@ -172,8 +172,8 @@ class TodoFooter extends Component {
       ))
       .attr(Style, store.total.map(total -> if (total == 0) 'display: none' else null))
       .children(
-        Html.build('span').children(
-          Html.build('strong').children(store.remaining.map(remaining -> switch remaining {
+        Html.span().children(
+          Html.strong().children(store.remaining.map(remaining -> switch remaining {
             case 1: '1 item left';
             default: '${remaining} items left';
           }))
@@ -183,11 +183,11 @@ class TodoFooter extends Component {
 }
 
 class TodoHeader extends Component {
-  function render(context:Context) {
-    var store = context.get(TodoStore);
+  function render():Child {
+    var store = get(TodoStore);
     var placeholder = new Signal('');
 
-    return Html.build('header')
+    return Html.header()
       .style(Breeze.compose(
         Spacing.pad('x', 3)
       ))
@@ -208,6 +208,7 @@ class TodoHeader extends Component {
               Spacing.margin('right', 'auto')
             )).children('Todos'),
             TodoInput.build({
+              styles: Sizing.width('70%'),
               name: 'create',
               value: placeholder,
               onSubmit: data -> {
@@ -218,9 +219,6 @@ class TodoHeader extends Component {
                 placeholder.set('');
               }
             })
-            .withStyle(Breeze.compose(
-              Sizing.width('70%')
-            ))
           ]),
 
         Html.build('ul')
@@ -242,8 +240,8 @@ class TodoHeader extends Component {
 class TodoItem extends Component {
   @:attribute final todo:Todo;
   
-  function render(context:Context) {
-    var store = context.get(TodoStore);
+  function render():Child {
+    var store = get(TodoStore);
 
     return Html.template(<li class={new Computation(() -> Breeze.compose(
       Flex.display(),
@@ -256,8 +254,8 @@ class TodoItem extends Component {
       if (todo.isCompleted() && !todo.isEditing()) Typography.textColor('gray', 500) else null
     ))} id='todo-${todo.id}' onDblClick={_ -> todo.isEditing.set(true)}>
       <Show 
-        when={todo.isEditing}
-        fallback={_ -> <>
+        condition={todo.isEditing}
+        fallback={() -> <>
           <input 
             class="toggle" 
             checked={todo.isCompleted}
@@ -270,11 +268,9 @@ class TodoItem extends Component {
           <Button action={() -> todo.isEditing.set(true)}>'Edit'</Button>
           <Button action={() -> store.removeTodo(todo)}>'Remove'</Button>
         </>}
-        children={_ -> <>
-          // This is a bit of a hack to get extensions working,
-          // but it does work! We should think up some sort
-          // of syntax to actually implement it.
-          {(<TodoInput 
+        children={() -> <>
+          <TodoInput
+            styles={Sizing.width('full')}
             name='edit'
             value={todo.description}
             isEditing={todo.isEditing}
@@ -283,7 +279,7 @@ class TodoItem extends Component {
               todo.description.set(data);
               todo.isEditing.set(false);
             })}
-          />).withStyle(Sizing.width('full'))}
+          />
           <Button action={() -> todo.isEditing.set(false)}>'Cancel'</Button>
         </>}
       />
@@ -343,14 +339,15 @@ class TodoItem extends Component {
   }
 }
 
-class TodoInput extends Component<Html> {
+class TodoInput extends Component {
+  @:attribute final styles:Null<ClassName> = null;
   @:attribute final name:String;
   @:attribute final onSubmit:(data:String) -> Void;
   @:attribute final onCancel:() -> Void;
   @:observable final isEditing:Bool = false;
   @:observable final value:String;
 
-  function render(_) {
+  function render():Child {
     var el:Signal<Null<InputElement>> = new Signal(null);
     var currentValue = new Signal(value.peek());
 
@@ -362,8 +359,9 @@ class TodoInput extends Component<Html> {
       }
     });
 
-    return Html.build('input')
+    return Html.input()
       .style(Breeze.compose(
+        styles,
         Spacing.pad('x', 3),
         Spacing.pad('y', 1),
         Border.radius(2),
@@ -390,12 +388,12 @@ class TodoInput extends Component<Html> {
   }
 }
 
-class VisibilityControl extends Component<Html> {
+class VisibilityControl extends Component {
   @:attribute final visibility:TodoVisibility;
 
-  function render(context:Context) {
-    var store = context.get(TodoStore);
-    return Html.build('li').children(
+  function render():Child {
+    var store = get(TodoStore);
+    return Html.li().children(
       Button.build({
         action: () -> store.visibility.set(visibility),
         selected: store.visibility.map(currentVisibility -> visibility == currentVisibility),
@@ -405,13 +403,13 @@ class VisibilityControl extends Component<Html> {
   }
 }
 
-class Button extends Component<Html> {
+class Button extends Component {
   @:observable final selected:Bool = false;
   @:attribute final action:()->Void;
   @:children @:attribute var child:Child;
 
-  function render(_) {
-    return Html.build('button')
+  function render():Child {
+    return Html.button()
       .style(new Computation<ClassName>(() -> [
         Spacing.pad('x', 3),
         Spacing.pad('y', 1),

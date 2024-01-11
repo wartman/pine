@@ -4,11 +4,10 @@ import pine.signal.Computation;
 import pine.signal.Signal;
 
 @:forward
-abstract Child(ViewBuilder) 
+abstract Child(View) 
   from Text
-  from Component 
-  from ViewBuilder
-  to ViewBuilder 
+  from View
+  to View 
 {
   @:from
   public inline static function ofComputationString(content:Computation<String>):Child {
