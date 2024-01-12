@@ -19,6 +19,10 @@ class Reconciler implements Disposable {
     return currentChildren;
   }
 
+  public inline function each(handler:(view:View)->Void) {
+    for (view in currentChildren) handler(view);
+  }
+
   public function reconcile(newChildren:Array<View>):Void {
     var newHead = 0;
     var oldHead = 0;
