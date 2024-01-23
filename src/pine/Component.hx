@@ -1,26 +1,26 @@
 package pine;
 
+import pine.signal.Runtime;
 import pine.Disposable;
 import pine.debug.Debug;
-import pine.signal.Graph;
 
 @:autoBuild(pine.ComponentBuilder.build())
 abstract class Component extends View implements DisposableHost {
-  final __disposables = new DisposableCollection();
+  final __owner = new Owner();
   var __child:Null<View> = null;
 
   abstract public function render():Child;
 
   public function addDisposable(disposable:DisposableItem):Void {
-    __disposables.addDisposable(disposable);
+    __owner.addDisposable(disposable);
   }
 
   public function removeDisposable(disposable:DisposableItem):Void {
-    __disposables.removeDisposable(disposable);
+    __owner.removeDisposable(disposable);
   }
   
   function __initialize() {
-    __child = withOwnedValue(__disposables, () -> untrackValue(render));
+    __child = __owner.own(() -> Runtime.current().untrack(render));
     __child.mount(this, getAdaptor(), slot);
   }
 
@@ -39,7 +39,7 @@ abstract class Component extends View implements DisposableHost {
   }
 
   function __dispose():Void {
-    __disposables.dispose();
+    __owner.dispose();
     __child?.dispose();
     __child = null;
   }

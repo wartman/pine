@@ -4,11 +4,20 @@ import pine.debug.Debug;
 import pine.signal.*;
 
 class Scope extends View {
+  @:fromMarkup
+  @:noCompletion
+  @:noUsing
+  public inline static function fromMarkup(props:{
+    @:children public final render:()->Child;
+  }) {
+    return new Scope(props.render);
+  }
+
   public inline static function wrap(render) {
     return new Scope(render);
   }
 
-  final render:()->View;
+  final render:()->Child;
 
   var link:Disposable;
   var child:Null<View> = null;

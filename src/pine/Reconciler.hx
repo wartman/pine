@@ -15,8 +15,12 @@ class Reconciler implements Disposable {
     this.createSlot = createSlot;
   }
 
-  public inline function getCurrentChildren() {
-    return currentChildren;
+  public inline function last() {
+    return currentChildren[currentChildren.length - 1];
+  }
+
+  public inline function each(handler:(index:Int, view:View)->Void) {
+    for (index => view in currentChildren) handler(index, view);
   }
 
   public function reconcile(newChildren:Array<View>):Void {

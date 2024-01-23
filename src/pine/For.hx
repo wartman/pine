@@ -3,12 +3,45 @@ package pine;
 import pine.debug.Debug;
 import pine.signal.Signal;
 import pine.signal.Observer;
+import pine.signal.Computation;
+
+using Lambda;
+
+// @:todo Uncertain if this flexibility is worth the complexity.
+@:forward
+abstract ForIterator<T>(ReadOnlySignal<Iterable<T>>) 
+  from Signal<Iterable<T>>
+  from Computation<Iterable<T>>
+  from ReadOnlySignal<Iterable<T>> 
+{
+  @:from public static inline function ofArray<T>(arr:Array<T>):ForIterator<T> {
+    return (arr:Iterable<T>);
+  }
+
+  @:from public static inline function ofSignalArray<T>(arr:Signal<Array<T>>):ForIterator<T> {
+    return cast arr;
+  }
+
+  @:from public static inline function ofReadOnlySignalArray<T>(arr:ReadOnlySignal<Array<T>>):ForIterator<T> {
+    return cast arr;
+  }
+
+  @:from public static inline function ofComputationArray<T>(arr:Computation<Array<T>>):ForIterator<T> {
+    return cast arr;
+  }
+
+  @:op(a())
+  public inline function get() {
+    return this.get();
+  }
+}
 
 class For<T:{}> extends View {
   @:fromMarkup
   @:noCompletion
+  @:noUsing
   public inline static function fromMarkup<T:{}>(props:{
-    public final each:ReadOnlySignal<Array<T>>;
+    public final each:ForIterator<T>;
     @:children public final child:(item:T)->Child;
   }) {
     return For.each(props.each, props.child);
@@ -18,7 +51,7 @@ class For<T:{}> extends View {
     return new For<T>(items, render);
   }
 
-  final items:ReadOnlySignal<Array<T>>;
+  final items:ForIterator<T>;
   final render:(item:T)->Child;
   final itemToViewsMap:Map<T, View> = [];
   
@@ -36,13 +69,8 @@ class For<T:{}> extends View {
   }
 
   public function getPrimitive():Dynamic {
-    var children = reconciler?.getCurrentChildren();
-
-    assert(children != null);
     assert(marker != null);
-
-    if (children.length == 0) return marker.getPrimitive();
-    return children[children.length - 1].getPrimitive();
+    return reconciler?.last()?.getPrimitive() ?? marker.getPrimitive();
   }
 
   function __initialize() {
@@ -59,7 +87,7 @@ class For<T:{}> extends View {
       var items = items();
 
       for (item => _ in itemToViewsMap) {
-        if (!items.contains(item)) {
+        if (!items.has(item)) {
           itemToViewsMap.remove(item);
         }
       }
@@ -84,12 +112,11 @@ class For<T:{}> extends View {
     marker.setSlot(newSlot);
     
     var previous = marker;
-    var children = reconciler?.getCurrentChildren() ?? [];
-    
-    for (index => child in children) {
+
+    reconciler.each((index, child) -> {
       child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
       previous = child;
-    }
+    });
   }
 
   function __dispose() {

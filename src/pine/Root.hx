@@ -30,8 +30,8 @@ private class RootView extends View {
   final target:Dynamic;
   final render:()->Child;
   final hydrate:Bool;
+  final owner:Owner = new Owner();
 
-  var link:Null<Disposable> = null;
   var child:Null<View> = null;
 
   public function new(parent, adaptor, target, render, hydrate = false) {
@@ -51,15 +51,11 @@ private class RootView extends View {
       child.mount(this, adaptor, slot);
     };
 
-    if (hydrate) adaptor.hydrate(() -> {
-      this.link = parent == null 
-        ? Observer.root(doRender) 
-        : Observer.track(doRender);
-    }) else {
-      this.link = parent == null 
-        ? Observer.root(doRender) 
-        : Observer.track(doRender);
-    }
+    owner.own(() -> if (hydrate) {
+      adaptor.hydrate(() -> Observer.track(doRender));
+    } else {
+      Observer.track(doRender);
+    });
   }
 
   public function findNearestPrimitive():Dynamic {
@@ -75,7 +71,6 @@ private class RootView extends View {
   function __dispose() {
     child?.dispose();
     child = null;
-    link?.dispose();
-    link = null;
+    owner.dispose();
   }
 }

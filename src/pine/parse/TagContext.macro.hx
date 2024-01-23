@@ -55,10 +55,10 @@ class TagContext {
         default: throw 'assert';
       }
       for (f in fields) {
-        tags.set(f.name, Tag.fromType({
+        tags[f.name] = Tag.fromType({
           value: f.name,
           pos: f.pos
-        }, f.type, FromPrimitive));
+        }, f.type, FromPrimitive);
       }
     }
   }

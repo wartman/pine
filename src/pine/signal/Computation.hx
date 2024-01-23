@@ -2,103 +2,162 @@ package pine.signal;
 
 import pine.Disposable;
 import pine.debug.Debug;
-import pine.signal.Graph;
 import pine.signal.Signal;
-
-using Kit;
-using Lambda;
+import haxe.Exception;
 
 @:forward
 abstract Computation<T>(ComputationObject<T>) 
-  from ComputationObject<T> 
+  from ComputationObject<T>
   to ReadOnlySignal<T>
-  to Disposable
   to DisposableItem
+  to Disposable 
 {
-  public inline function new(computation, ?equals) {
-    this = new ComputationObject(computation, equals);
+  /**
+    Eager Computations will always recompute, even if they don't
+    have any consumers of their own.
+  **/
+  public static function eager<T>(value, ?equal):Computation<T> {
+    return new ComputationObject(value, equal, true);
   }
 
-  @:op(a()) 
-  public inline function get():T {
+  /**
+    Lazy computations will only recompute if they have consumers.
+
+    This is the default behavior for Computations and is generally
+    recommended.
+  **/
+  public static function lazy<T>(value, ?equal):Computation<T> {
+    return new ComputationObject(value, equal, false);
+  }
+
+  public inline function new(value, ?equal) {
+    this = new ComputationObject(value, equal);
+  }
+
+  @:op(a())
+  public inline function get() {
     return this.get();
   }
-}
 
-class ComputationObject<T> extends Observer implements ProducerNode {
-  final consumers:List<ConsumerNode> = new List();
-  final equals:(a:T, b:T) -> Bool;
-  var value:Maybe<T> = None;
-
-  public function new(computation:()->T, ?equals) {
-    this.equals = equals ?? (a, b) -> a == b;
-    super(() -> {
-      var newValue = computation();
-      switch value {
-        case Some(oldValue) if (this.equals(oldValue, newValue)):
-          // noop
-        case Some(_):
-          version.increment();
-          value = Some(newValue);
-          notify();
-        case None:
-          value = Some(newValue);
-      }
-    });
-  }
-
-  public function get():T {
-    if (isInactive()) return resolveValue();
-
-    switch getCurrentConsumer() {
-      case None:
-      case Some(consumer) if (consumer == this):
-        error('Cannot observe self');
-      case Some(consumer):
-        consumer.bindProducer(this);
-        bindConsumer(consumer);
-    }
-
-    return resolveValue();
-  }
-
-  public function peek():T {
-    return resolveValue();
+  @:to
+  public inline function asReadOnlySignal():ReadOnlySignal<T> {
+    return this;
   }
 
   public inline function map<R>(transform:(value:T)->R):ReadOnlySignal<R> {
     return new Computation(() -> transform(get()));
   }
+}
 
-  public function notify() {
-    for (consumer in consumers) if (consumer.isInactive()) {
-      consumers.remove(consumer);
-    } else {
-      consumer.invalidate();
+enum ComputationStatus<T> {
+  Uninitialized;
+  Computing;
+  Disposed(lastValue:T);
+  Computed(value:T);
+  Errored(e:Exception);
+}
+
+class ComputationObject<T> implements Disposable {
+  final factory:()->T;
+  final equals:(a:T, b:T)->Bool;
+  
+  var node:Null<ReactiveNode>;
+  var status:ComputationStatus<T> = Uninitialized;
+
+  public function new(factory, ?equals, ?alwaysLive:Bool) {
+    this.factory = factory;
+    this.equals = equals ?? (a, b) -> a == b;
+    this.node = new ReactiveNode(Runtime.current(), _ -> compute(), {
+      alwaysLive: alwaysLive,
+      forceValidation: _ -> switch status  {
+        case Uninitialized: true;
+        default: false;
+      }
+    });
+    if (alwaysLive == true) Owner.current()?.addDisposable(this);
+  }
+
+  public function get():T {
+    // We always validate the node to ensure we have the most
+    // up-to-date value. This can mean the node is validated
+    // before it would usually be scheduled.
+    node?.validate();
+    node?.accessed();
+    return resolveValue();
+  }
+
+  public function peek():T {
+    node?.validate();
+    return resolveValue();
+  }
+
+  public function dispose() {
+    switch status {
+      case Disposed(_):
+      case Computed(value):
+        status = Disposed(value);
+        node?.disconnect();
+        node = null;
+      default:
+        // @todo: Is this an error?
     }
   }
 
-  public function bindConsumer(consumer:ConsumerNode) {
-    if (consumers.exists(node -> node.id == consumer.id)) return;
-    consumers.push(consumer);
+  function resolveValue() {
+    return switch status {
+      case Uninitialized:
+        error('No value computed');
+      case Errored(e):
+        throw e;
+      case Computing:
+        error('Cycle detected');
+      case Computed(value):
+        value;
+      case Disposed(lastValue):
+        lastValue;
+    };
   }
 
-  public function unbindConsumer(consumer:ConsumerNode) {
-    consumers.remove(consumer);
-  }
+  function compute() {
+    switch status {
+      case Uninitialized:
+        assert(node != null);
 
-  inline function resolveValue() {
-    return switch value {
-      case Some(value): value;
-      case None: error('Value was not initialized');
-    }
-  }
+        var value:Null<T> = null;
 
-  override function dispose() {
-    super.dispose();
-    for (consumer in consumers) {
-      unbindConsumer(consumer);
-      consumer.unbindProducer(this);
+        status = Computing;
+        
+        try node.useAsCurrentConsumer(() -> value = factory()) catch (e) {
+          status = Errored(e);
+        }
+        
+        switch status {
+          case Errored(_):
+          default: 
+            status = Computed(value);
+        }
+      case Computed(prevValue):
+        var value:T = prevValue;
+
+        status = Computing;
+
+        try node.useAsCurrentConsumer(() -> {
+          var newValue = factory();
+    
+          if (equals(prevValue, newValue)) return;
+    
+          value = newValue;
+          node.version++;
+        }) catch (e) {
+          status = Errored(e);
+        }
+
+        switch status {
+          case Errored(_):
+          default: 
+            status = Computed(value);
+        }
+      default:
     }
   }
 }

@@ -65,12 +65,12 @@ class ConstructorBuilder implements Builder {
       ):
         (macro function (props:$propsType) {
           @:mergeBlock $b{init};
-          var prevOwner = pine.signal.Graph.setCurrentOwner(Some(this));
+          var prevOwner = pine.Owner.setCurrent(this);
           try $b{late} catch (e) {
-            pine.signal.Graph.setCurrentOwner(prevOwner);
+            pine.Owner.setCurrent(prevOwner);
             throw e;
           }
-          pine.signal.Graph.setCurrentOwner(prevOwner);
+          pine.Owner.setCurrent(prevOwner);
           ${switch previousConstructorExpr {
             case Some(expr): macro pine.signal.Observer.untrack(() -> $expr);
             case None: macro null;

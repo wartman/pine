@@ -109,29 +109,6 @@ class TodoApp extends Component {
         </div>
       </main>
     </Provider>);
-
-    // return Provider.provide(store).children(
-    //   Html.build('main')
-    //     .style(Breeze.compose(
-    //       Flex.display(),
-    //       Flex.justify('center'),
-    //       Spacing.pad(10),
-    //     ))
-    //     .children(
-    //       Html.build('div')
-    //         .style(Breeze.compose(
-    //           Sizing.width('full'),
-    //           Border.radius(2),
-    //           Border.width(.5),
-    //           Breakpoint.viewport('700px', Sizing.width('700px'))
-    //         ))
-    //         .children([
-    //           TodoHeader.build({}),
-    //           TodoList.build({}),
-    //           TodoFooter.build({})
-    //         ])
-    //     )
-    // );
   }
 }
 
@@ -148,16 +125,6 @@ class TodoList extends Component {
         {todo -> <TodoItem todo=todo />}
       </For>
     </ul>);
-    // return Html.build('ul')
-    //   .style(Breeze.compose(
-    //     Flex.display(),
-    //     Flex.gap(3),
-    //     Flex.direction('column'),
-    //     Spacing.pad(3)
-    //   ))
-    //   .children(
-    //     For.each(store.visibleTodos, (todo, _) -> TodoItem.build({ todo: todo }))
-    //   );
   }
 }
 
@@ -275,67 +242,15 @@ class TodoItem extends Component {
             value={todo.description}
             isEditing={todo.isEditing}
             onCancel={() -> todo.isEditing.set(false)}
-            onSubmit={data -> Action.run(() -> {
+            onSubmit={data -> {
               todo.description.set(data);
               todo.isEditing.set(false);
-            })}
+            }}
           />
           <Button action={() -> todo.isEditing.set(false)}>'Cancel'</Button>
         </>}
       />
     </li>);
-
-    // return Html.build('li')
-    //   .style(new Computation(() -> Breeze.compose(
-    //     Flex.display(),
-    //     Flex.gap(3),
-    //     Flex.alignItems('center'),
-    //     Spacing.pad('y', 3),
-    //     Border.width('bottom', .5),
-    //     Border.color('gray', 300),
-    //     Select.child('last', Border.style('bottom', 'none')),
-    //     if (todo.isCompleted() && !todo.isEditing()) Typography.textColor('gray', 500) else null
-    //   )))
-    //   .attr(Id, 'todo-${todo.id}')
-    //   .on(DblClick, _ -> todo.isEditing.set(true))
-    //   .children(
-    //     Show.unless(todo.isEditing, _ -> Fragment.of([
-    //         Html.build('input')
-    //           .attr(ClassName, 'toggle')
-    //           .attr('type', 'checkbox')
-    //           .attr('checked', todo.isCompleted)
-    //           .on(Click, _ -> todo.isCompleted.update(status -> !status)),
-    //         Html.build('div')
-    //           .style(Spacing.margin('right', 'auto'))
-    //           .children(todo.description),
-    //         Button.build({
-    //           action: () -> todo.isEditing.set(true),
-    //           child: 'Edit'
-    //         }),
-    //         Button.build({
-    //           action: () -> store.removeTodo(todo),
-    //           child: 'Remove'
-    //         })
-    //       ])
-    //     ).otherwise(_ -> Fragment.of([
-    //       TodoInput.build({
-    //         name: 'edit',
-    //         value: todo.description,
-    //         isEditing: todo.isEditing,
-    //         onCancel: () -> todo.isEditing.set(false),
-    //         // Note: Using `Action` is not required, but it can help
-    //         // ensure changes are batched.
-    //         onSubmit: data -> Action.run(() -> {
-    //           todo.description.set(data);
-    //           todo.isEditing.set(false);
-    //         })
-    //       }).withStyle(Sizing.width('full')),
-    //       Button.build({
-    //         action: () -> todo.isEditing.set(false),
-    //         child: 'Cancel'
-    //       })
-    //     ]))
-    //   );
   }
 }
 

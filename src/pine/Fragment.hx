@@ -86,6 +86,15 @@ class TrackedFragment extends View {
     this.children = children;
   }
 
+  public function findNearestPrimitive():Dynamic {
+    return ensureParent().findNearestPrimitive();
+  }
+
+  public function getPrimitive():Dynamic {
+    assert(marker != null);
+    return reconciler?.last()?.getPrimitive() ?? marker.getPrimitive();
+  }
+
   function __initialize() {
     var adaptor = getAdaptor();
     
@@ -99,31 +108,17 @@ class TrackedFragment extends View {
     link = Observer.track(() -> reconciler.reconcile(children()));
   }
 
-  public function findNearestPrimitive():Dynamic {
-    return ensureParent().findNearestPrimitive();
-  }
-
-  public function getPrimitive():Dynamic {
-    var currentChildren = reconciler?.getCurrentChildren();
-
-    assert(marker != null);
-    assert(currentChildren != null);
-
-    if (currentChildren.length == 0) return marker.getPrimitive();
-    return currentChildren[currentChildren.length - 1].getPrimitive();
-  }
-
   function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
     if (newSlot == null) return;
+
     marker.setSlot(newSlot);
 
     var previous = marker;
-    var currentChildren = reconciler?.getCurrentChildren() ?? [];
 
-    for (index => child in currentChildren) {
+    reconciler.each((index, child) -> {
       child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
       previous = child;
-    }
+    });
   }
 
   function __dispose() {

@@ -1,7 +1,6 @@
 package pine;
 
 import pine.Disposable;
-import pine.signal.Graph;
 import pine.signal.Observer;
 import pine.signal.Signal;
 
@@ -10,7 +9,7 @@ class PrimitiveView extends View {
   final children:Children;
   final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
   final ref:Null<(primitive:Dynamic)->Void>;
-  final disposables:DisposableCollection = new DisposableCollection();
+  final owner:Owner = new Owner();
 
   var primitive:Null<Dynamic> = null;
   
@@ -27,19 +26,17 @@ class PrimitiveView extends View {
 
     this.primitive = adaptor.createPrimitive(tag, slot, parent.findNearestPrimitive);
     
-    var previousOwner = setCurrentOwner(Some(disposables));
-
-    for (name => value in attributes) Observer.track(() -> {
-      adaptor.updatePrimitiveAttribute(primitive, name, value());
+    owner.own(() -> {
+      for (name => value in attributes) Observer.track(() -> {
+        adaptor.updatePrimitiveAttribute(primitive, name, value());
+      });
+      
+      var previous:Null<View> = null;
+      for (index => child in children) {
+        child.mount(this, adaptor, new Slot(index, previous?.getPrimitive()));
+        previous = child;
+      }
     });
-    
-    var previous:Null<View> = null;
-    for (index => child in children) {
-      child.mount(this, adaptor, new Slot(index, previous?.getPrimitive()));
-      previous = child;
-    }
-
-    setCurrentOwner(previousOwner);
 
     if (ref != null) ref(primitive);
 
@@ -60,7 +57,7 @@ class PrimitiveView extends View {
 
   function __dispose() {
     getAdaptor().removePrimitive(primitive, slot);
-    disposables.dispose();
+    owner.dispose();
     for (child in children) child.dispose();
   }
 }

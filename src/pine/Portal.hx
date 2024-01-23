@@ -3,6 +3,7 @@ package pine;
 class Portal extends View {
   @:fromMarkup
   @:noCompletion
+  @:noUsing
   public inline static function fromMarkup(props:{
     public final target:Dynamic;
     @:children public final child:()->Child;
