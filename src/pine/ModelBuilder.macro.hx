@@ -8,7 +8,6 @@ final factory = new ClassBuilderFactory([
   new SignalFieldBuilder(),
   new ComputedFieldBuilder(),
   new ObservableFieldBuilder(),
-  new ActionFieldBuilder(),
   new JsonSerializerBuilder({}),
   new ConstructorBuilder({})
 ]);

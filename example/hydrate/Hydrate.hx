@@ -23,19 +23,17 @@ function hydrateRoot() {
   Browser.document.body.querySelector('#hydrate-target').innerHTML = html;
 
   var root = Browser.document.getElementById('hydrate-root');
-  ClientRoot.hydrate(root, () -> Counter.build({ count:0 }));
+  ClientRoot.hydrate(root, () -> Html.template(<Counter count={0}/>));
 }
 
 class Counter extends Component {
   @:signal public final count:Int;
   @:computed public final display:String = Std.string(count());
 
-  @:action
   public function decrement() {
     if (count() > 0) count.update(i -> i - 1);
   }
 
-  @:action
   public function increment() {
     count.update(i -> i + 1);
   }

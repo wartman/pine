@@ -9,12 +9,10 @@ using ex.BreezePlugin;
 class ToastManager extends Model {
   @:signal public final messages:Array<String>;
 
-  @:action
   public function addMessage(message:String) {
     messages.update(messages -> messages.concat([ message ]));
   }
   
-  @:action
   public function removeMessage(message:String) {
     messages.update(messages -> messages.filter(m -> m != message));
   }

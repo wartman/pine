@@ -12,7 +12,6 @@ final factory = new ClassBuilderFactory([
   new ObservableFieldBuilder(),
   new SignalFieldBuilder(),
   new ComputedFieldBuilder(),
-  new ActionFieldBuilder(),
   new ConstructorBuilder({}),
   new ComponentBuilder()
 ]);

@@ -70,7 +70,6 @@ class StaticFragment extends View {
   }
 }
 
-
 class TrackedFragment extends View {
   public static inline function of(children:ReadOnlySignal<Children>) {
     return new TrackedFragment(children);

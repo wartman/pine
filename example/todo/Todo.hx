@@ -59,7 +59,6 @@ class TodoStore extends Model {
     case Active: todos().filter(todo -> !todo.isCompleted());
   }
   
-  @:action
   public function addTodo(description:String) {
     uid.update(id -> id + 1);
     todos.update(todos -> [ new Todo({
@@ -70,13 +69,11 @@ class TodoStore extends Model {
     }) ].concat(todos));
   }
 
-  @:action
   public function removeTodo(todo:Todo) {
     todo.dispose();
     todos.update(todos -> todos.filter(t -> t != todo));
   }
 
-  @:action
   public function removeCompletedTodos() {
     todos.update(todos -> todos.filter(todo -> {
       if (todo.isCompleted()) {
