@@ -8,10 +8,10 @@ class Provider<T:Disposable> extends Component {
   }
 
   @:attribute final value:T;
-  @:children @:attribute var views:Null<Children> = null;
+  @:children @:attribute var views:Null<Children> = [];
 
   public function children(...children:Children) {
-    views = views.concat(children.toArray().flatten());
+    views = views.concat(children?.toArray()?.flatten() ?? []);
     return this;
   }
 

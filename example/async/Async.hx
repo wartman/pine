@@ -12,13 +12,19 @@ using Kit;
 
 function asyncRoot() {
   var root = Browser.document.body.querySelector('#async-root');
-  ClientRoot.mount(root, () -> Html.template(<Async />));
+  ClientRoot.mount(root, () -> Html.template(<Suspense
+    onSuspended={() -> trace('Suspended')}
+    onComplete={() -> trace('Done')}  
+  >
+    <Async />
+  </Suspense>));
 }
 
 class Async extends Component {
   function render() {
     var id = new Signal(0);
-    var resource = new Resource(id, id -> {
+    var resource = Resource.suspends(this).fetch(() -> {
+      var id = id();
       new Task(activate -> Timer.delay(() -> activate(Ok(id)), 1000));
     });
 

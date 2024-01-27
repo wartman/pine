@@ -1,7 +1,8 @@
 package pine.signal;
 
 import pine.Disposable;
-import pine.signal.Signal.ReadOnlySignal;
+import pine.signal.Signal;
+
 using Kit;
 
 enum ResourceStatus<T, E = Error> {
@@ -10,17 +11,15 @@ enum ResourceStatus<T, E = Error> {
   Error(error:E);
 }
 
-final ResourceNoOpSource:()->Null<Any> = () -> null;
-
-// @todo: Make `T` forced to be serializable
+// @todo: Make `T` forced to be serializable?
 @:forward
 @:forward.new
-abstract Resource<Query, T>(ResourceObject<Query, T>) 
+abstract Resource<T>(ResourceObject<T>) 
   to Disposable 
   to DisposableItem 
 {
-  public static function once<T>(fetch:()->Task<T>) {
-    return new Resource(ResourceNoOpSource, _ -> fetch());
+  public static function suspends(context:View) {
+    return new ResourceBuilder(context);
   }
 
   @:op(a())
@@ -29,26 +28,42 @@ abstract Resource<Query, T>(ResourceObject<Query, T>)
   }
 }
 
-class ResourceObject<Query, T> implements Disposable {
-  final data:Signal<ResourceStatus<T>>;
+class ResourceBuilder {
+  final suspense:Null<Suspense>;
+
+  public function new(context:View) {
+    this.suspense = context.get(Suspense);
+  }
+
+  public function fetch<T>(fetch):Resource<T> {
+    return new Resource<T>(fetch, suspense);
+  }
+}
+
+class ResourceObject<T> implements Disposable {
+  final suspense:Null<Suspense>;
   final owner:Owner;
+  final data:Signal<ResourceStatus<T>>;
 
   var link:Null<Cancellable>;
 
-  public function new(
-    source:ReadOnlySignal<Query>,
-    fetch:(query:Query)->Task<T>
-  ) {
+  public function new(fetch:()->Task<T>, ?suspense) {
+    this.suspense = suspense;
+
     data = new Signal(Loading);
     owner = new Owner();
 
     owner.own(() -> Observer.track(() -> {
       link?.cancel();
       data.set(Loading);
-
-      link = fetch(source()).handle(result -> switch result {
-        case Ok(value): data.set(Ok(value));
-        case Error(error): data.set(Error(error));
+      suspense?.markResourceAsSuspended(this);
+      link = fetch().handle(result -> switch result {
+        case Ok(value): 
+          data.set(Ok(value));
+          suspense?.markResourceAsCompleted(this);
+        case Error(error): 
+          data.set(Error(error));
+          suspense.markResourceAsFailed(this);
       });
     }));
 
@@ -63,5 +78,6 @@ class ResourceObject<Query, T> implements Disposable {
     owner.dispose();
     link?.cancel();
     link = null;
+    suspense?.markResourceAsCompleted(this);
   }
 }
