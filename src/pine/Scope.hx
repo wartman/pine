@@ -18,8 +18,8 @@ class Scope extends View {
   }
 
   final render:()->Child;
+  final owner:Owner = new Owner();
 
-  var link:Disposable;
   var child:Null<View> = null;
 
   public function new(render) {
@@ -27,11 +27,11 @@ class Scope extends View {
   }
 
   public function __initialize() {
-    link = new Observer(() -> {
+    owner.own(() -> Observer.track(() -> {
       child?.dispose();
       child = render();
       child.mount(this, getAdaptor(), slot);
-    });
+    }));
   }
 
   public function findNearestPrimitive():Dynamic {
@@ -48,8 +48,7 @@ class Scope extends View {
   }
 
   function __dispose() {
-    link?.dispose();
-    link = null;
+    owner.dispose();
     child?.dispose();
     child = null;
   }

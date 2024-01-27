@@ -108,7 +108,7 @@ abstract ReadOnlySignal<T>(ReadOnlySignalObject<T>)
   }
 
   @:from public inline static function ofStaticValue<T>(value:T):ReadOnlySignal<T> {
-    return new StaticSignalObject(value);
+    return new ReadOnlySignal(value);
   }
 
   public inline function new(value:T) {
