@@ -1,6 +1,5 @@
 package pine;
 
-import pine.Disposable;
 import pine.signal.Observer;
 import pine.signal.Signal;
 

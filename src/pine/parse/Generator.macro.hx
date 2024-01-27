@@ -71,6 +71,7 @@ class Generator {
               var attrType = field.type.toComplexType();
               var name = attr.name.value;
               var expr = macro @:pos(attr.value.pos) (${attr.value}:pine.signal.Signal.ReadOnlySignal<$attrType>);
+              
               macro @:pos(attr.name.pos) $v{name} => $expr;
             } ];
             macro @:pos(name.pos) new pine.PrimitiveView(

@@ -8,7 +8,7 @@ abstract Observer(ObserverObject) to DisposableItem to Disposable {
     Runtime.current().untrack(effect);
   }
 
-  public inline static function track(effect:()->Void):Disposable {
+  public inline static function track(effect:()->Void) {
     return new Observer(effect);
   }
 
