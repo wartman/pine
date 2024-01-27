@@ -10,22 +10,22 @@ class Suspense extends Component {
   @:attribute final onFailed:()->Void = null;
   @:children @:attribute final children:Children;
 
-  final resources:Array<ResourceObject<Any>> = [];
+  final resources:Array<ResourceObject<Any, Any>> = [];
 
-  function markResourceAsSuspended(resource:ResourceObject<Any>) {
+  function markResourceAsSuspended(resource:ResourceObject<Any, Any>) {
     if (resources.contains(resource)) return;
     var isFirstSuspense = resources.length == 0;
     resources.push(resource);
     if (isFirstSuspense && onSuspended != null) onSuspended(); 
   }
 
-  function markResourceAsCompleted(resource:ResourceObject<Any>) {
+  function markResourceAsCompleted(resource:ResourceObject<Any, Any>) {
     if (!resources.contains(resource)) return;
     resources.remove(resource);
     if (resources.length == 0 && onComplete != null) onComplete();
   }
 
-  function markResourceAsFailed(resource:ResourceObject<Any>) {
+  function markResourceAsFailed(resource:ResourceObject<Any, Any>) {
     if (!resources.contains(resource)) return;
     resources.remove(resource);
     if (resources.length == 0 && onFailed != null) onFailed();

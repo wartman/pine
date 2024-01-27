@@ -14,9 +14,10 @@ enum ResourceStatus<T, E = Error> {
 // @todo: Make `T` forced to be serializable?
 @:forward
 @:forward.new
-abstract Resource<T>(ResourceObject<T>) 
+abstract Resource<T, E = Error>(ResourceObject<T, E>) 
   to Disposable 
-  to DisposableItem 
+  to DisposableItem
+  to ReadOnlySignal<ResourceStatus<T, E>>
 {
   public static function suspends(context:View) {
     return new ResourceBuilder(context);
@@ -40,14 +41,14 @@ class ResourceBuilder {
   }
 }
 
-class ResourceObject<T> implements Disposable {
+class ResourceObject<T, E = Error> implements Disposable {
   final suspense:Null<Suspense>;
   final owner:Owner;
-  final data:Signal<ResourceStatus<T>>;
+  final data:Signal<ResourceStatus<T, E>>;
 
   var link:Null<Cancellable>;
 
-  public function new(fetch:()->Task<T>, ?suspense) {
+  public function new(fetch:()->Task<T, E>, ?suspense) {
     this.suspense = suspense;
 
     data = new Signal(Loading);
@@ -72,6 +73,10 @@ class ResourceObject<T> implements Disposable {
 
   public inline function get() {
     return data.get();
+  }
+
+  public inline function peek() {
+    return data.peek();
   }
 
   public function dispose() {

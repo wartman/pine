@@ -9,6 +9,7 @@ import pine.html.client.*;
 import pine.signal.*;
 
 using Kit;
+using pine.signal.Tools;
 
 function asyncRoot() {
   var root = Browser.document.body.querySelector('#async-root');
@@ -29,15 +30,16 @@ class Async extends Component {
     });
 
     return Html.template(<div>
-      // To use a Resource, simply put it into a Scope and switch
-      // over the possible responses. 
-      <Scope>
-        {() -> switch resource() {
+      <div>
+        // You could wrap the Resource in a `<Scope>...</Scope>`,
+        // but `pine.signal.Tools` gives us the handy `scope` extension
+        // method that lets us use the resource directly.
+        {resource.scope(res -> switch res {
           case Error(e): <p>{e.message}</p>;
           case Ok(value): <p>{value}</p>;
           case Loading: <p>"Loading..."</p>;
-        }}
-      </Scope>
+        })}
+      </div>
       <Button 
         action={() -> id.update(id -> id + 1)}
         disabled={new Computation(() -> switch resource() {
