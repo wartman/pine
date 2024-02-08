@@ -7,7 +7,7 @@ import haxe.macro.Type;
 using Lambda;
 using StringTools;
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 
 class Tag {
   public static final fromMarkupMeta = ':fromMarkup';

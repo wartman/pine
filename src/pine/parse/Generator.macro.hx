@@ -6,7 +6,7 @@ import haxe.macro.Expr;
 using Lambda;
 using haxe.macro.Tools;
 using pine.parse.ParseTools;
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 
 // @todo: Figure out how to get this thing to enable completion.
 class Generator {

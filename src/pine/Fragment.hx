@@ -76,10 +76,10 @@ class TrackedFragment extends View {
   }
 
   final children:ReadOnlySignal<Children>;
+  final owner:Owner = new Owner();
   
   var reconciler:Null<Reconciler> = null;
   var marker:Null<View> = null;
-  var link:Null<Disposable> = null;
   
   public function new(children) {
     this.children = children;
@@ -103,8 +103,7 @@ class TrackedFragment extends View {
     });
 
     marker.mount(this, adaptor, slot);
-
-    link = Observer.track(() -> reconciler.reconcile(children()));
+    owner.own(() -> Observer.track(() -> reconciler.reconcile(children())));
   }
 
   function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
@@ -121,8 +120,7 @@ class TrackedFragment extends View {
   }
 
   function __dispose() {
-    link?.dispose();
-    link = null;
+    owner.dispose();
     marker?.dispose();
     marker = null;
     reconciler?.dispose();

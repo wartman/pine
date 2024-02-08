@@ -3,7 +3,7 @@ package pine.macro.builder;
 import haxe.macro.Expr;
 
 using Lambda;
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 
 
 class SignalFieldBuilder implements Builder {

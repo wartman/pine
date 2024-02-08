@@ -5,7 +5,7 @@ import haxe.macro.Context;
 
 using Lambda;
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 
 typedef JsonSerializerBuilderOptions = {
   public final ?constructorAccessor:Expr;
@@ -31,7 +31,7 @@ class JsonSerializerBuilder implements Builder {
     var fields = builder.getProps('new');
     var serializer:Array<ObjectField> = [];
     var deserializer:Array<ObjectField> = [];
-    
+
     for (field in fields) {
       var result = parseField(builder, field);
       serializer.push({ field: field.name, expr: result.serializer });

@@ -1,7 +1,6 @@
 package pine.signal;
 
 import pine.debug.Debug;
-import pine.Disposable;
 
 enum abstract RuntimeStatus(Bool) to Bool {
   final Idle = false;

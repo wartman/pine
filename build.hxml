@@ -4,6 +4,7 @@
 
 -lib kit
 -lib kit.spec
+-lib kit.http
 -lib breeze
 
 --debug

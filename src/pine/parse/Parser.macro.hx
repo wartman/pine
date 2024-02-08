@@ -5,7 +5,7 @@ import pine.parse.Node;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 using haxe.macro.Tools;
 
 typedef ParserOptions = {

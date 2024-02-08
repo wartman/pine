@@ -39,7 +39,7 @@ class Scope extends View {
   }
 
   public function getPrimitive():Dynamic {
-    assert(child != null);
+    assert(child != null, 'Attempted to get a primitive from an uninitialized Scope');
     return child.getPrimitive();
   }
 

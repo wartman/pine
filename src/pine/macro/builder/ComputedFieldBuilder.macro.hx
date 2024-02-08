@@ -2,7 +2,7 @@ package pine.macro.builder;
 
 import haxe.macro.Expr;
 
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 
 class ComputedFieldBuilder implements Builder {
   public final priority:BuilderPriority = Normal;

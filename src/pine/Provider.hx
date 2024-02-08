@@ -57,8 +57,7 @@ abstract ProviderBuilder(Array<Disposable>) {
     return child;
   }
 
-  @:to
-  public inline function toChild():Child {
+  @:to public inline function toChild():Child {
     return children([]);
   }
 }

@@ -54,9 +54,9 @@ class For<T:{}> extends View {
   final items:ForIterator<T>;
   final render:(item:T)->Child;
   final itemToViewsMap:Map<T, View> = [];
+  final owner:Owner = new Owner();
   
   var reconciler:Null<Reconciler> = null;
-  var link:Null<Disposable> = null;
   var marker:Null<View> = null;
 
   public function new(items, render) {
@@ -81,9 +81,7 @@ class For<T:{}> extends View {
 
     marker.mount(this, getAdaptor(), slot);
 
-    // @todo: There may be a more efficient way to iterate
-    // over all of this?
-    link = new Observer(() -> {
+    owner.own(() -> Observer.track(() -> {
       var items = items();
 
       for (item => _ in itemToViewsMap) {
@@ -104,7 +102,7 @@ class For<T:{}> extends View {
       }
 
       reconciler.reconcile(next);
-    });
+    }));
   }
 
   function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
@@ -120,8 +118,7 @@ class For<T:{}> extends View {
   }
 
   function __dispose() {
-    link?.dispose();
-    link = null;
+    owner.dispose();
     marker?.dispose();
     marker = null;
     reconciler?.dispose();

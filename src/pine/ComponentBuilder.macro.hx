@@ -4,7 +4,7 @@ import haxe.macro.Expr;
 import pine.macro.*;
 import pine.macro.builder.*;
 
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 using Lambda;
 
 final factory = new ClassBuilderFactory([

@@ -20,18 +20,15 @@ abstract HtmlTagBuilder(HtmlTagBuilderImpl) from HtmlTagBuilderImpl {
     this = new HtmlTagBuilderImpl(tag);
   }
 
-  @:to(View)
-  public inline function toView():View {
+  @:to public inline function toView():View {
     return this.createView();
   }
 
-  @:to(Child)
-  public inline function toChild():Child {
+  @:to public inline function toChild():Child {
     return this.createView();
   }
 
-  @:to(Children)
-  public inline function toChildren():Children {
+  @:to public inline function toChildren():Children {
     return this.createView();
   }
 }

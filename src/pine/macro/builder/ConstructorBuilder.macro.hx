@@ -5,7 +5,7 @@ import haxe.macro.Expr;
 
 using Kit;
 using haxe.macro.Tools;
-using pine.macro.MacroTools;
+using pine.macro.Tools;
 
 typedef ConstructorBuilderOptions = {
   public final ?privateConstructor:Bool;

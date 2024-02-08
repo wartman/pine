@@ -12,22 +12,8 @@ abstract Computation<T>(ComputationObject<T>)
   to DisposableItem
   to Disposable 
 {
-  /**
-    Eager Computations will always recompute, even if they don't
-    have any consumers of their own.
-  **/
-  public static function eager<T>(value, ?equal):Computation<T> {
+  public static function untracked<T>(value, ?equal):Computation<T> {
     return new ComputationObject(value, equal, true);
-  }
-
-  /**
-    Lazy computations will only recompute if they have consumers.
-
-    This is the default behavior for Computations and is generally
-    recommended.
-  **/
-  public static function lazy<T>(value, ?equal):Computation<T> {
-    return new ComputationObject(value, equal, false);
   }
 
   public inline function new(value, ?equal) {
@@ -60,21 +46,26 @@ enum ComputationStatus<T> {
 class ComputationObject<T> implements Disposable {
   final factory:()->T;
   final equals:(a:T, b:T)->Bool;
+  final isUntracked:Bool;
   
   var node:Null<ReactiveNode>;
   var status:ComputationStatus<T> = Uninitialized;
 
-  public function new(factory, ?equals, ?alwaysLive:Bool) {
+  public function new(factory, ?equals, ?isUntracked:Bool) {
     this.factory = factory;
     this.equals = equals ?? (a, b) -> a == b;
+    this.isUntracked = isUntracked;
     this.node = new ReactiveNode(Runtime.current(), _ -> compute(), {
-      alwaysLive: alwaysLive,
+      alwaysLive: isUntracked,
       forceValidation: _ -> switch status  {
         case Uninitialized: true;
         default: false;
       }
     });
-    if (alwaysLive == true) Owner.current()?.addDisposable(this);
+    // Untracked computations will never stop being live, so they
+    // need to be disposed. Typically there should be an Owner to
+    // handle this.
+    if (isUntracked == true) Owner.current()?.addDisposable(this);
   }
 
   public function get():T {
@@ -82,7 +73,8 @@ class ComputationObject<T> implements Disposable {
     // up-to-date value. This can mean the node is validated
     // before it would usually be scheduled.
     node?.validate();
-    node?.accessed();
+    // Untracked computations cannot be used as producers.
+    if (!isUntracked) node?.accessed();
     return resolveValue();
   }
 
