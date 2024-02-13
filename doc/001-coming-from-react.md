@@ -35,7 +35,7 @@ class Counter extends Component {
   var count:Int = 0;
 
   function render() {
-    return new Html.button()
+    return Html.button()
       .on(Click, _ -> count.set(i -> i + 1))
       .children('You pressed me ', count.map(Std.string), ' times');
   }
