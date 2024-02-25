@@ -3,6 +3,9 @@ Pine
 
 A simple reactive UI framework for Haxe.
 
+> Note: Probably don't use this right now! The Api is changing
+> drastically and constantly.
+
 Usage
 -----
 
