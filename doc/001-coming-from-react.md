@@ -31,14 +31,13 @@ export default function Counter() {
 import pine.*;
 import pine.html.*;
 
-class Counter extends AutoComponent {
+class Counter extends Component {
   var count:Int = 0;
 
-  function render(context:Context) {
-    return new Html<'button'>({
-      onclick: _ -> count.set(i -> i + 1),
-      children: [ 'You pressed me ', new Text(count), ' times' ]
-    });
+  function render() {
+    return Html.button()
+      .on(Click, _ -> count.set(i -> i + 1))
+      .children('You pressed me ', count.map(Std.string), ' times');
   }
 }
 ```
@@ -126,7 +125,7 @@ import pine.html.client.Client;
 function main() {
   mount(
     js.Browser.document.getElementById('root'),
-    () -> new ChatApp({})
+    () -> ChatApp.build({})
   );
 }
 
@@ -147,104 +146,51 @@ function createConnection(serverUrl:String, roomId:String):Connection {
   };
 }
 
-class ChatRoom extends AutoComponent {
+class ChatRoom extends Component {
   @:signal final roomId:String;
   @:signal final serverUrl:String = 'https://localhost:1234';
 
-  function build() {
-    effect(() -> {
-      var connection = createConnection(serverUrl(), roomId());
+  function render() {
+    var connection:Null<Connection> = null;
+
+    addDisposable(() -> connection?.disconnect());
+
+    Observer.track(() -> {
+      connection?.disconnect();
+      connection = createConnection(serverUrl(), roomId());
       connection.connect();
-      return () -> connection.disconnect();
     });
 
-    return new Fragment([
-      new Html<'label'>({
-        children: [
-          new Text('Server URL: '),
-          new Html<'input'>({
-            value: serverUrl,
-            onchange: (e) -> serverUrl.set((cast e.target:js.html.InputElement).value)
-          })
-        ]
-      }),
-      new Text('Welcome to the '),
-      new Text(roomId),
-      new Text(' room')
-    ]);
+    return Fragment.of(
+      Html.label().children(
+        'Server URL: ',
+        Html.input().attr('value', serverUrl).on(Change, e -> serverUrl.set((cast e.target:js.html.InputElement).value))
+      ),
+      'Welcome to the ', roomId, ' room'
+    );
   }
 }
 
-class ChatApp extends AutoComponent {
+class ChatApp extends Component {
   @:signal final roomId:String = 'general';
   @:signal final show:Bool = false;
 
-  function build() {
-    return new Fragment([
-      new Html<'label'>({
-        children: [
-          new Text('Choose the chat room: '),
-          new Html<'select'>({
-            value: roomId,
-            onchange: e -> roomId.set((cast e.target:js.html.InputElement).value),
-            children: [
-              new Html<'option'>({ value: 'general', children: 'general' }),
-              new Html<'option'>({ value: 'travel', children: 'travel' }),
-              new Html<'option'>({ value: 'music', children: 'music' })
-            ]
-          })
-        ]
-      }),
-      new Html<'button'>({
-        onclick: e -> show.update(showing -> !showing),
-        children: [
-          new Text(compute(() -> if (show()) 'Close chat' else 'Open chat'))
-        ]
-      }),
-      new Show(show, () -> new Html<'hr'>({})),
-      new Show(show, () -> new ChatRoom({ roomId: roomId }))
-    ]);
-  }
-}
-```
-
-Pine also doesn't have a `useRef`, but because `build` methods only run once it simply doesn't need it! For example, this:
-
-```js
-import { useRef } from 'react';
-
-export default function Counter() {
-  let ref = useRef(0);
-
-  function handleClick() {
-    ref.current = ref.current + 1;
-    alert('You clicked ' + ref.current + ' times!');
-  }
-
-  return (
-    <button onClick={handleClick}>
-      Click me!
-    </button>
-  );
-}
-```
-
-...will just look like this in Pine:
-
-```haxe
-import pine.*;
-import pine.html.*;
-
-class Counter extends AutoComponent {
-  function build() {
-    var ref = { current: 0 };
-    return new Html<'button'>({
-      onclick: e -> {
-        ref.current += 1;
-        js.Browser.window.alert('You clicked ${ref.current} times!');
-      },
-      children: 'Click me!'
-    });
+  function render() {
+    return Fragment.of(
+      Html.label().children(
+        'Choose the chat room: ',
+        Html.select().attr('value', roomId).on(Change, e -> roomId.set((cast e.target:js.html.InputElement).value).children(
+          Html.option().attr('value', 'general').children('general'),
+          Html.option().attr('value', 'travel').children('travel'),
+          Html.option().attr('value', 'music').children('music')
+        )
+      ),
+      Html.button().on(Click, e -> show.update(showing -> !showing)).children(
+        Show.when(show, () -> 'Close chat').otherwise(() -> 'Open chat')
+      ),
+      Show.when(show, Html.hr())
+      Show.when(show, ChatRoom.build({ roomId: roomId }))
+    );
   }
 }
 ```
