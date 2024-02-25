@@ -44,9 +44,9 @@ abstract ProviderBuilder(Array<Disposable>) {
     return abstract;
   }
 
-  public function children(children:Children):Child {
+  public function children(...children:Children):Child {
     var provider = this.shift();
-    var child = Provider.build({ value: provider, views: children });
+    var child = Provider.build({ value: provider, views: children.toArray().flatten() });
     
     while (provider != null) {
       provider = this.shift();

@@ -38,4 +38,9 @@ abstract Child(View)
   public inline static function ofFloat(content:Float):Child {
     return (content:Text);
   }
+
+  @:from
+  public inline static function ofChildren(children:Children) {
+    return Fragment.of(children);
+  }
 }

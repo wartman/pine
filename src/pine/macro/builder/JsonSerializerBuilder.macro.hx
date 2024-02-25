@@ -65,7 +65,7 @@ class JsonSerializerBuilder implements Builder {
 
     builder.addField(constructors
       .getField('fromJson')
-      .unwrap()
+      .orThrow()
       .applyParameters(builder.getClass().params.toTypeParamDecl()));
 
     builder.add(macro class {

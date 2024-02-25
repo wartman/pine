@@ -60,7 +60,7 @@ class ComponentBuilder implements Builder {
   
     builder.addField(constructors
       .getField('build')
-      .unwrap()
+      .orThrow()
       .applyParameters(params));
 
     // for (prop in props) {

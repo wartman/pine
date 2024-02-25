@@ -7,7 +7,6 @@ import pine.signal.Computation;
 
 using Lambda;
 
-// @:todo Uncertain if this flexibility is worth the complexity.
 @:forward
 abstract ForIterator<T>(ReadOnlySignal<Iterable<T>>) 
   from Signal<Iterable<T>>
