@@ -1,6 +1,6 @@
 package pine.bridge;
 
-import kit.http.Request;
+// import kit.http.Request;
 import pine.html.Html;
 
 abstract Link(LinkBuilder) {
@@ -49,17 +49,17 @@ class LinkComponent extends Component {
   @:attribute final builder:HtmlTagBuilder;
 
   function render() {
-    var router = get(Router);
+    // var router = get(Router);
     var visitor = get(RouteVisitor);
 
     visitor?.enqueue(to);
 
-    if (router != null) {
-      builder.on(Click, e -> {
-        e.preventDefault();
-        router.go(new Request(Get, to));
-      });
-    }
+    // if (router != null) {
+    //   builder.on(Click, e -> {
+    //     e.preventDefault();
+    //     router.go(new Request(Get, to));
+    //   });
+    // }
 
     return builder.attr('href', to).toView();
   }

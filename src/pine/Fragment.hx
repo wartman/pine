@@ -19,6 +19,11 @@ abstract Fragment(View) to View to Child {
   public inline function new(children:Children) {
     this = new StaticFragment(children);
   }
+
+  @:to
+  public inline function toChildren():Children {
+    return this;
+  }
 }
 
 class StaticFragment extends View {

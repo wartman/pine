@@ -35,7 +35,7 @@ class Scope extends View {
   }
 
   public function findNearestPrimitive():Dynamic {
-    return ensureParent().findNearestPrimitive();
+    return getParent().findNearestPrimitive();
   }
 
   public function getPrimitive():Dynamic {

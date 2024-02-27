@@ -100,10 +100,7 @@ class IslandAsset implements Asset {
   function createMainHaxeFunction() {
     var buf = new StringBuf();
     buf.add('function main() {\n');
-    // buf.add('  var target = js.Browser.document.createElement("div");\n');
-    // buf.add('  js.Browser.document.body.append(target);\n');
-    // buf.add('  var root = pine.html.client.ClientRoot.mount(target, () -> pine.Placeholder.build());\n');
-    buf.add('  var adaptor = new pine.html.client.ClientAdaptor();');
+    buf.add('  var adaptor = new pine.html.client.ClientAdaptor();\n');
     for (island in islands.getIslandPaths()) {
       buf.add('  $island.hydrateIslands(adaptor);\n');
     }

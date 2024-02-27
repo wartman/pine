@@ -1,5 +1,6 @@
 package pine.bridge;
 
+import kit.http.Request;
 import kit.file.adaptor.SysAdaptor;
 import kit.file.FileSystem;
 import pine.html.server.*;
@@ -66,6 +67,7 @@ class Bridge extends Model {
         .provide(client)
         .provide(islands)
         .provide(visitor)
+        .provide(new Navigator({ request: new Request(Get, path) }))
         .children(Suspense.build({
           onSuspended: () -> {
             suspended = true;

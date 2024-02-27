@@ -1,4 +1,4 @@
-import bridge.island.Counter.bridgeRoot;
+import bridge.Main.bridgeRoot;
 
 function main() {
   bridgeRoot();
