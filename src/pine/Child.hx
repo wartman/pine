@@ -40,7 +40,7 @@ abstract Child(View)
   }
 
   @:from
-  public inline static function ofChildren(children:Children) {
+  public inline static function ofChildren(children:Children):Child {
     return Fragment.of(children);
   }
 }

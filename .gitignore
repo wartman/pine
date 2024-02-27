@@ -1,7 +1,9 @@
 /dist
 /dump
 /notes
+/temp
 /_src
 /_test
 /*/**/__*
 /__*
+/node_modules

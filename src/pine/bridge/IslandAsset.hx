@@ -1,12 +1,16 @@
 package pine.bridge;
 
+import kit.file.adaptor.*;
+import kit.file.*;
+
 using Kit;
 using haxe.io.Path;
+using pine.bridge.cli.CommandTools;
 
 class IslandAsset implements Asset {
   static macro function getCurrentClassPaths();
 
-  final config:IslandConfig;
+  final config:ClientConfig;
   final islands:IslandContext;
 
   public function new(config, islands) {
@@ -24,45 +28,69 @@ class IslandAsset implements Asset {
   }
   #else
   public function process(context:AssetContext):Task<Nothing> {
-    trace(createMainHaxeFunction());
-    trace(createHaxeCommand());
-    return Nothing;
+    // return outputMainFile();
+    return outputMainFile().next(_ -> runHaxeCommand());
+  }
+
+  function outputMainFile() {
+    var path = config.main.withExtension('hx');
+    var fs = new FileSystem(new SysAdaptor(Sys.getCwd()));
+
+    return fs.directory(config.outputDirectory)
+      .create()
+      .next(dir -> dir.file(path).write(createMainHaxeFunction()));
+  }
+
+  function runHaxeCommand():Task<Nothing> {
+    var path = createHaxeCommand();
+    return switch Sys.command(path) {
+      case 0: Nothing;
+      case _: new Error(InternalError, 'Failed to generate haxe file');
+    }
   }
 
   function createHaxeCommand() {
-    var paths:Array<String> = getCurrentClassPaths();
-    var parts = [ 'haxe' ];
+    // var paths:Array<String> = getCurrentClassPaths();
+    var paths:Array<String> = [];
+    var cmd = [ 'haxe'.createNodeCommand() ];
     var libraries = config.libraries ?? [];
 
     if (!libraries.contains('pine')) {
       libraries.push('pine');
     }
 
-    if (!libraries.contains('kit')) {
-      libraries.push('kit');
+    for (lib in libraries) {
+      cmd.push('-lib $lib');
     }
 
-    for (lib in libraries) {
-      parts.push('--library $lib');
-    }
+    cmd.push(config.hxml.withExtension('hxml'));
 
     if (config.sources != null) {
       paths = paths.concat(config.sources);
     }
 
-    for (path in paths) {
-      parts.push('--class-path $path');
-    }
-    
-    parts.push('--main ${getMainName()}');
-    parts.push('--js ${getTarget()}');
+    paths.push(config.outputDirectory);
 
-    return parts.join(' ');
+    for (path in paths) {
+      cmd.push('-cp $path');
+    }
+
+    #if debug
+    cmd.push('--debug');
+    #end
+    
+    cmd.push('-D pine.client');
+    cmd.push('-main ${getMainName()}');
+    cmd.push('-js ${getTarget()}');
+
+    trace(cmd.join(' '));
+
+    return cmd.join(' ');
   }
 
   function getTarget() {
     // @todo: Include version with app name.
-    return (config?.target ?? 'app.js').withExtension('js');
+    return Path.join([ config.outputDirectory, config.outputName ]).withExtension('js');
   }
 
   function getMainName() {
@@ -72,12 +100,12 @@ class IslandAsset implements Asset {
   function createMainHaxeFunction() {
     var buf = new StringBuf();
     buf.add('function main() {\n');
-    // @todo: figure out a better root
-    buf.add('  var target = js.Browser.document.createTextNode("");\n');
-    buf.add('  js.Browser.document.body.append(target);\n');
-    buf.add('  var root = pine.html.client.ClientRoot.hydrate(target, () -> pine.Placeholder.build());\n');
+    // buf.add('  var target = js.Browser.document.createElement("div");\n');
+    // buf.add('  js.Browser.document.body.append(target);\n');
+    // buf.add('  var root = pine.html.client.ClientRoot.mount(target, () -> pine.Placeholder.build());\n');
+    buf.add('  var adaptor = new pine.html.client.ClientAdaptor();');
     for (island in islands.getIslandPaths()) {
-      buf.add('  $island.hydrateIslands(root);\n');
+      buf.add('  $island.hydrateIslands(adaptor);\n');
     }
     buf.add('}\n');
     return buf.toString();

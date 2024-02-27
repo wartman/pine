@@ -1,9 +1,9 @@
--cp src
--cp example
+dependencies.hxml
 
 -lib kit
 -lib kit.http
--lib breeze
+-lib kit.file
+-lib hxnodejs
 
 -D js-es=6
 -D analyzer-optimize
@@ -13,5 +13,6 @@
 --dce full
 # --macro nullSafety("pine")
 
--main Examples
+-main BridgeExample
+# -main Examples
 -js dist/assets/index.js

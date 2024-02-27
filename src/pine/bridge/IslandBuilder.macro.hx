@@ -35,13 +35,11 @@ class IslandBuilder implements Builder {
       }
 
       #if pine.client
-      public static function hydrateIslands(parent:pine.View) {
+      public static function hydrateIslands(adaptor:pine.Adaptor) {
         var elements = pine.bridge.IslandElement.getIslandElementsForComponent(islandName);
         return [ for (el in elements) {
           var props:{} = pine.bridge.IslandElement.getIslandProps(el);
-          var component = fromJson(props);
-          var adaptor = parent.getAdaptor();
-          adaptor.hydrate(() -> component.mount(parent, adaptor, null));
+          pine.Root.build(el, adaptor, () -> fromJson(props)).hydrate();
         } ];
       }
       #end

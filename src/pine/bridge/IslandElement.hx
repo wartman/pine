@@ -32,17 +32,17 @@ class IslandElement extends Component {
 
   @:attribute final component:String;
   @:attribute final props:{};
-  @:children @:attribute final children:Children;
+  @:children @:attribute final child:Child;
 
-  function render() {
+  function render():Child {
     #if pine.client
-    return Fragment.of(children);
+    return child;
     #else
     get(IslandContext)?.registerIsland(component);
     return new PrimitiveView(tag, [
       'data-component' => component,
       'data-props' => Json.stringify(props).htmlEscape(true)
-    ], children);
+    ], child);
     #end
   }
 }

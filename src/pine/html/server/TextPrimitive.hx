@@ -1,5 +1,7 @@
 package pine.html.server;
 
+import pine.Constants;
+
 using StringTools;
 
 class TextPrimitive extends Primitive {
@@ -25,6 +27,6 @@ class TextPrimitive extends Primitive {
     // You can use the `raw` option to output the text directly. Use this
     // sparingly -- it's intended only for things like outputting
     // JSON, CSS or JS in a script or style tag. 
-    return raw ? '<!--#-->' + content.htmlEscape() : content;
+    return raw ? '<!--${TextMarker}-->' + content.htmlEscape() : content;
   }
 }

@@ -4,8 +4,8 @@ import pine.Disposable;
 
 @:forward(dispose)
 abstract Observer(ObserverObject) to DisposableItem to Disposable {
-  public static function untrack(effect:()->Void):Void {
-    Runtime.current().untrack(effect);
+  public static function untrack<T>(effect:()->T):T {
+    return Runtime.current().untrack(effect);
   }
 
   public inline static function track(effect:()->Void) {

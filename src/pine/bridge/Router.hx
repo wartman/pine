@@ -1,7 +1,7 @@
 package pine.bridge;
 
 import kit.http.Request;
-import pine.signal.Runtime;
+import pine.signal.Observer;
 import pine.signal.Signal;
 
 class Router extends Component {
@@ -25,9 +25,8 @@ class Router extends Component {
       .provide(this)
       .children(Scope.wrap(() -> {
         var request = currentRequest();
-        var rt = Runtime.current();
         for (route in routes) if (route.match(request)) {
-          return rt.untrack(() -> route.render(request));
+          return Observer.untrack(() -> route.render(request));
         }
         return fallback(request);
       }));

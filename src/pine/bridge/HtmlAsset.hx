@@ -1,13 +1,14 @@
 package pine.bridge;
 
 using Kit;
+using haxe.io.Path;
 
 class HtmlAsset implements Asset {
   final path:String;
   final html:String;
 
   public function new(path, html) {
-    this.path = path;
+    this.path = path == '/' ? 'index' : path;
     this.html = html;
   }
 
@@ -16,7 +17,7 @@ class HtmlAsset implements Asset {
   }
 
   public function process(context:AssetContext):Task<Nothing> {
-    trace(html);
-    return Nothing;
+    var file = context.output.file(path.withExtension('html'));
+    return file.write(html);
   }
 }

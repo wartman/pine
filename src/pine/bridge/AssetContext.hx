@@ -1,16 +1,18 @@
 package pine.bridge;
 
-import pine.bridge.Bridge;
+import kit.file.Directory;
 import Kit.Task;
 
 using Lambda;
 
 class AssetContext implements Disposable {
   public final config:ClientConfig;
+  public final output:Directory;
   final assets:Array<Asset> = [];
 
-  public function new(config) {
+  public function new(config, output) {
     this.config = config;
+    this.output = output;
   }
 
   public function addAsset(asset:Asset) {

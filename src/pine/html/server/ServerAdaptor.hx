@@ -32,6 +32,10 @@ class ServerAdaptor implements Adaptor {
     return new TextPrimitive('', options?.prefixTextWithMarker ?? true);
   }
 
+  public function createPlaceholderPrimitive(slot:Slot, findParent:()->Dynamic):Dynamic {
+    return new PlaceholderPrimitive();
+  }
+
   public function updateTextPrimitive(primitive:Dynamic, value:String) {
     (primitive:TextPrimitive).updateContent(value);
   }

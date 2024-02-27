@@ -17,7 +17,7 @@ abstract class Island extends ReactiveView {
         Provider.provide(this).children(IslandElement.build({
           component: __islandName(),
           props: toJson(),
-          children: render()
+          child: render()
         })))
       );
     }

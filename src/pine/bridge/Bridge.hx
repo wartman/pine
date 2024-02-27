@@ -1,32 +1,27 @@
 package pine.bridge;
 
+import kit.file.adaptor.SysAdaptor;
+import kit.file.FileSystem;
 import pine.html.server.*;
 
 using Kit;
-
-class ClientConfig extends Model {
-  @:constant public final sources:Array<String> = [ 'src' ];
-  @:constant public final outputDirectory:String = 'temp';
-  @:constant public final outputName:String = 'index.js';
-  @:constant public final libraries:Array<String> = [];
-  @:constant public final flags:Array<String> = [];
-}
 
 class Bridge extends Model {
   public inline static function build(props) {
     return new Bridge(props);
   }
   
-  @:constant final client:ClientConfig = new ClientConfig({});
+  @:constant final client:ClientConfig = { hxml: 'dependencies' };
   @:constant final children:()->Child;
   @:constant final onComplete:()->Void = null;
 
   public function generate():Task<AssetContext> {
-    var assets = new AssetContext(client);
+    var root = new FileSystem(new SysAdaptor(Sys.getCwd()));
+    var assets = new AssetContext(client, root.directory(client.outputDirectory));
     var islands = new IslandContext();
     var visitor = new RouteVisitor();
     
-    assets.addAsset(new IslandAsset({}, islands));
+    assets.addAsset(new IslandAsset(client, islands));
     visitor.enqueue('/');
 
     return renderUntilComplete(assets, islands, visitor)

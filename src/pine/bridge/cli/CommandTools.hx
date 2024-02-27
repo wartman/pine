@@ -5,16 +5,14 @@ using StringTools;
 
 function createNodeCommand(program:String) {
   var path = Path.join([
+    // Sys.getCwd(),
     'node_modules',
     '.bin',
     program
   ]);
   
   if (Sys.systemName() == 'Windows') {
-    path = path
-      .withExtension('cmd')
-      .normalize()
-      .replace('/', '\\');
+    path = path.withExtension('cmd').normalize().replace('/', '\\');
   } else {
     path = './${path}';
   }
