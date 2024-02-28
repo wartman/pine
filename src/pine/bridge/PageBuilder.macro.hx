@@ -8,13 +8,18 @@ import pine.macro.builder.*;
 using kit.Hash;
 using pine.macro.Tools;
 using pine.bridge.RouteBuilder;
+using pine.macro.Tools;
 
 final factory = new ClassBuilderFactory([
-  new AttributeFieldBuilder(),
-  new ObservableFieldBuilder(),
-  new SignalFieldBuilder(),
-  new ComputedFieldBuilder(),
-  new ConstructorBuilder({})
+  new ConstructorBuilder({
+    customBuilder: options -> {
+      (macro function(url, params) {
+        this.url = url;
+        this.params = params;
+        ${options.previousExpr.or(macro null)}
+      }).extractFunction();
+    }
+  })
 ]);
 
 function buildGeneric() {
@@ -60,12 +65,10 @@ private function buildPageRoute(url:String) {
         pos: pos
       }
     ],
-    kind: TDClass(null, [
-      {
-        pack: [ 'pine', 'bridge' ],
-        name: 'Route'
-      }
-    ], true, false, false),
+    kind: TDClass({
+      pack: [ 'pine' ],
+      name: 'ReactiveView'
+    }, [], false, false, true),
     fields: builder.export()
   });
 
@@ -84,9 +87,20 @@ class PageBuilder implements Builder {
   public function apply(builder:ClassBuilder) {
     var route = url.processRoute();
     var routeParamsType = route.paramsType;
+    var path = builder.getTypePath();
     
     builder.add(macro class {
       static final matcher = ${route.matcher};
+
+      public static function route():pine.bridge.Route {
+        return new pine.bridge.Route.SimpleRoute(request -> {
+          if (request.method != Get) return None;
+          if (matcher.match(request.url)) {
+            return Some(() -> new $path(request.url, ${route.paramsBuilder}));
+          }
+          return None;
+        });
+      }
   
       public static function createUrl(props:$routeParamsType):String {
         return ${route.urlBuilder};
@@ -96,18 +110,8 @@ class PageBuilder implements Builder {
         return pine.bridge.Link.to(createUrl(props));
       }
 
-      final url = new pine.signal.Signal<Null<String>>(null);
-      final params = new pine.signal.Signal<Null<$routeParamsType>>(null);
-
-      public function match(request:kit.http.Request):Bool {
-        if (request.method != Get) return false;
-        if (matcher.match(request.url)) {
-          this.url.set(request.url);
-          this.params.set(${route.paramsBuilder});
-          return true;
-        }
-        return false;
-      }
+      final url:String;
+      final params:$routeParamsType;
     });
   }
 }

@@ -1,21 +1,31 @@
 package bridge;
 
+import kit.file.adaptor.SysAdaptor;
+import bridge.core.*;
+import kit.file.*;
+import pine.*;
 import bridge.page.*;
 import pine.bridge.*;
 
 function bridgeRoot() {
-  trace(HomePage);
+  var fs = new FileSystem(new SysAdaptor(Sys.getCwd()));
+
   Bridge
     .build({
       client: {
         hxml: 'dependencies',
       },
-      children: () -> Router.build({
-        routes: [
-          new HomePage({})
-        ],
-        fallback: _ -> 'Not found'
-      })
+      children: () -> Provider
+        .provide(new DataContext(fs.directory('example/bridge/data')))
+        .children(
+          Router.build({
+            routes: [
+              HomePage.route(),
+              PostPage.route()
+            ],
+            fallback: _ -> 'Not found'
+          })
+        )
     })
     .generate()
     .next(assets -> assets.process())

@@ -11,8 +11,9 @@ class Router extends Component {
     var nav = get(Navigator);
     return Scope.wrap(() -> {
       var request = nav.request();
-      for (route in routes) if (route.match(request)) {
-        return Observer.untrack(() -> route.render());
+      for (route in routes) switch route.match(request) {
+        case Some(render): return Observer.untrack(render);
+        case None:
       }
       return fallback(request);
     });

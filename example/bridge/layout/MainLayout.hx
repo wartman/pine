@@ -12,7 +12,7 @@ class MainLayout extends Component {
     return Html.template(<html>
       <head>
         <title>title</title>
-        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="/styles.css" />
       </head>
 
       <body>
@@ -20,12 +20,13 @@ class MainLayout extends Component {
           <h3>"This is a test"</h3>
           <nav>
             <ul>
-              {PostPage.link({ id: '001' }).children('First Post')}
+              <li>{PostPage.link({ id: '001' }).children('First Post')}</li>
+              <li>{PostPage.link({ id: '002' }).children(<b>'Second post'</b>)}</li>
             </ul>
           </nav>
         </header>
         {children}
-        <script src="app.js" />
+        <script src="/app.js" />
       </body>
     </html>);
   }

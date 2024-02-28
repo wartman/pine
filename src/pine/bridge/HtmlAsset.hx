@@ -8,7 +8,7 @@ class HtmlAsset implements Asset {
   final html:String;
 
   public function new(path, html) {
-    this.path = path == '/' ? 'index' : path;
+    this.path = path;
     this.html = html;
   }
 
@@ -17,7 +17,8 @@ class HtmlAsset implements Asset {
   }
 
   public function process(context:AssetContext):Task<Nothing> {
-    var file = context.output.file(path.withExtension('html'));
+    var url = Path.join([ path, 'index.html' ]);
+    var file = context.output.file(url);
     return file.write(html);
   }
 }

@@ -6,9 +6,7 @@ import pine.bridge.*;
 import bridge.layout.*;
 import bridge.island.*;
 
-class HomePage implements Page<'/'> {
-  public function new() {}
-
+class HomePage extends Page<'/'> {
   public function render():Child {
     return Html.template(<MainLayout title="Home">
       <Counter />
