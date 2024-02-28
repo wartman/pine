@@ -9,10 +9,11 @@ import bridge.layout.MainLayout;
 
 using haxe.io.Path;
 using pine.signal.Tools;
+using Kit;
 
 class PostPage extends Page<'/post/{id:String}'> {
   public function render():Child {
-    var data = get(DataContext);
+    var data = get(DataContext).toMaybe().orThrow('No data context found');
     var resource = Resource.suspends(this).fetch(() -> data.getPost(params.id));
     return Html.template(<MainLayout>
       {resource.scope(res -> switch res {

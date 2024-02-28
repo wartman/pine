@@ -47,6 +47,10 @@ class ElementPrimitive extends Primitive {
     var attrs = [for (key => value in attrs) '$key="$value"'];
     if (attrs.length > 0) out += ' ${attrs.join(' ')}';
 
+    if (tag == 'html') {
+      out = '<!doctype html>' + out;
+    }
+
     // todo: handle innerHTML.
 
     return if (VOID_ELEMENTS.contains(tag)) {

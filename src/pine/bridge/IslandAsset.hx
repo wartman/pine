@@ -54,6 +54,7 @@ class IslandAsset implements Asset {
     var paths:Array<String> = [];
     var cmd = [ 'haxe'.createNodeCommand() ];
     var libraries = config.libraries ?? [];
+    var flags = config.flags ?? [];
 
     if (!libraries.contains('pine')) {
       libraries.push('pine');
@@ -78,6 +79,10 @@ class IslandAsset implements Asset {
     #if debug
     cmd.push('--debug');
     #end
+
+    for (flag in flags) {
+      cmd.push(flag);
+    }
     
     cmd.push('-D pine.client');
     cmd.push('-main ${getMainName()}');

@@ -22,6 +22,7 @@ class MainLayout extends Component {
             <ul>
               <li>{PostPage.link({ id: '001' }).children('First Post')}</li>
               <li>{PostPage.link({ id: '002' }).children(<b>'Second post'</b>)}</li>
+              <li>{TodoExample.link({}).children('Todos')}</li>
             </ul>
           </nav>
         </header>

@@ -14,5 +14,5 @@ dependencies.hxml
 # --macro nullSafety("pine")
 
 -main BridgeExample
-# -main Examples
--js dist/assets/index.js
+
+-js temp/build.js

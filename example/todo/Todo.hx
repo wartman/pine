@@ -3,18 +3,17 @@ package todo;
 import Breeze;
 import ex.Button;
 import haxe.Json;
-import js.Browser;
 import js.html.InputElement;
 import pine.*;
 import pine.html.*;
-import pine.html.client.ClientRoot;
+// import pine.html.client.ClientRoot;
 import pine.signal.*;
 
 using ex.BreezePlugin;
 
-function todoRoot() {
-  mount(Browser.document.getElementById('todo-root'), () -> TodoApp.build({}));
-}
+// function todoRoot() {
+//   mount(js.Browser.document.getElementById('todo-root'), () -> TodoApp.build({}));
+// }
 
 class Todo extends Model {
   @:constant public final id:Int;
@@ -34,16 +33,17 @@ class TodoStore extends Model {
   static inline final storageId = 'pine-todo-store';
 
   public static function load():TodoStore {
-    var data = js.Browser.window.localStorage.getItem(storageId);
-    var context = if (data == null) {
-      new TodoStore({uid: 0, todos: [], visibility: All});
-    } else {
-      fromJson(Json.parse(data));
-    }
+    // var data =  js.Browser.window.localStorage.getItem(storageId);
+    // var context = if (data == null) {
+    //   new TodoStore({uid: 0, todos: [], visibility: All});
+    // } else {
+    //   fromJson(Json.parse(data));
+    // }
+    var context = new TodoStore({uid: 0, todos: [], visibility: All});
 
-    Observer.track(() -> {
-      js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(context.toJson()));
-    });
+    // Observer.track(() -> {
+    //   js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(context.toJson()));
+    // });
 
     return context;
   }

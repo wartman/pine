@@ -14,6 +14,7 @@ function bridgeRoot() {
     .build({
       client: {
         hxml: 'dependencies',
+        flags: [ '-D breeze.output=none' ]
       },
       children: () -> Provider
         .provide(new DataContext(fs.directory('example/bridge/data')))
@@ -21,7 +22,8 @@ function bridgeRoot() {
           Router.build({
             routes: [
               HomePage.route(),
-              PostPage.route()
+              PostPage.route(),
+              TodoExample.route()
             ],
             fallback: _ -> 'Not found'
           })
