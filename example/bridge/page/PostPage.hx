@@ -2,7 +2,7 @@ package bridge.page;
 
 import bridge.core.DataContext;
 import pine.*;
-import pine.bridge.Page;
+import pine.router.*;
 import pine.html.Html;
 import pine.signal.*;
 import bridge.layout.MainLayout;
@@ -13,7 +13,7 @@ using Kit;
 
 class PostPage extends Page<'/post/{id:String}'> {
   public function render():Child {
-    var data = get(DataContext).toMaybe().orThrow('No data context found');
+    var data = DataContext.from(this);
     var resource = Resource.suspends(this).fetch(() -> data.getPost(params.id));
     return Html.template(<MainLayout>
       {resource.scope(res -> switch res {

@@ -1,5 +1,6 @@
 package bridge.core;
 
+import pine.View;
 import haxe.Json;
 import kit.file.*;
 import pine.Disposable;
@@ -8,6 +9,11 @@ using Kit;
 using haxe.io.Path;
 
 class DataContext implements Disposable {
+  @:noUsing
+  public static function from(context:View) {
+    return context.get(DataContext).toMaybe().orThrow('No data context found');
+  }
+
   final source:Directory;
 
   public function new(source) {

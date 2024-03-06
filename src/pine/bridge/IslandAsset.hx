@@ -28,7 +28,6 @@ class IslandAsset implements Asset {
   }
   #else
   public function process(context:AssetContext):Task<Nothing> {
-    // return outputMainFile();
     return outputMainFile().next(_ -> runHaxeCommand());
   }
 

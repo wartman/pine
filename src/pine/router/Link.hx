@@ -1,4 +1,4 @@
-package pine.bridge;
+package pine.router;
 
 // import kit.http.Request;
 import pine.html.Html;
@@ -65,7 +65,7 @@ class LinkComponent extends Component {
   }
 }
 
-@:allow(pine.bridge.Link)
+@:allow(pine.router.Link)
 class LinkBuilder {
   final to:String;
   final builder:HtmlTagBuilder = new HtmlTagBuilder('a');

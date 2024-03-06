@@ -19,6 +19,6 @@ class HtmlAsset implements Asset {
   public function process(context:AssetContext):Task<Nothing> {
     var url = Path.join([ path, 'index.html' ]);
     var file = context.output.file(url);
-    return file.write(html);
+    return file.write('<!doctype html>' + html);
   }
 }

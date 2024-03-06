@@ -4,16 +4,8 @@ import pine.debug.Debug;
 
 using StringTools;
 
-typedef ServerAdaptorOptions = {
-  public var ?prefixTextWithMarker:Bool;
-}
-
 class ServerAdaptor implements Adaptor {
-  final options:ServerAdaptorOptions;
-
-  public function new(?options) {
-    this.options = options ?? { prefixTextWithMarker: true };
-  }
+  public function new() {}
 
   public function hydrate(scope:() -> Void) {
     scope();
@@ -29,7 +21,7 @@ class ServerAdaptor implements Adaptor {
   }
 
   public function createTextPrimitive(text:String, slot:Slot, findParent:() -> Dynamic):Dynamic {
-    return new TextPrimitive('', options?.prefixTextWithMarker ?? true);
+    return new TextPrimitive('');
   }
 
   public function createPlaceholderPrimitive(slot:Slot, findParent:()->Dynamic):Dynamic {

@@ -32,4 +32,8 @@ abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<View>
   @:from public inline static function ofString(content:String):Children {
     return [ new Text(content) ];
   }
+
+  @:to public inline function toArray():Array<Child> {
+    return this;
+  }
 }

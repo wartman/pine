@@ -1,5 +1,6 @@
 package pine.html.server;
 
+import pine.html.server.Primitive.PrimitiveStringifyOptions;
 import haxe.DynamicAccess;
 
 class ElementPrimitive extends Primitive {
@@ -30,9 +31,11 @@ class ElementPrimitive extends Primitive {
     Reflect.setField(attributes, name, value);    
   }
 
-  public function toString():String {
+  public function toString(?options:PrimitiveStringifyOptions):String {
     var attrs:Map<String, String> = getFilteredAttributes();
-    var children:Array<String> = children.filter(c -> c != null).map(c -> c.toString());
+    var children:Array<String> = children
+      .filter(c -> c != null)
+      .map(c -> c.toString(options));
 
     if (tag == '#document' || tag == '#fragment') {
       return children.join('');
@@ -46,10 +49,6 @@ class ElementPrimitive extends Primitive {
     var out = '<${tag}';
     var attrs = [for (key => value in attrs) '$key="$value"'];
     if (attrs.length > 0) out += ' ${attrs.join(' ')}';
-
-    if (tag == 'html') {
-      out = '<!doctype html>' + out;
-    }
 
     // todo: handle innerHTML.
 

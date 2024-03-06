@@ -1,4 +1,4 @@
-package pine.bridge;
+package pine.router;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -7,7 +7,7 @@ import pine.macro.builder.*;
 
 using kit.Hash;
 using pine.macro.Tools;
-using pine.bridge.RouteBuilder;
+using pine.router.RouteBuilder;
 using pine.macro.Tools;
 
 final factory = new ClassBuilderFactory([
@@ -56,7 +56,7 @@ private function buildPageRoute(url:String) {
     meta: [
       {
         name: ':autoBuild',
-        params: [ macro pine.bridge.PageBuilder.build($v{url}) ],
+        params: [ macro pine.router.PageBuilder.build($v{url}) ],
         pos: pos
       },
       {
@@ -92,8 +92,8 @@ class PageBuilder implements Builder {
     builder.add(macro class {
       static final matcher = ${route.matcher};
 
-      public static function route():pine.bridge.Route {
-        return new pine.bridge.Route.SimpleRoute(request -> {
+      public static function route():pine.router.Route {
+        return new pine.router.Route.SimpleRoute(request -> {
           if (request.method != Get) return None;
           if (matcher.match(request.url)) {
             return Some(() -> new $path(request.url, ${route.paramsBuilder}));
@@ -107,7 +107,7 @@ class PageBuilder implements Builder {
       }
 
       public static function link(props:$routeParamsType) {
-        return pine.bridge.Link.to(createUrl(props));
+        return pine.router.Link.to(createUrl(props));
       }
 
       final url:String;

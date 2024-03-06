@@ -25,11 +25,9 @@ class AssetContext implements Disposable {
     }
   }
 
-  public function dispose() {
-    
-  }
-
   public function process() {
     return Task.parallel(...assets.map(asset -> asset.process(this)));
   }
+
+  public function dispose() {}
 }

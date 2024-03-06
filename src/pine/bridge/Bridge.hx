@@ -1,11 +1,13 @@
 package pine.bridge;
 
-import kit.http.Request;
-import kit.file.adaptor.SysAdaptor;
 import kit.file.FileSystem;
+import kit.file.adaptor.SysAdaptor;
+import kit.http.Request;
 import pine.html.server.*;
+import pine.router.*;
 
 using Kit;
+using pine.html.server.PrimitiveTools;
 
 class Bridge extends Model {
   public inline static function build(props) {
@@ -57,8 +59,7 @@ class Bridge extends Model {
     visitor:RouteVisitor
   ):Task<HtmlAsset> {
     return new Task(activate -> {
-      // @todo: use a Document api
-      var document = new ElementPrimitive('#fragment', {});
+      var document = new ElementPrimitive('#document', {});
       var suspended = false;
       var activated = false;
 
@@ -89,7 +90,13 @@ class Bridge extends Model {
 
       if (suspended == false) {
         activated = true;
-        activate(Ok(new HtmlAsset(path, document.toString())));
+        activate(Ok(new HtmlAsset(path, document.toString({
+          // Only output markers on islands.
+          useMarkers: primitive -> primitive.findAncestor(parent -> switch Std.downcast(parent, ElementPrimitive) {
+            case null: false;
+            case element: element.tag == IslandElement.tag;
+          }).map(_ -> true).or(false)
+        }))));
       }
     });
   }

@@ -10,7 +10,5 @@ class ClientConfig implements Disposable {
   public final libraries:Array<String> = [];
   public final flags:Array<String> = [];
 
-  public function dispose() {
-    // noop
-  }
+  public function dispose() {}
 }
