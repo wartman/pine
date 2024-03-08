@@ -8,7 +8,7 @@ using StringTools;
 using haxe.macro.Tools;
 
 class Html {
-  public static function template(expr:Expr) {
+  public static function view(expr:Expr) {
     static var generator:Null<pine.parse.Generator> = null;
       
     if (generator == null) {

@@ -7,7 +7,7 @@ using Kit;
 using haxe.io.Path;
 using pine.bridge.cli.CommandTools;
 
-class IslandAsset implements Asset {
+class ClientAppAsset implements Asset {
   static macro function getCurrentClassPaths();
 
   final config:ClientConfig;
@@ -49,23 +49,22 @@ class IslandAsset implements Asset {
   }
 
   function createHaxeCommand() {
-    // var paths:Array<String> = getCurrentClassPaths();
-    var paths:Array<String> = [];
+    var paths:Array<String> = getCurrentClassPaths().filter(path -> path != '');
     var cmd = [ 'haxe'.createNodeCommand() ];
     var libraries = config.libraries ?? [];
     var flags = config.flags ?? [];
 
-    if (!libraries.contains('pine')) {
-      libraries.push('pine');
-    }
+    // if (!libraries.contains('pine')) {
+    //   libraries.push('pine');
+    // }
 
     for (lib in libraries) {
       cmd.push('-lib $lib');
     }
 
-    cmd.push(config.hxml.withExtension('hxml'));
+    // cmd.push(config.hxml.withExtension('hxml'));
 
-    if (config.sources != null) {
+    if (config.sources.length > 0) {
       paths = paths.concat(config.sources);
     }
 
@@ -75,8 +74,14 @@ class IslandAsset implements Asset {
       cmd.push('-cp $path');
     }
 
+    cmd.push('-D js-es=6');
+    cmd.push('-D message-reporting=pretty');
+
     #if debug
     cmd.push('--debug');
+    #else
+    cmd.push('--dce full');
+    cmd.push('-D analyzer-optimize')
     #end
 
     for (flag in flags) {

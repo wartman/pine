@@ -1,19 +1,11 @@
 package todo;
 
-import Breeze;
-import ex.Button;
-import haxe.Json;
+import ex.*;
 import js.html.InputElement;
-import pine.*;
-import pine.html.*;
-// import pine.html.client.ClientRoot;
+import haxe.Json;
 import pine.signal.*;
 
 using ex.BreezePlugin;
-
-// function todoRoot() {
-//   mount(js.Browser.document.getElementById('todo-root'), () -> TodoApp.build({}));
-// }
 
 class Todo extends Model {
   @:constant public final id:Int;
@@ -33,17 +25,20 @@ class TodoStore extends Model {
   static inline final storageId = 'pine-todo-store';
 
   public static function load():TodoStore {
-    // var data =  js.Browser.window.localStorage.getItem(storageId);
-    // var context = if (data == null) {
-    //   new TodoStore({uid: 0, todos: [], visibility: All});
-    // } else {
-    //   fromJson(Json.parse(data));
-    // }
+    #if pine.client
+    var data =  js.Browser.window.localStorage.getItem(storageId);
+    var context = if (data == null) {
+      new TodoStore({uid: 0, todos: [], visibility: All});
+    } else {
+      fromJson(Json.parse(data));
+    }
+    #else
     var context = new TodoStore({uid: 0, todos: [], visibility: All});
+    #end
 
-    // Observer.track(() -> {
-    //   js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(context.toJson()));
-    // });
+    Observer.track(() -> {
+      js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(context.toJson()));
+    });
 
     return context;
   }
@@ -87,9 +82,11 @@ class TodoStore extends Model {
 }
 
 class TodoApp extends Component {
+  @:attribute final store:TodoStore = null;
+
   function render():Child {
-    var store = TodoStore.load();
-    return Html.template(<Provider value=store>
+    var store = this.store ?? TodoStore.load();
+    return view(<Provider value=store>
       <main class={Breeze.compose(
         Flex.display(),
         Flex.justify('center'),
@@ -113,7 +110,7 @@ class TodoApp extends Component {
 class TodoList extends Component {
   function render():Child {
     final store = get(TodoStore);
-    return Html.template(<ul class={Breeze.compose(
+    return view(<ul class={Breeze.compose(
       Flex.display(),
       Flex.gap(3),
       Flex.direction('column'),
@@ -208,7 +205,7 @@ class TodoItem extends Component {
   function render():Child {
     var store = get(TodoStore);
 
-    return Html.template(<li class={new Computation(() -> Breeze.compose(
+    return view(<li class={new Computation(() -> Breeze.compose(
       Flex.display(),
       Flex.gap(3),
       Flex.alignItems('center'),

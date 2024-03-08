@@ -1,6 +1,5 @@
 package ex;
 
-import Breeze;
 import pine.html.Html;
 import pine.signal.Signal;
 

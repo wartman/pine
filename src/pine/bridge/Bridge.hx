@@ -14,7 +14,8 @@ class Bridge extends Model {
     return new Bridge(props);
   }
   
-  @:constant final client:ClientConfig = { hxml: 'dependencies' };
+  // @:constant final client:ClientConfig = { hxml: 'dependencies' };
+  @:constant final client:ClientConfig = {};
   @:constant final children:()->Child;
   @:constant final onComplete:()->Void = null;
 
@@ -24,7 +25,7 @@ class Bridge extends Model {
     var islands = new IslandContext();
     var visitor = new RouteVisitor();
     
-    assets.addAsset(new IslandAsset(client, islands));
+    assets.addAsset(new ClientAppAsset(client, islands));
     visitor.enqueue('/');
 
     return renderUntilComplete(assets, islands, visitor)

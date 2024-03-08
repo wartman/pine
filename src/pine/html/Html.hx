@@ -7,7 +7,7 @@ using Lambda;
 
 @:build(pine.html.HtmlBuilder.build())
 class Html {
-  public macro static function template(e);
+  public macro static function view(e);
 
   public static inline function build(tag:String) {
     return new HtmlTagBuilder(tag);

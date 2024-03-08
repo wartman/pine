@@ -19,7 +19,7 @@ import pine.html.client.*;
 
 function main() {
   var root = Browser.document.getElementById('hydrate-root');
-  ClientRoot.hydrate(root, () -> Html.template(<Counter count={0}/>));
+  ClientRoot.hydrate(root, () -> Html.view(<Counter count={0}/>));
 }
 
 class Counter extends Component {
@@ -35,7 +35,7 @@ class Counter extends Component {
   }
 
   function render() {
-    return Html.template(<div>
+    return Html.view(<div>
       <div>'Current count: ' display</div>
       <button onClick={_ -> decrement()}>'-'</button>
       <button onClick={_ -> increment()}>'+'</button>
@@ -45,7 +45,7 @@ class Counter extends Component {
 
 ```
 
-The same app can also be written in pure haxe without using the `Html.template` macro:
+The same app can also be written in pure haxe without using the `Html.view` macro:
 
 ```haxe
 import js.Browser;

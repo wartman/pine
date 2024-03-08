@@ -1,5 +1,7 @@
-dependencies.hxml
+-cp src
+-cp example
 
+-lib breeze
 -lib kit
 -lib kit.http
 -lib kit.file
@@ -13,6 +15,6 @@ dependencies.hxml
 --dce full
 # --macro nullSafety("pine")
 
--main BridgeExample
+-main Run
 
 -js temp/build.js

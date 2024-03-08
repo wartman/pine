@@ -5,4 +5,4 @@ package pine.router;
 #end
 
 @:genericBuild(pine.router.PageBuilder.buildGeneric())
-interface Page<@:const Path> {}
+class Page<@:const Path> {}
