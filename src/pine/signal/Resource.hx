@@ -59,7 +59,7 @@ class ResourceObject<T, E = Error> implements Disposable {
       data.set(Loading);
       suspense?.markResourceAsSuspended(this);
       link = fetch().handle(result -> switch result {
-        case Ok(value): 
+        case Ok(value):
           data.set(Ok(value));
           suspense?.markResourceAsCompleted(this);
         case Error(error): 

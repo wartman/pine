@@ -7,6 +7,7 @@ import pine.signal.Signal;
 abstract Child(View) 
   from Text
   from View
+  from Component
   to View 
 {
   @:from

@@ -64,6 +64,24 @@ class Bridge extends Model {
       var suspended = false;
       var activated = false;
 
+      function checkActivation() {
+        if (activated) throw 'Activated more than once on a render';
+        activated = true;
+      }
+
+      function sendHtml(path:String, document:ElementPrimitive) {
+        if (onComplete != null) onComplete();
+        
+        var html = new HtmlAsset(path, document.toString({ 
+          useMarkers: primitive -> primitive.findAncestor(parent -> switch Std.downcast(parent, ElementPrimitive) {
+            case null: false;
+            case element: element.tag == IslandElement.tag;
+          }).map(_ -> true).or(false)  
+        }));
+
+        activate(Ok(html));
+      }
+
       Root.build(document, new ServerAdaptor(), () -> Provider
         .provide(assets)
         .provide(client)
@@ -72,17 +90,15 @@ class Bridge extends Model {
         .provide(new Navigator({ request: new Request(Get, path) }))
         .children(Suspense.build({
           onSuspended: () -> {
+            trace('Suspended!');
             suspended = true;
           },
           onComplete: () -> {
-            if (onComplete != null) onComplete();
-            if (activated) throw 'Activated more than once on a render';
-            activated = true;
-            activate(Ok(new HtmlAsset(path, document.toString())));
+            checkActivation();
+            sendHtml(path, document);
           },
           onFailed: () -> {
-            if (activated) throw 'Activated more than once on a render';
-            activated = true;
+            checkActivation();
             activate(Error(new Error(InternalError, 'Rendering failed')));
           },
           children: children()
@@ -90,14 +106,8 @@ class Bridge extends Model {
       ).create();
 
       if (suspended == false) {
-        activated = true;
-        activate(Ok(new HtmlAsset(path, document.toString({
-          // Only output markers on islands.
-          useMarkers: primitive -> primitive.findAncestor(parent -> switch Std.downcast(parent, ElementPrimitive) {
-            case null: false;
-            case element: element.tag == IslandElement.tag;
-          }).map(_ -> true).or(false)
-        }))));
+        checkActivation();
+        sendHtml(path, document);
       }
     });
   }

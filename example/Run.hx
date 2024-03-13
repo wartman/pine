@@ -1,5 +1,7 @@
+import haxe.io.Path;
 import pine.bridge.Bridge;
 import pine.router.Router;
+import site.data.FileSystemContext;
 import site.page.*;
 
 function main() {
@@ -9,14 +11,22 @@ function main() {
       flags: [ '-D breeze.output=none' ],
       outputName: '/assets/app.js'
     },
-    children: () -> Router.build({
-      routes: [
-        HomePage.route(),
-        TodoPage.route(),
-        CounterPage.route()
-      ],
-      fallback: _ -> 'Page not found'
-    })
+    children: () -> Provider
+      .provide(new FileSystemContext(Path.join([
+        Sys.getCwd(),
+        'example'
+      ])))
+      .children(
+        Router.build({
+          routes: [
+            HomePage.route(),
+            TodoPage.route(),
+            CounterPage.route(),
+            PostPage.route()
+          ],
+          fallback: _ -> 'Page not found'
+        })
+      )
   })
   .generate()
   .next(assets -> assets.process())

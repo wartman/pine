@@ -3,9 +3,19 @@ package pine;
 import pine.signal.Scheduler;
 import pine.signal.Resource;
 
+using Kit;
+
 // @todo: This is just a very simple first step.
+// @todo: We need to add the ability to propagate (or not) up to
+// parent Suspenses.
 @:allow(pine.signal.Resource)
 class Suspense extends Component {
+  public static function from(context:View) {
+    return context.get(Suspense)
+      .toMaybe()
+      .orThrow('No Suspense found');
+  }
+
   @:attribute final onSuspended:()->Void = null;
   @:attribute final onComplete:()->Void = null;
   @:attribute final onFailed:()->Void = null;

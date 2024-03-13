@@ -24,6 +24,9 @@ class SiteHeader extends Component {
             Sizing.height('100%'),
           )}>
             <li>{TodoPage.link({}).children("Todos Example")}</li>
+            <li>{PostPage.link({ id: 1 }).children("First Post")}</li>
+            <li>{PostPage.link({ id: 2 }).children("Second Post")}</li>
+            <li>{PostPage.link({ id: 3 }).children("Third Post")}</li>
             <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
             <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>
           </ul>
