@@ -4,12 +4,13 @@ import pine.macro.*;
 import pine.macro.builder.*;
 
 using Lambda;
-using pine.macro.Tools;
+using haxe.macro.Tools;
 
 final factory = new ClassBuilderFactory([
   new AttributeFieldBuilder(),
   new SignalFieldBuilder(),
   new ObservableFieldBuilder(),
+  new ComputedFieldBuilder(),
   new ConstructorBuilder({}),
   new ComponentBuilder(),
   new IslandBuilder(),
@@ -26,7 +27,8 @@ class IslandBuilder implements Builder {
   public function new() {}
 
   public function apply(builder:ClassBuilder) {
-    var path = builder.getTypePath().typePathToString();
+    var path = builder.getType().follow().toComplexType().toString();
+
     builder.add(macro class {
       public static final islandName = $v{path};
 

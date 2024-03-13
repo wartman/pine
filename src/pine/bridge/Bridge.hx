@@ -19,9 +19,9 @@ class Bridge extends Model {
   @:constant final children:()->Child;
   @:constant final onComplete:()->Void = null;
 
-  public function generate():Task<AssetContext> {
+  public function generate():Task<AppContext> {
     var root = new FileSystem(new SysAdaptor(Sys.getCwd()));
-    var assets = new AssetContext(client, root.directory(client.outputDirectory));
+    var assets = new AppContext(client, root.directory(client.outputDirectory));
     var islands = new IslandContext();
     var visitor = new RouteVisitor();
     
@@ -36,7 +36,7 @@ class Bridge extends Model {
   }
 
   function renderUntilComplete(
-    assets:AssetContext,
+    assets:AppContext,
     islands:IslandContext,
     visitor:RouteVisitor
   ):Task<Array<HtmlAsset>> {
@@ -55,7 +55,7 @@ class Bridge extends Model {
   
   function renderPath(
     path:String,
-    assets:AssetContext,
+    assets:AppContext,
     islands:IslandContext,
     visitor:RouteVisitor
   ):Task<HtmlAsset> {

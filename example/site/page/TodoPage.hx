@@ -1,7 +1,6 @@
 package site.page;
 
 import pine.router.Page;
-import site.island.TodoIsland;
 import site.layout.MainLayout;
 import todo.Todo;
 
@@ -21,7 +20,7 @@ class TodoPage extends Page<'/todo'> {
     });
 
     return view(<MainLayout title="Todos">
-      <TodoIsland store=store />
+      <TodoApp store=store />
     </MainLayout>);
   }
 }

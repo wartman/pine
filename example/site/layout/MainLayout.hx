@@ -1,5 +1,6 @@
 package site.layout;
 
+import pine.bridge.AppContext;
 import site.component.SiteHeader;
 
 class MainLayout extends Component {
@@ -11,7 +12,7 @@ class MainLayout extends Component {
       <html>
         <head>
           <title>title</title>
-          <link rel="stylesheet" href="/styles.css" />
+          <link rel="stylesheet" href="/assets/app.css" />
         </head>
 
         <body>
@@ -19,7 +20,7 @@ class MainLayout extends Component {
           <main>
             children
           </main>
-          <script src="/app.js" />
+          <script src={AppContext.from(this).getClientAppPath()} />
         </body>
       </html>
     );

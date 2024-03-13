@@ -1,18 +1,27 @@
 package pine.bridge;
 
 import kit.file.Directory;
-import Kit.Task;
 
+using Kit;
 using Lambda;
+using haxe.io.Path;
 
-class AssetContext implements Disposable {
+class AppContext implements Disposable {
+  public static function from(context:View) {
+    return context.get(AppContext).toMaybe().orThrow('No app context found');
+  }
+
   public final config:ClientConfig;
   public final output:Directory;
   final assets:Array<Asset> = [];
 
-  public function new(config, output) {
+  public function new(config, output, ?document) {
     this.config = config;
     this.output = output;
+  }
+
+  public function getClientAppPath() {
+    return config.outputName.withExtension('js').normalize();
   }
 
   public function addAsset(asset:Asset) {

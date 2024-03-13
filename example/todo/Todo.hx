@@ -1,8 +1,9 @@
 package todo;
 
 import ex.*;
-import js.html.InputElement;
 import haxe.Json;
+import js.html.InputElement;
+import pine.bridge.Island;
 import pine.signal.*;
 
 using ex.BreezePlugin;
@@ -81,7 +82,7 @@ class TodoStore extends Model {
   }
 }
 
-class TodoApp extends Component {
+class TodoApp extends Island {
   @:attribute final store:TodoStore = null;
 
   function render():Child {
@@ -155,7 +156,7 @@ class TodoHeader extends Component {
       ))
       .attr('role', 'header')
       .children([
-        Html.build('div')
+        Html.div()
           .style(Breeze.compose(
             Flex.display(),
             Flex.gap(3),
@@ -164,7 +165,7 @@ class TodoHeader extends Component {
             Border.width('bottom', .5)
           ))
           .children([
-            Html.build('h1').style(Breeze.compose(
+            Html.h1().style(Breeze.compose(
               Typography.fontSize('lg'),
               Typography.fontWeight('bold'),
               Spacing.margin('right', 'auto')
@@ -183,7 +184,7 @@ class TodoHeader extends Component {
             })
           ]),
 
-        Html.build('ul')
+        Html.ul()
           .style(Breeze.compose(
             Flex.display(),
             Flex.gap(3),

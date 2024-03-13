@@ -23,11 +23,11 @@ class ClientAppAsset implements Asset {
   }
 
   #if pine.client
-  public function process(context:AssetContext):Task<Nothing> {
+  public function process(context:AppContext):Task<Nothing> {
     return null;
   }
   #else
-  public function process(context:AssetContext):Task<Nothing> {
+  public function process(context:AppContext):Task<Nothing> {
     return outputMainFile().next(_ -> runHaxeCommand());
   }
 
@@ -49,7 +49,9 @@ class ClientAppAsset implements Asset {
   }
 
   function createHaxeCommand() {
-    var paths:Array<String> = getCurrentClassPaths().filter(path -> path != '');
+    // @todo: This *should* capture all our dependencies, but I've only
+    // tested it with Lix, so who really knows.
+    var paths:Array<String> = getCurrentClassPaths().filter(path -> path != '' && path != null);
     var cmd = [ 'haxe'.createNodeCommand() ];
     var libraries = config.libraries ?? [];
     var flags = config.flags ?? [];
@@ -91,8 +93,6 @@ class ClientAppAsset implements Asset {
     cmd.push('-D pine.client');
     cmd.push('-main ${getMainName()}');
     cmd.push('-js ${getTarget()}');
-
-    trace(cmd.join(' '));
 
     return cmd.join(' ');
   }

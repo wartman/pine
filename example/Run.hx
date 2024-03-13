@@ -5,9 +5,9 @@ import site.page.*;
 function main() {
   Bridge.build({
     client: {
-      // hxml: 'dependencies',
       // @todo: Come up with a better way to handle Breeze.
-      flags: [ '-D breeze.output=none' ]
+      flags: [ '-D breeze.output=none' ],
+      outputName: '/assets/app.js'
     },
     children: () -> Router.build({
       routes: [

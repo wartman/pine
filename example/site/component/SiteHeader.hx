@@ -1,24 +1,28 @@
 package site.component;
 
 import site.page.*;
+import site.style.*;
 
 class SiteHeader extends Component {
   function render() {
     return view(
       <header class={Breeze.compose(
         Flex.display(),
-        Spacing.margin('x', 'auto'),
-        Spacing.pad('y', 3),
-        Breakpoint.viewport('900px',
-          Sizing.width('max', '900px')
-        ),
+        Core.centered
       )}>
         <h2 class={Breeze.compose(
           Typography.fontSize('lg'),
-          Typography.fontWeight('bold')
+          Typography.fontWeight('bold'),
+          Spacing.margin('right', 'auto')
         )}>{HomePage.link({}).children("Example Site")}</h2>
         <nav>
-          <ul>
+          <ul class={Breeze.compose(
+            Flex.display(),
+            Flex.direction('row'),
+            Flex.alignItems('center'),
+            Flex.gap(3),
+            Sizing.height('100%'),
+          )}>
             <li>{TodoPage.link({}).children("Todos Example")}</li>
             <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
             <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>

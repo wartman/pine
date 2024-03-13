@@ -49,17 +49,17 @@ class LinkComponent extends Component {
   @:attribute final builder:HtmlTagBuilder;
 
   function render() {
-    // var router = get(Router);
-    var visitor = get(RouteVisitor);
-
-    visitor?.enqueue(to);
-
-    // if (router != null) {
-    //   builder.on(Click, e -> {
-    //     e.preventDefault();
-    //     router.go(new Request(Get, to));
-    //   });
-    // }
+    #if pine.client
+    var navigator = get(Navigator);
+    if (navigator != null) {
+      builder.on(Click, e -> {
+        e.preventDefault();
+        navigator.go(new kit.http.Request(Get, to));
+      });
+    }
+    #else
+    get(RouteVisitor)?.enqueue(to);
+    #end
 
     return builder.attr('href', to).toView();
   }

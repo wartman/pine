@@ -85,3 +85,11 @@ You can use whichever you prefer.
 This may look a lot like React, but Pine does *not* use a virtual DOM. Instead, it relies on fine-grained reactivity to keep everything in sync. 
 
 > More details will be coming soon -- right now the API is too in flux for any documentation to stick.
+
+<!-- Creating SPAs
+-------------
+
+Pine has a built-in router that can be used to create single-page apps (and server-side rendering with islands ones as well, but we'll get into that in the next section).
+
+Islands and SSR
+--------------- -->

@@ -13,7 +13,8 @@ class Html {
       
     if (generator == null) {
       generator = new pine.parse.Generator(new pine.parse.TagContext([
-        'pine.html.HtmlTags'
+        'pine.html.HtmlTags',
+        'pine.html.SvgTags'
       ]));
     }
   

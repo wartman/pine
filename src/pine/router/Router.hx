@@ -8,7 +8,7 @@ class Router extends Component {
   @:attribute final fallback:(request:Request)->Child;
 
   function render():Child {
-    var nav = get(Navigator);
+    var nav = Navigator.from(this);
     return Scope.wrap(() -> {
       var request = nav.request();
       for (route in routes) switch route.match(request) {
