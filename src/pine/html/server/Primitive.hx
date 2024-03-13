@@ -2,6 +2,10 @@ package pine.html.server;
 
 import pine.debug.Debug;
 
+typedef PrimitiveStringifyOptions = {
+  public final useMarkers:(primitive:Primitive)->Bool;
+} 
+
 abstract class Primitive {
   public var parent:Null<Primitive> = null;
   public var children:Array<Primitive> = [];
@@ -68,5 +72,5 @@ abstract class Primitive {
     parent = null;
   }
 
-  abstract public function toString():String;
+  abstract public function toString(?options:PrimitiveStringifyOptions):String;
 }

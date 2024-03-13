@@ -1,10 +1,11 @@
 package pine.html.client;
 
-import pine.html.HtmlEvents.EventListener;
-import js.html.Node;
 import js.Browser;
 import js.html.Element;
+import js.html.Node;
+import pine.Constants;
 import pine.debug.Debug;
+import pine.html.HtmlEvents.EventListener;
 
 using StringTools;
 
@@ -27,8 +28,12 @@ class ClientAdaptor implements Adaptor {
 
   public function createPrimitive(name:String, slot:Slot, findParent:()->Dynamic):Dynamic {
     if (isHydrating) {
-      // @todo: some validation here.
-      return hydrateNearestPrimitive(slot, findParent);
+      var primitive:Node = hydrateNearestPrimitive(slot, findParent);
+      assert({
+        var tag = name.startsWith('svg:') ? name.substr(4) : name;
+        primitive != null && primitive.nodeName.toLowerCase() == tag;
+      }, 'Hydration failed: expected a ${name} node');
+      return primitive;
     }
     return name.startsWith('svg:')
       ? Browser.document.createElementNS(svgNamespace, name.substr(4)) 
@@ -37,10 +42,20 @@ class ClientAdaptor implements Adaptor {
 
   public function createTextPrimitive(value:String, slot:Slot, findParent:()->Dynamic):Dynamic {
     if (isHydrating) {
-      // @todo: some validation here.
-      return hydrateNearestPrimitive(slot, findParent);
+      var primitive:Node = hydrateNearestPrimitive(slot, findParent);
+      assert(primitive != null && primitive.nodeType == Node.TEXT_NODE, 'Hydration failed: expected a Text node');
+      return primitive;
     }
     return Browser.document.createTextNode(value);
+  }
+
+  public function createPlaceholderPrimitive(slot:Slot, findParent:()->Dynamic):Dynamic {
+    if (isHydrating) {
+      var primitive:Node = hydrateNearestPrimitive(slot, findParent);
+      assert(primitive != null && primitive.nodeType == Node.COMMENT_NODE, 'Hydration failed: expected a placeholder node.');
+      return primitive;
+    }
+    return Browser.document.createComment('<!--${PlaceholderMarker}-->');
   }
 
   public function updateTextPrimitive(primitive:Dynamic, value:String) {
@@ -211,6 +226,7 @@ class ClientAdaptor implements Adaptor {
     // open up stuff like Islands.
     if (node == null) return null;
     if (node.nodeType == Node.COMMENT_NODE) {
+      if (node.textContent == PlaceholderMarker) return node;
       return skipComments(node.nextSibling);
     }
     return node;

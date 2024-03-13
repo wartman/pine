@@ -24,7 +24,7 @@ abstract class ReactiveView extends View implements DisposableHost {
   }
 
   public function findNearestPrimitive():Dynamic {
-    return ensureParent().findNearestPrimitive();
+    return getParent().findNearestPrimitive();
   }
 
   public function getPrimitive():Dynamic {

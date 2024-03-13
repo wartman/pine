@@ -20,7 +20,11 @@ class Provider<T:Disposable> extends Component {
   }
 
   function render():Child {
-    return views != null ? Fragment.of(views) : Placeholder.build();
+    return switch views.toArray() {
+      case []: Placeholder.build();
+      case [ view ]: view;
+      default: Fragment.of(views);
+    }
   }
 
   override function get<T>(type:Class<T>):Null<T> {

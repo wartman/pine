@@ -1,5 +1,6 @@
 package pine;
 
+import pine.debug.Debug;
 import pine.signal.Observer;
 import pine.signal.Signal;
 
@@ -21,7 +22,7 @@ class PrimitiveView extends View {
 
   function __initialize() {
     var adaptor = getAdaptor();
-    var parent = ensureParent();
+    var parent = getParent();
 
     this.primitive = adaptor.createPrimitive(tag, slot, parent.findNearestPrimitive);
     
@@ -43,15 +44,16 @@ class PrimitiveView extends View {
   }
   
   public function findNearestPrimitive():Dynamic {
-    return primitive;
+    return getPrimitive();
   }
 
   public function getPrimitive():Dynamic {
+    assert(primitive != null, 'A primitive of type $tag was not initialized properly');
     return primitive;
   }
 
   function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
-    getAdaptor().movePrimitive(primitive, previousSlot, newSlot, ensureParent().findNearestPrimitive);
+    getAdaptor().movePrimitive(primitive, previousSlot, newSlot, getParent().findNearestPrimitive);
   }
 
   function __dispose() {

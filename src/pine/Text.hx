@@ -1,5 +1,6 @@
 package pine;
 
+import pine.debug.Debug;
 import pine.signal.Computation;
 import pine.signal.Observer;
 import pine.signal.Signal;
@@ -63,7 +64,7 @@ class TextView extends View {
 
   function __initialize() {
     var adaptor = getAdaptor();
-    var parent = ensureParent();
+    var parent = getParent();
 
     primitive = adaptor.createTextPrimitive(content.peek(), slot, parent.findNearestPrimitive);
     link = new Observer(() -> adaptor.updateTextPrimitive(primitive, content()));
@@ -72,16 +73,17 @@ class TextView extends View {
   }
 
   public function findNearestPrimitive():Dynamic {
-    return primitive;
+    return getPrimitive();
   }
 
   public function getPrimitive():Dynamic {
+    assert(primitive != null);
     return primitive;
   }
 
   function __updateSlot(prevSlot:Null<Slot>, newSlot:Null<Slot>) {
     var adaptor = getAdaptor();
-    var parent = ensureParent();
+    var parent = getParent();
 
     adaptor.movePrimitive(primitive, prevSlot, newSlot, parent.findNearestPrimitive);
   }

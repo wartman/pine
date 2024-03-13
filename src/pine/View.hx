@@ -34,12 +34,6 @@ abstract class View implements Disposable {
     }
   }
 
-  public function ensureParent():View {
-    var parent = getParent();
-    assert(parent != null);
-    return parent;
-  }
-
   public function getAdaptor() {
     return switch __status {
       case Mounted(_, adaptor):

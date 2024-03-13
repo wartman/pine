@@ -1,17 +1,21 @@
 -cp src
 -cp example
 
+-lib breeze
 -lib kit
 -lib kit.http
--lib breeze
+-lib kit.file
+-lib hxnodejs
 
 -D js-es=6
 -D analyzer-optimize
 -D message-reporting=pretty
+-D breeze.output=assets/app.css
 
 --debug
 --dce full
 # --macro nullSafety("pine")
 
--main Examples
--js dist/assets/index.js
+-main Run
+
+-js temp/build.js

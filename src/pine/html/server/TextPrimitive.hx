@@ -1,14 +1,15 @@
 package pine.html.server;
 
+import pine.Constants;
+import pine.html.server.Primitive;
+
 using StringTools;
 
 class TextPrimitive extends Primitive {
   var content:String;
-  final raw:Bool;
 
-  public function new(content, raw = true) {
+  public function new(content) {
     this.content = content;
-    this.raw = raw;
   }
 
   public function updateContent(content) {
@@ -16,15 +17,14 @@ class TextPrimitive extends Primitive {
     this.content = content;
   }
 
-  public function toString():String {
+  public function toString(?options:PrimitiveStringifyOptions):String {
     // Important: we prefix all strings with a comment to ensure
     // that text components are split up during hydration. On the
     // client side comments will be ignored, but should still ensure
     // text nodes are properly delimited.
     //
-    // You can use the `raw` option to output the text directly. Use this
-    // sparingly -- it's intended only for things like outputting
-    // JSON, CSS or JS in a script or style tag. 
-    return raw ? '<!--#-->' + content.htmlEscape() : content;
+    // This can be turned off via the `useMarkers` option.
+    var raw = options?.useMarkers(this) ?? true;
+    return raw ? '<!--${TextMarker}-->' + content.htmlEscape() : content;
   }
 }
