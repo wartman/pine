@@ -1,6 +1,6 @@
 package pine;
 
-import pine.ReactiveView;
+import pine.ProxyView;
 
 @:autoBuild(pine.ComponentBuilder.build())
-abstract class Component extends ReactiveView {}
+abstract class Component extends ProxyView {}

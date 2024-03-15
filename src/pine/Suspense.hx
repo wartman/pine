@@ -10,8 +10,12 @@ using Kit;
 // parent Suspenses.
 @:allow(pine.signal.Resource)
 class Suspense extends Component {
+  public inline static function wrap(children) {
+    return new SuspenseBuilder(children);
+  }
+
   public static function from(context:View) {
-    return context.get(Suspense)
+    return context.getContext(Suspense)
       .toMaybe()
       .orThrow('No Suspense found');
   }
@@ -52,5 +56,40 @@ class Suspense extends Component {
 
   function render() {
     return Provider.provide(this).children(children);
+  }
+}
+
+abstract SuspenseBuilder({
+  var ?onSuspended:()->Void;
+  var ?onComplete:()->Void;
+  var ?onFailed:()->Void;
+  final children:Children;
+}) {
+  public inline function new(children) {
+    this = { children: children };
+  }
+
+  public inline function onSuspended(onSuspended) {
+    this.onSuspended = onSuspended;
+    return abstract;
+  }
+
+  public inline function onComplete(onComplete) {
+    this.onComplete = onComplete;
+    return abstract;
+  }
+
+  public inline function onFailed(onFailed) {
+    this.onFailed = onFailed;
+    return abstract;
+  }
+
+  @:to public inline function build():Child {
+    return Suspense.build({
+      onSuspended: this.onSuspended,
+      onFailed: this.onFailed,
+      onComplete: this.onComplete,
+      children: this.children
+    });
   }
 }

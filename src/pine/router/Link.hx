@@ -50,7 +50,7 @@ class LinkComponent extends Component {
 
   function render() {
     #if pine.client
-    var navigator = get(Navigator);
+    var navigator = getContext(Navigator);
     if (navigator != null) {
       builder.on(Click, e -> {
         e.preventDefault();
@@ -58,7 +58,7 @@ class LinkComponent extends Component {
       });
     }
     #else
-    get(RouteVisitor)?.enqueue(to);
+    getContext(RouteVisitor)?.enqueue(to);
     #end
 
     return builder.attr('href', to).toView();

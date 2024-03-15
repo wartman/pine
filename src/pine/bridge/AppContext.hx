@@ -1,16 +1,14 @@
 package pine.bridge;
 
+import pine.debug.Debug;
 import kit.file.Directory;
 
 using Kit;
 using Lambda;
 using haxe.io.Path;
 
-class AppContext implements Disposable {
-  public static function from(context:View) {
-    return context.get(AppContext).toMaybe().orThrow('No app context found');
-  }
-
+@:fallback(error('No app context found'))
+class AppContext implements Context {
   public final config:ClientConfig;
   public final output:Directory;
   final assets:Array<Asset> = [];

@@ -1,15 +1,12 @@
 package pine.router;
 
+import pine.debug.Debug.error;
 import kit.http.*;
 
 using Kit;
 
-class Navigator extends Model {
-  @:noUsing
-  public static function from(context:View) {
-    return context.get(Navigator).toMaybe().orThrow('No Navigator found');
-  }
-
+@:fallback(error('No Navigator found'))
+class Navigator extends Model implements Context {
   // @todo: Potentially allow `body` in here? Likely won't be needed much.
   @:json(
     to = { method: value.method, url: value.url.toString() },

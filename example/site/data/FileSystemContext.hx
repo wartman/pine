@@ -2,14 +2,10 @@ package site.data;
 
 import kit.file.FileSystem;
 import kit.file.adaptor.SysAdaptor;
+import pine.debug.Debug;
 
-class FileSystemContext implements Disposable {
-  public static function from(context:View) {
-    return context.get(FileSystemContext)
-      .toMaybe()
-      .orThrow('No FileSystem available');
-  }
-
+@:fallback(error('No filesystem context found'))
+class FileSystemContext implements Context {
   public final fs:FileSystem;
 
   public function new(root:String) {

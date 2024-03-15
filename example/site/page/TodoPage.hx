@@ -20,6 +20,12 @@ class TodoPage extends Page<'/todo'> {
     });
 
     return view(<MainLayout title="Todos">
+      <p>
+        "Note: the TodoMVC implementation here "<i>"does"</i>" actually have "
+        "the ability to persist itself in local storage, but we don't "
+        "use it yet as it would break the Island hydration step."
+      </p>
+      <p>"Ideally we'll have a solution soon."</p>
       <TodoApp store=store />
     </MainLayout>);
   }

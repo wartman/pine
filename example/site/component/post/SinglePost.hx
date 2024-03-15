@@ -10,9 +10,9 @@ class SinglePost extends ServerComponent {
   function render():Task<Child> {
     return Post.from(this)
       .fetch(id)
-      .next(post -> (view(<Panel>
+      .next(post -> view(<Panel>
         <h2>{post.title}</h2>
         <p>{post.content}</p>
-      </Panel>):Child));
+      </Panel>));
   }
 }

@@ -27,9 +27,9 @@ class Provider<T:Disposable> extends Component {
     }
   }
 
-  override function get<T>(type:Class<T>):Null<T> {
+  override function getContext<T>(type:Class<T>):Null<T> {
     if (Std.isOfType(value, type)) return cast value;
-    return getParent()?.get(type);
+    return getParent()?.getContext(type);
   }
 
   override function __dispose() {

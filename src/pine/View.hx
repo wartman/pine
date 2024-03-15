@@ -21,8 +21,8 @@ abstract class View implements Disposable {
 
   abstract function __initialize():Void;
 
-  public function get<T>(type:Class<T>):Null<T> {
-    return getParent()?.get(type);
+  public function getContext<T>(type:Class<T>):Null<T> {
+    return getParent()?.getContext(type);
   }
 
   public function getParent() {

@@ -5,7 +5,7 @@ import pine.signal.Signal;
 
 @:forward
 abstract Children(Array<Child>) from Array<Child> to Array<Child> to Array<View> {
-  @:from public inline static function ofBuilder(child:View):Children {
+  @:from public inline static function ofView(child:View):Children {
     return [ child ];
   }
 

@@ -6,7 +6,7 @@ import js.html.InputElement;
 import pine.bridge.Island;
 import pine.signal.*;
 
-using ex.BreezePlugin;
+using ex.BreezeModifiers;
 
 class Todo extends Model {
   @:constant public final id:Int;
@@ -33,13 +33,12 @@ class TodoStore extends Model {
     } else {
       fromJson(Json.parse(data));
     }
-    #else
-    var context = new TodoStore({uid: 0, todos: [], visibility: All});
-    #end
-
     Observer.track(() -> {
       js.Browser.window.localStorage.setItem(TodoStore.storageId, Json.stringify(context.toJson()));
     });
+    #else
+    var context = new TodoStore({uid: 0, todos: [], visibility: All});
+    #end
 
     return context;
   }
@@ -110,7 +109,7 @@ class TodoApp extends Island {
 
 class TodoList extends Component {
   function render():Child {
-    final store = get(TodoStore);
+    final store = getContext(TodoStore);
     return view(<ul class={Breeze.compose(
       Flex.display(),
       Flex.gap(3),
@@ -126,7 +125,7 @@ class TodoList extends Component {
 
 class TodoFooter extends Component {
   function render():Child {
-    var store = get(TodoStore);
+    var store = getContext(TodoStore);
     return Html.footer()
       .style(Breeze.compose(
         Background.color('black', 0),
@@ -147,7 +146,7 @@ class TodoFooter extends Component {
 
 class TodoHeader extends Component {
   function render():Child {
-    var store = get(TodoStore);
+    var store = getContext(TodoStore);
     var placeholder = new Signal('');
 
     return Html.header()
@@ -204,7 +203,7 @@ class TodoItem extends Component {
   @:attribute final todo:Todo;
   
   function render():Child {
-    var store = get(TodoStore);
+    var store = getContext(TodoStore);
 
     return view(<li class={new Computation(() -> Breeze.compose(
       Flex.display(),
@@ -303,7 +302,7 @@ class VisibilityControl extends Component {
   @:attribute final visibility:TodoVisibility;
 
   function render():Child {
-    var store = get(TodoStore);
+    var store = getContext(TodoStore);
     return Html.li().children(
       Button.build({
         action: () -> store.visibility.set(visibility),

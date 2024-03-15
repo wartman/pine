@@ -29,7 +29,7 @@ class Parser {
   public function toExpr() {
     var expr = options.generateExpr(parse());
     var pos = createPos(0, position);
-    return macro @:pos(pos) $expr;
+    return macro @:pos(pos) ($expr:pine.Child);
   }
 
   public function parse():Array<Node> {

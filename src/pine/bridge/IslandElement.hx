@@ -38,7 +38,7 @@ class IslandElement extends Component {
     #if pine.client
     return child;
     #else
-    get(IslandContext)?.registerIsland(component);
+    getContext(IslandContext)?.registerIsland(component);
     return new PrimitiveView(tag, [
       'data-component' => component,
       'data-props' => Json.stringify(props).htmlEscape(true)

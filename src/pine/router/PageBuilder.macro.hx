@@ -67,7 +67,7 @@ private function buildPageRoute(url:String) {
     ],
     kind: TDClass({
       pack: [ 'pine' ],
-      name: 'ReactiveView'
+      name: 'ProxyView'
     }, [], false, false, true),
     fields: builder.export()
   });

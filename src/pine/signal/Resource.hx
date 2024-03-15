@@ -33,7 +33,7 @@ class ResourceBuilder {
   final suspense:Null<Suspense>;
 
   public function new(context:View) {
-    this.suspense = context.get(Suspense);
+    this.suspense = context.getContext(Suspense);
   }
 
   public function fetch<T>(fetch):Resource<T> {

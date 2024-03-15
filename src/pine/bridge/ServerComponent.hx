@@ -4,6 +4,7 @@ package pine.bridge;
   #error "ServerComponents cannot be used on the client"
 #end
 
+import pine.Disposable;
 import pine.signal.Resource;
 import pine.debug.Debug;
 
@@ -14,15 +15,16 @@ using pine.signal.Tools;
 // ServerComponents can just return a Task<Child>. There's no need
 // to show loading states on server-side components, so we can just
 // render a placeholder until the component is ready.
+// @todo: Try to figure out a way to DRY this code up a bit.
 @:autoBuild(pine.ComponentBuilder.build())
-abstract class ServerComponent extends View {
+abstract class ServerComponent extends View implements DisposableHost {
   var __owner:Owner = new Owner();
   var __child:Null<View> = null;
 
   abstract function render():Task<Child>;
 
   function __initialize() {
-    assert(get(Suspense) != null, 'ServerComponents must be used inside a Suspense.');
+    assert(getContext(Suspense) != null, 'ServerComponents must be used inside a Suspense.');
 
     __child = __owner.own(() -> Resource.suspends(this)
       .fetch(render)
@@ -30,8 +32,10 @@ abstract class ServerComponent extends View {
         case Ok(view):
           view;
         case Error(_) | Loading:
-          // @todo: This *should* just get propagated up to the Suspense
-          // component. 
+          // @todo: Consider what we should do about the Error
+          // case. It *should* get pushed up to the Suspense
+          // component and handled by the generator, so it *should*
+          // be fine.
           Placeholder.build();
       })
     );
@@ -46,6 +50,14 @@ abstract class ServerComponent extends View {
     var primitive = __child?.getPrimitive();
     assert(primitive != null);
     return primitive;
+  }
+
+  public function addDisposable(disposable:DisposableItem):Void {
+    __owner.addDisposable(disposable);
+  }
+
+  public function removeDisposable(disposable:DisposableItem):Void {
+    __owner.removeDisposable(disposable);
   }
 
   function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>):Void {

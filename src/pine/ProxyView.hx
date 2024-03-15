@@ -4,11 +4,11 @@ import pine.signal.Runtime;
 import pine.Disposable;
 import pine.debug.Debug;
 
-abstract class ReactiveView extends View implements DisposableHost {
+abstract class ProxyView extends View implements DisposableHost {
   final __owner = new Owner();
   var __child:Null<View> = null;
 
-  abstract public function render():Child;
+  abstract function render():Child;
 
   public function addDisposable(disposable:DisposableItem):Void {
     __owner.addDisposable(disposable);

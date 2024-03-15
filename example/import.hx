@@ -5,4 +5,4 @@ import pine.signal.*;
 import Breeze;
 
 using Kit;
-using ex.BreezePlugin;
+using ex.BreezeModifiers;

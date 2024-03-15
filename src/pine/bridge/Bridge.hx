@@ -88,21 +88,19 @@ class Bridge extends Model {
         .provide(islands)
         .provide(visitor)
         .provide(new Navigator({ request: new Request(Get, path) }))
-        .children(Suspense.build({
-          onSuspended: () -> {
-            trace('Suspended!');
-            suspended = true;
-          },
-          onComplete: () -> {
-            checkActivation();
-            sendHtml(path, document);
-          },
-          onFailed: () -> {
-            checkActivation();
-            activate(Error(new Error(InternalError, 'Rendering failed')));
-          },
-          children: children()
-        }))
+        .children(
+          Suspense.wrap(children())
+            .onSuspended(() -> suspended = true)
+            .onComplete(() -> {
+              checkActivation();
+              sendHtml(path, document);
+            })
+            .onFailed(() -> {
+              checkActivation();
+              activate(Error(new Error(InternalError, 'Rendering failed')));
+            })
+            .build()
+        )
       ).create();
 
       if (suspended == false) {
