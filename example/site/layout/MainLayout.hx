@@ -16,10 +16,9 @@ class MainLayout extends Component {
         </head>
 
         <body>
+          <div id="portal"></div>
           <SiteHeader />
-          <main>
-            children
-          </main>
+          <main>children</main>
           <script src={AppContext.from(this).getClientAppPath()} />
         </body>
       </html>

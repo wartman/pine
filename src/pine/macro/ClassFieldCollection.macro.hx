@@ -2,7 +2,6 @@ package pine.macro;
 
 import haxe.macro.Expr;
 
-using Kit;
 using Lambda;
 
 class ClassFieldCollection {

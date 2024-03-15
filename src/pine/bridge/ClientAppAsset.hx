@@ -3,7 +3,6 @@ package pine.bridge;
 import kit.file.adaptor.*;
 import kit.file.*;
 
-using Kit;
 using haxe.io.Path;
 using pine.bridge.cli.CommandTools;
 

@@ -4,7 +4,6 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
-using Kit;
 using Lambda;
 using haxe.macro.Tools;
 

@@ -1,10 +1,41 @@
 package site.component;
 
+import pine.router.RouteVisitor;
 import site.page.*;
 import site.style.*;
+import site.island.*;
+import site.data.*;
 
 class SiteHeader extends Component {
   function render() {
+    var postMenu = new Menu({
+      label: 'Posts',
+      options: [
+        new MenuOption({
+          label: 'First Post',
+          type: PageLink,
+          url: PostPage.createUrl({ id: 1 })
+        }),
+        new MenuOption({
+          label: 'Second Post',
+          type: PageLink,
+          url: PostPage.createUrl({ id: 2 })
+        }),
+        new MenuOption({
+          label: 'Third Post',
+          type: PageLink,
+          url: PostPage.createUrl({ id: 3 })
+        })
+      ]
+    });
+
+    // Note: this is a hack to ensure our post routes are visited, as
+    // the server will not activate the menu.
+    var visitor = getContext(RouteVisitor);
+    if (visitor != null) for (option in postMenu.options) {
+      visitor.enqueue(option.url);
+    }
+
     return view(
       <header class={Breeze.compose(
         Flex.display(),
@@ -24,9 +55,7 @@ class SiteHeader extends Component {
             Sizing.height('100%'),
           )}>
             <li>{TodoPage.link({}).children("Todos Example")}</li>
-            <li>{PostPage.link({ id: 1 }).children("First Post")}</li>
-            <li>{PostPage.link({ id: 2 }).children("Second Post")}</li>
-            <li>{PostPage.link({ id: 3 }).children("Third Post")}</li>
+            <li><DropdownMenu menu=postMenu /></li>
             <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
             <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>
           </ul>

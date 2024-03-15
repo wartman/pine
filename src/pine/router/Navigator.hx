@@ -3,8 +3,6 @@ package pine.router;
 import pine.debug.Debug.error;
 import kit.http.*;
 
-using Kit;
-
 @:fallback(error('No Navigator found'))
 class Navigator extends Model implements Context {
   // @todo: Potentially allow `body` in here? Likely won't be needed much.

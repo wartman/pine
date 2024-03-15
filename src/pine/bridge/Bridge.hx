@@ -6,7 +6,6 @@ import kit.http.Request;
 import pine.html.server.*;
 import pine.router.*;
 
-using Kit;
 using pine.html.server.PrimitiveTools;
 
 class Bridge extends Model {

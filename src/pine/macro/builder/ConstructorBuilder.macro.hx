@@ -3,7 +3,6 @@ package pine.macro.builder;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
-using Kit;
 using haxe.macro.Tools;
 using pine.macro.Tools;
 

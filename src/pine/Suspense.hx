@@ -3,8 +3,6 @@ package pine;
 import pine.signal.Scheduler;
 import pine.signal.Resource;
 
-using Kit;
-
 // @todo: This is just a very simple first step.
 // @todo: We need to add the ability to propagate (or not) up to
 // parent Suspenses.

@@ -42,6 +42,10 @@ abstract Link(LinkBuilder) {
       builder: this.builder
     });
   }
+
+  public inline function build() {
+    return toView();
+  }
 }
 
 class LinkComponent extends Component {
@@ -61,7 +65,7 @@ class LinkComponent extends Component {
     getContext(RouteVisitor)?.enqueue(to);
     #end
 
-    return builder.attr('href', to).toView();
+    return builder.attr('href', to).build();
   }
 }
 

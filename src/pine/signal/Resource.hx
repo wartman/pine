@@ -3,8 +3,6 @@ package pine.signal;
 import pine.Disposable;
 import pine.signal.Signal;
 
-using Kit;
-
 enum ResourceStatus<T, E = Error> {
   Loading;
   Ok(data:T);

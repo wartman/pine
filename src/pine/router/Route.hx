@@ -2,8 +2,6 @@ package pine.router;
 
 import kit.http.Request;
 
-using Kit;
-
 interface Route {
   public function match(request:Request):Maybe<()->Child>;
 }
