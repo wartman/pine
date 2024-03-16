@@ -2,7 +2,7 @@ package pine.component;
 
 #if ((js && !nodejs) || pine.client)
 import js.Browser.window;
-import js.html.Animation;
+import js.html.Animation as HtmlAnimation;
 import js.html.Element;
 import pine.signal.Observer;
 #end
@@ -42,7 +42,7 @@ class Animation extends Component {
   
   #if ((js && !nodejs) || pine.client)
   var currentKeyframes:Null<Keyframes> = null;
-  var currentAnimation:Null<Animation> = null;
+  var currentAnimation:Null<HtmlAnimation> = null;
 
   function render() {
     var first = true;
@@ -106,7 +106,7 @@ private typedef AnimationOptions = {
   public final ?iterations:Float;
 }
 
-private function registerAnimations(el:Element, keyframes:Array<Dynamic>, options:AnimationOptions, onFinished:()->Void):Animation {
+private function registerAnimations(el:Element, keyframes:Array<Dynamic>, options:AnimationOptions, onFinished:()->Void):HtmlAnimation {
   var duration = prefersReducedMotion() ? 0 : options.duration;
   var animation = el.animate(keyframes, { 
     duration: duration,

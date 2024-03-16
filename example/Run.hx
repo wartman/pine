@@ -22,7 +22,8 @@ function main() {
             HomePage.route(),
             TodoPage.route(),
             CounterPage.route(),
-            PostPage.route()
+            PostPage.route(),
+            ComponentExamplesPage.route()
           ],
           fallback: _ -> 'Page not found'
         })

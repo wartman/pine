@@ -61,6 +61,7 @@ class SiteHeader extends Component {
             <li><DropdownMenu menu=postMenu /></li>
             <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
             <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>
+            <li>{ComponentExamplesPage.link({}).children("More Examples")}</li>
           </ul>
         </nav>
       </header>

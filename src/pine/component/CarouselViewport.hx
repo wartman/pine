@@ -7,6 +7,9 @@ import pine.signal.*;
 using Lambda;
 using pine.Modifier;
 
+// @todo: This component is using most of the implementation from
+// Blok, which unfortunately seems completely broken in Pine (at least
+// with dragging). Unsure why right now.
 class CarouselViewport extends Component {
   @:attribute final className:String = null;
   @:attribute final duration:Int = 200;
@@ -19,15 +22,17 @@ class CarouselViewport extends Component {
   //
   // We should make the drag behavior optional, I suppose.
 
+  var target:Maybe<Animation> = None;
+
   #if (js && !nodejs)
   var startDrag:Float = -1;
   var previousDrag:Float = 0;
   var dragOffset:Float = 0;
 
   function getTarget() {
-    return findChildOfType(Animated, true)
+    return target
       .flatMap(component -> component.getPrimitive().as(js.html.Element).toMaybe())
-      .orThrow('Could not find Animated child -- `getTarget` may have been called before the component rendered');
+      .orThrow('Could not find Animation child -- `getTarget` may have been called before the component rendered');
   }
 
   function isValidInteraction(e:js.html.Event) {
@@ -160,7 +165,12 @@ class CarouselViewport extends Component {
 
   function render():Child {
     var carousel = CarouselContext.from(this);
-    var currentOffset = Runtime.current().untrack(() -> getOffset(carousel.getPosition().current));
+    // // @todo: For some reason this worked fine in Block, but here we're
+    // // trying to get an offset from Components that have not mounted yet.
+    // //
+    // // Also, and I'm not sure if this is the cause, the Carousel is entirely
+    // // broken when using mouse dragging.
+    // var currentOffset = Runtime.current().untrack(() -> getOffset(carousel.getPosition().current));
     var body = Html.div()
       #if (js && !nodejs)
       .on(MouseDown, onDragStart)
@@ -169,7 +179,7 @@ class CarouselViewport extends Component {
       .attr(ClassName, className)
       .attr(Style, 'overflow:hidden')
       .children(
-        Animation.build({
+        (target = Some(Animation.build({
           keyframes: new Keyframes('blok.foundation.carousel', context -> {
             var pos = carousel.getPosition();
             #if (js && !nodejs)
@@ -192,13 +202,14 @@ class CarouselViewport extends Component {
           // @todo: Duration should be based off the width of the screen.
           duration: duration,
           child: Html.div()
-            .attr(Style, 'display:flex;height:100%;width:100%;transform:translate3d(-${currentOffset}px, 0px, 0px)')
+            // .attr(Style, 'display:flex;height:100%;width:100%;transform:translate3d(-${currentOffset}px, 0px, 0px)')
+            .attr(Style, 'display:flex;height:100%;width:100%;transform:translate3d(0px, 0px, 0px)')
             .children(children)
-        })
+        }))).unwrap()
       );
 
     #if (js && !nodejs)
-    return body.onMount(setup);
+    return body.build().onMount(setup);
     #else
     return body;
     #end
