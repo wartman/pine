@@ -1,13 +1,13 @@
 package pine.component;
 
-import pine.component.Animated;
+import pine.component.Animation;
 
 class CollapseItem extends Component {
   @:children @:attribute final child:Child;
 
   function render() {
     var collapse = CollapseContext.from(this);
-    return Animated.build({
+    return Animation.build({
       animateInitial: false,
       keyframes: collapse.status.map(status -> switch status {
         case Collapsed: new Keyframes('in', context -> [

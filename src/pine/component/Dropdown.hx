@@ -1,47 +1,70 @@
 package pine.component;
 
-import pine.component.DropdownContext;
+import pine.debug.Debug;
 
 using pine.Modifier;
 
-class Dropdown extends Component {
+enum abstract DropdownStatus(Bool) {
+  final Open = true;
+  final Closed = false;
+}
+
+// @todo: Decide if making Dropdown a context too is:
+// a) a good idea.
+// b) idiomatic with how we want Pine to work.
+@:fallback(error('No Dropdown found'))
+class Dropdown extends Component implements Context {
   @:attribute final attachment:PositionedAttachment = ({ h: Middle, v: Bottom }:PositionedAttachment);
   @:attribute final gap:Int = 0;
-  @:attribute final toggle:(context:DropdownContext)->Child;
-  @:attribute final child:(context:DropdownContext)->Children;
-  @:attribute final status:DropdownStatus = Closed;
+  @:attribute final label:(context:Dropdown)->Child;
+  @:attribute final child:(context:Dropdown)->Children;
+  @:signal final status:DropdownStatus = Closed;
+  
+  var items:Array<View> = [];
+  
+  public function open() {
+    status.set(Open);
+  }
+
+  public function close() {
+    status.set(Closed);
+  }
+
+  public function toggle() {
+    status.update(status -> status == Open ? Closed : Open);
+  }
+
+  public function register(view:View) {
+    items.push(view);
+  }
 
   function render() {
-    var dropdown = new DropdownContext(attachment, status, gap);
-    var toggle = DropdownToggle.build({ child: toggle(dropdown) });
+    var target = label(this);
+
+    addDisposable(() -> items = []);
+
     return Provider
-      .provide(dropdown)
+      .provide(this)
       .children(
-        toggle,
-        Scope.wrap(_ -> switch dropdown.status() {
+        target,
+        Scope.wrap(_ -> switch status() {
           case Open:
             DropdownPopover.build({
-              getTarget: () -> toggle.getPrimitive(),
-              onHide: () -> dropdown.close(),
+              getTarget: () -> target.getPrimitive(),
+              onHide: close,
               attachment: attachment,
               gap: gap,
-              children: child(dropdown)
+              children: child(this)
             });
           case Closed:
+            items = [];
             Placeholder.build();
         })
       );
   }
 }
 
-class DropdownToggle extends Component {
-  @:children @:attribute final child:Child;
-  
-  function render() {
-    return child;
-  }
-}
-
+@:access(pine.component)
 class DropdownPopover extends Component {
   @:attribute final getTarget:()->Dynamic;
   @:attribute final onHide:()->Void;
@@ -87,7 +110,7 @@ class DropdownPopover extends Component {
   }
 
   function getNextFocusedChild(offset:Int):Maybe<View> {
-    var items = DropdownContext.from(this).items;
+    var items = Dropdown.from(this).items;
     var index = Math.ceil(items.indexOf(current) + offset);
     var item = items[index];
     
@@ -123,7 +146,7 @@ class DropdownPopover extends Component {
     e.preventDefault();
     switch getNextFocusedChild(-1) {
       case Some(item): 
-        item.getPrimitive().as(js.html.Element).focus();
+        item.getPrimitive().as(js.html.Element)?.focus();
       case None if (hideIfFirst): 
         hide(e);
       case None:

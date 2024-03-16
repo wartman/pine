@@ -10,7 +10,7 @@ class DropdownMenu extends Island {
 
   function render():Child {
     return Dropdown.build({
-      toggle: dropdown -> Button.build({
+      label: dropdown -> Button.build({
         action: () -> dropdown.toggle(),
         child: menu.label
       }),

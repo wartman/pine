@@ -28,7 +28,5 @@ class RouteVisitor implements Disposable {
     return toVisit;
   }
 
-  public function dispose() {
-    // noop
-  }
+  public function dispose() {}
 }

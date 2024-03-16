@@ -1,6 +1,6 @@
 package site.island;
 
-import pine.component.DropdownItem;
+import pine.component.Dropdown;
 import pine.router.Link;
 import site.data.MenuOption;
 
@@ -25,14 +25,14 @@ class DropdownMenuOption extends Component {
           .build();
     }
 
+    Dropdown.from(this).register(link);
+
     return Html.li()
       .style(Breeze.compose(
         Flex.display(),
         Spacing.pad('x', 2),
         Spacing.pad('y', 1)
       ))
-      .children(
-        DropdownItem.build({ child: link })
-      );
+      .children(link);
   }
 }

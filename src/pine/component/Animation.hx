@@ -28,7 +28,7 @@ abstract Keyframes({
   }
 }
 
-class Animated extends Component {
+class Animation extends Component {
   @:observable final keyframes:Keyframes;
   @:attribute final duration:Int;
   @:attribute final animateInitial:Bool = true;

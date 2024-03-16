@@ -31,6 +31,9 @@ class SiteHeader extends Component {
 
     // Note: this is a hack to ensure our post routes are visited, as
     // the server will not activate the menu.
+    //
+    // This is probably a good argument *not* to build site-nav
+    // menus this way, but for this example's sake we'll do it.
     var visitor = getContext(RouteVisitor);
     if (visitor != null) for (option in postMenu.options) {
       visitor.enqueue(option.url);
