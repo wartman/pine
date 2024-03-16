@@ -36,6 +36,8 @@ class CarouselSlideViewport extends Component {
       }
     }) else child(carousel);
 
-    return Html.div().attr(Style, 'flex:0 0 100%').children(body);
+    return Html.div()
+      .attr(Style, 'flex:0 0 100%')
+      .children(body);
   }
 }

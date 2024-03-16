@@ -22,13 +22,13 @@ class CarouselExample extends Component {
           Typography.fontWeight('bold'),
           Flex.display(),
           Flex.alignItems('center'),
-          Flex.justify('center')
+          Flex.justify('center'),
+          Interactive.cursor('grab')
         ),
-        onClick: _ -> carousel.next(),
         children: item
       }))).concat([
         // No need to use `Slide.wrap` unless you want to:
-        carousel -> Panel.build({
+        carousel -> Panel.build({ 
           styles: Breeze.compose(
             Sizing.height(50),
             Layout.position('relative'),
@@ -43,7 +43,7 @@ class CarouselExample extends Component {
             Flex.alignItems('center'),
             Flex.justify('center')
           ),
-          children: [ 'End' ]
+          children: 'End'
         })
       ]),
       controls: carousel -> Html.div()

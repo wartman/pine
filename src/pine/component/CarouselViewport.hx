@@ -7,9 +7,6 @@ import pine.signal.*;
 using Lambda;
 using pine.Modifier;
 
-// @todo: This component is using most of the implementation from
-// Blok, which unfortunately seems completely broken in Pine (at least
-// with dragging). Unsure why right now.
 class CarouselViewport extends Component {
   @:attribute final className:String = null;
   @:attribute final duration:Int = 200;
@@ -148,7 +145,10 @@ class CarouselViewport extends Component {
 
   function setup() {
     var window = js.Browser.window;
+    
+    resetViewportTransform();
     window.addEventListener('resize', resetViewportTransform);
+
     addDisposable(() -> {
       window.removeEventListener('resize', resetViewportTransform);
       window.removeEventListener('mousemove', onDragUpdate);
@@ -165,12 +165,6 @@ class CarouselViewport extends Component {
 
   function render():Child {
     var carousel = CarouselContext.from(this);
-    // // @todo: For some reason this worked fine in Block, but here we're
-    // // trying to get an offset from Components that have not mounted yet.
-    // //
-    // // Also, and I'm not sure if this is the cause, the Carousel is entirely
-    // // broken when using mouse dragging.
-    // var currentOffset = Runtime.current().untrack(() -> getOffset(carousel.getPosition().current));
     var body = Html.div()
       #if (js && !nodejs)
       .on(MouseDown, onDragStart)
@@ -202,10 +196,9 @@ class CarouselViewport extends Component {
           // @todo: Duration should be based off the width of the screen.
           duration: duration,
           child: Html.div()
-            // .attr(Style, 'display:flex;height:100%;width:100%;transform:translate3d(-${currentOffset}px, 0px, 0px)')
             .attr(Style, 'display:flex;height:100%;width:100%;transform:translate3d(0px, 0px, 0px)')
             .children(children)
-        }))).unwrap()
+        }))).orThrow()
       );
 
     #if (js && !nodejs)
