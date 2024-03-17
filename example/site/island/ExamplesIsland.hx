@@ -1,5 +1,6 @@
 package site.island;
 
+import site.component.core.Section;
 import pine.bridge.Island;
 import site.component.example.*;
 
@@ -7,9 +8,13 @@ class ExamplesIsland extends Island {
   function render():Child {
     return Html.div()
       .children(
-        CarouselExample.build({}),
-        CollapseExample.build({}),
-        AnimationExample.build({})
+        Section.build({
+          children: [
+            CarouselExample.build({}),
+            CollapseExample.build({}),
+            AnimationExample.build({})
+          ] 
+        })
       );
   }
 }

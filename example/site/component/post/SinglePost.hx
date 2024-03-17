@@ -2,7 +2,7 @@ package site.component.post;
 
 import site.data.Post;
 import pine.bridge.ServerComponent;
-import ex.Panel;
+import site.component.core.Panel;
 
 class SinglePost extends ServerComponent {
   @:attribute final id:Int;

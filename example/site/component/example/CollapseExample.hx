@@ -1,7 +1,7 @@
 package site.component.example;
 
 import pine.component.*;
-import ex.*;
+import site.component.core.*;
 
 class CollapseExample extends Component {
   function render():Child {

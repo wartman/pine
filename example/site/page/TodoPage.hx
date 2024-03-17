@@ -2,6 +2,7 @@ package site.page;
 
 import pine.router.Page;
 import site.layout.MainLayout;
+import site.component.core.*;
 import todo.Todo;
 
 class TodoPage extends Page<'/todo'> {
@@ -20,12 +21,14 @@ class TodoPage extends Page<'/todo'> {
     });
 
     return view(<MainLayout title="Todos">
-      <p>
-        "Note: the TodoMVC implementation here "<i>"does"</i>" actually have "
-        "the ability to persist itself in local storage, but we don't "
-        "use it yet as it would break the Island hydration step."
-      </p>
-      <p>"Ideally we'll have a solution soon."</p>
+      <Section constrain>
+        <p>
+          "Note: the TodoMVC implementation here "<i>"does"</i>" actually have "
+          "the ability to persist itself in local storage, but we don't "
+          "use it yet as it would break the Island hydration step."
+        </p>
+        <p>"Ideally we'll have a solution soon."</p>
+      </Section>
       <TodoApp store=store />
     </MainLayout>);
   }

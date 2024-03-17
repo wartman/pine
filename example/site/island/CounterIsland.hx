@@ -1,7 +1,7 @@
 package site.island;
 
 import pine.bridge.Island;
-import ex.*;
+import site.component.core.*;
 
 class CounterIsland extends Island {
   @:signal public final count:Int;

@@ -1,4 +1,4 @@
-package ex;
+package site.component.core;
 
 class Button extends Component {
   @:observable final selected:Bool = false;

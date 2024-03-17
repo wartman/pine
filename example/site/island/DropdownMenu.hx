@@ -1,6 +1,6 @@
 package site.island;
 
-import ex.Button;
+import site.component.core.Button;
 import pine.bridge.Island;
 import pine.component.*;
 import site.data.*;

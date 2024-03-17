@@ -1,6 +1,6 @@
 package site.component.example;
 
-import ex.*;
+import site.component.core.*;
 import pine.component.*;
 
 class CarouselExample extends Component {
@@ -27,7 +27,7 @@ class CarouselExample extends Component {
         ),
         children: item
       }))).concat([
-        // No need to use `Slide.wrap` unless you want to:
+        // No need to use `CarouselSlide.wrap` unless you want to:
         carousel -> Panel.build({ 
           styles: Breeze.compose(
             Sizing.height(50),

@@ -1,4 +1,4 @@
-package ex;
+package site.component.core;
 
 import pine.html.HtmlEvents;
 

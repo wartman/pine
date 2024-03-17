@@ -41,29 +41,39 @@ class SiteHeader extends Component {
 
     return view(
       <header class={Breeze.compose(
-        Flex.display(),
-        Core.centered
+        Background.color('black', 0),
+        Typography.textColor('white', 0)
       )}>
-        <h2 class={Breeze.compose(
-          Typography.fontSize('lg'),
-          Typography.fontWeight('bold'),
-          Spacing.margin('right', 'auto')
-        )}>{HomePage.link({}).children("Example Site")}</h2>
-        <nav>
-          <ul class={Breeze.compose(
+        <div class={Breeze.compose(
+          Sizing.height('100%'),
+          Flex.display(),
+          Spacing.pad('y', 3),
+          Core.centered
+        )}>
+          <h2 class={Breeze.compose(
+            Typography.fontSize('lg'),
+            Typography.fontWeight('bold'),
             Flex.display(),
-            Flex.direction('row'),
             Flex.alignItems('center'),
-            Flex.gap(3),
             Sizing.height('100%'),
-          )}>
-            <li>{TodoPage.link({}).children("Todos Example")}</li>
-            <li><DropdownMenu menu=postMenu /></li>
-            <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
-            <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>
-            <li>{ComponentExamplesPage.link({}).children("More Examples")}</li>
-          </ul>
-        </nav>
+            Spacing.margin('right', 'auto')
+          )}>{HomePage.link({}).children("Example Site")}</h2>
+          <nav>
+            <ul class={Breeze.compose(
+              Flex.display(),
+              Flex.direction('row'),
+              Flex.alignItems('center'),
+              Flex.gap(3),
+              Sizing.height('100%'),
+            )}>
+              <li>{TodoPage.link({}).children("Todos Example")}</li>
+              <li><DropdownMenu menu=postMenu /></li>
+              <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
+              <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>
+              <li>{ComponentExamplesPage.link({}).children("More Examples")}</li>
+            </ul>
+          </nav>
+        </div>
       </header>
     );
   }

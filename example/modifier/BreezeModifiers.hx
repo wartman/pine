@@ -1,4 +1,4 @@
-package ex;
+package modifier;
 
 import pine.html.Html;
 import pine.signal.Signal;
