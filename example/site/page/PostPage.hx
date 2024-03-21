@@ -1,15 +1,17 @@
 package site.page;
 
-import pine.router.Page;
+import pine.bridge.ServerComponent;
 import site.layout.MainLayout;
 import site.component.post.*;
 import site.component.core.*;
 
-class PostPage extends Page<'/post/{id:Int}'> {
-  function render() {
-    return view(<MainLayout title={'Post | ${params.id}'}>
+class PostPage extends ServerComponent {
+  @:attribute final id:Int;
+
+  function render():Task<Child> {
+    return view(<MainLayout title={'Post | ${id}'}>
       <Section constrain>
-        <SinglePost id={params.id} />
+        <SinglePost id=id />
       </Section>
     </MainLayout>);
   }

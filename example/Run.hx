@@ -1,6 +1,6 @@
 import haxe.io.Path;
 import pine.bridge.Bridge;
-import pine.router.Router;
+import pine.router.*;
 import site.data.FileSystemContext;
 import site.page.*;
 
@@ -19,11 +19,11 @@ function main() {
       .children(
         Router.build({
           routes: [
-            HomePage.route(),
-            TodoPage.route(),
-            CounterPage.route(),
-            PostPage.route(),
-            ComponentExamplesPage.route()
+            new Route<"/">(_ -> HomePage.build({})),
+            new Route<"/todos">(_ -> TodoPage.build({})),
+            new Route<"/counter/{initialCount:Int}">(params -> CounterPage.build(params)),
+            new Route<"/post/{id:Int}">(params -> PostPage.build(params)),
+            new Route<"/component-examples">(_ -> ComponentExamplesPage.build({}))
           ],
           fallback: _ -> 'Page not found'
         })

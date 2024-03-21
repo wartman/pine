@@ -2,63 +2,76 @@ package pine.router;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import pine.macro.*;
+import pine.macro.builder.*;
 
-using Lambda;
-using StringTools;
-using haxe.io.Path;
+using kit.Hash;
+using pine.macro.Tools;
+using pine.router.RouteTools;
+using pine.macro.Tools;
 
-typedef RouteMeta = {
-  public final matcher:Expr;
-  public final paramsType:ComplexType;
-  public final paramsBuilder:Expr;
-  public final urlBuilder:Expr;
+function buildGeneric() {
+  return switch Context.getLocalType() {
+    case TInst(_, [ TInst(_.get() => {kind: KExpr(macro $v{(url:String)})}, _) ]):
+      buildRoute(url.normalizeUrl());
+    default:
+      throw 'assert';
+  }
 }
 
-function processRoute(url:String):RouteMeta {
+function buildRoute(url:String) {
+  var suffix = url.hash();
   var pos = Context.getLocalClass().get().pos;
-  var parser = new RouteParser(url);
-  var matcher = macro new EReg($v{parser.getMatcher()}, '');
-  var parts = parser.getParts();
-  var params = parser.getParams();
-  var fields:Array<Field> = [ for (entry in params) switch entry.type {
-    case 'Int': { name: entry.key, kind: FVar(macro:Int), pos: pos };
-    default: { name: entry.key, kind: FVar(macro:String), pos: pos };
-  } ];
-  var paramsBuilder:Expr = {
-    expr: EObjectDecl([ for (i in 0...fields.length) {
-      field: fields[i].name,
-      expr: switch params[i].type {
-        case 'Int': macro Std.parseInt(matcher.matched($v{i + 1}));
-        default: macro matcher.matched($v{i + 1});
-      }
-    } ]),
-    pos: pos
-  };
+  var pack = [ 'pine', 'router' ];
+  var name = 'Route_${suffix}';
+  var path:TypePath = { pack: pack, name: name, params: [] };
 
-  var urlBuilder:Array<Expr> = [ macro $v{parts[0]} ];
-  for (i in 0...params.length) {
-    var key = params[i].key;
-    urlBuilder.push(switch params[i].type {
-      case 'String': macro props.$key;
-      default: macro Std.string(props.$key);
-    });
-    if (parts[i + 1] != null) {
-      urlBuilder.push(macro $v{parts[i + 1]});
+  if (path.typePathExists()) return TPath(path);
+  
+  var builder = new ClassFieldCollection([]);
+  var route = url.processRoute();
+  var routeParamsType = route.paramsType;
+  var renderType = macro:(params:$routeParamsType)->pine.Child;
+  
+  builder.add(macro class {
+    static final matcher = ${route.matcher};
+  
+    public static function createUrl(props:$routeParamsType):String {
+      return ${route.urlBuilder};
     }
-  }
 
-  return {
-    matcher: matcher,
-    paramsBuilder: paramsBuilder,
-    paramsType: TAnonymous(fields),
-    urlBuilder: macro [ $a{urlBuilder} ].join('')
-  };
-}
+    public static function link(props:$routeParamsType) {
+      return pine.router.Link.to(createUrl(props));
+    }
 
-function normalizeUrl(url:String) {
-  url = url.normalize().trim();
-  if (!url.startsWith('/')) {
-    url = '/' + url;
-  }
-  return url;
+    final render:$renderType;
+
+    public function new(render) {
+      this.render = render;
+    }
+
+    public function match(request:kit.http.Request):kit.Maybe<()->pine.Child> {
+      if (request.method != Get) return None;
+      if (matcher.match(request.url)) {
+        return Some(() -> render(${route.paramsBuilder}));
+      }
+      return None;
+    }
+  });
+
+  Context.defineType({
+    pack: pack,
+    name: name,
+    pos: pos,
+    meta: [],
+    kind: TDClass(null, [
+      {
+        pack: ['pine', 'router'],
+        name: 'Matchable'
+      }
+    ], false, true, false),
+    fields: builder.export()
+  });
+
+  return TPath(path);
 }

@@ -10,10 +10,6 @@ class Provider<T:Disposable> extends Component {
   @:attribute final value:T;
   @:children @:attribute var views:Null<Children> = null;
 
-  public function and<T:Disposable>(value:T) {
-    return new Provider({ value: value, views: this });
-  }
-
   public function children(children:Children) {
     views = views == null ? children : views.concat(children);
     return this;

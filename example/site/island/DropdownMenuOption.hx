@@ -1,6 +1,6 @@
 package site.island;
 
-import pine.component.Dropdown;
+import pine.component.DropdownContext;
 import pine.router.Link;
 import site.data.MenuOption;
 
@@ -25,7 +25,7 @@ class DropdownMenuOption extends Component {
           .build();
     }
 
-    Dropdown.from(this).register(link);
+    DropdownContext.from(this).register(link);
 
     return Html.li()
       .style(Breeze.compose(

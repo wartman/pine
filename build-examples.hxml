@@ -10,7 +10,7 @@
 -D js-es=6
 -D analyzer-optimize
 -D message-reporting=pretty
--D breeze.output=assets/app.css
+-D breeze.output=www/assets/app.css
 
 --debug
 --dce full
@@ -18,5 +18,5 @@
 
 -main Run
 
--js temp/build.js
--cmd node temp/build
+-js dist/build.js
+-cmd node dist/build

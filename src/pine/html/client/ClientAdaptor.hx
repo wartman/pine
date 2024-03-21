@@ -203,11 +203,6 @@ class ClientAdaptor implements Adaptor {
     }
   }
 
-  // @todo: This hydration method is extremely fragile right now.
-  // Need to look into some ways to add verification.
-  //
-  // That said, it *should* work so long as the client and server HTML
-  // is identical.
   function hydrateNearestPrimitive(slot:Slot, findParent:()->Dynamic):Dynamic {
     var prev:Null<Node> = slot.previous;
     if (prev == null) {
@@ -217,13 +212,6 @@ class ClientAdaptor implements Adaptor {
   }
 
   function skipComments(node:Null<Node>) {
-    // @todo: We're using comments to mark where string nodes start and end,
-    // which is probably quite fragile.
-    //
-    // A better method might be to have *all* components use 
-    // comment markers, perhaps even sending their hydration data
-    // next to them. This will take some more thinking, but would 
-    // open up stuff like Islands.
     if (node == null) return null;
     if (node.nodeType == Node.COMMENT_NODE) {
       if (node.textContent == PlaceholderMarker) return node;

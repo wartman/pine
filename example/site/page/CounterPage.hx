@@ -1,23 +1,25 @@
 package site.page;
 
-import pine.router.Page;
+import pine.bridge.ServerComponent;
 import site.component.core.Section;
 import site.island.CounterIsland;
 import site.layout.MainLayout;
 import site.style.Core;
 
-class CounterPage extends Page<'/counter/{initialCount:Int}'> {
-  function render():Child {
+class CounterPage extends ServerComponent {
+  @:attribute final initialCount:Int;
+
+  function render():Task<Child> {
     return MainLayout.build({
-      title: 'Counter | ${params.initialCount}',
+      title: 'Counter | ${initialCount}',
       children: Html.div()
         .style(centered)
         .children(
           Section.build({
             constrain: true,
-            children: CounterIsland.build({ count: params.initialCount })
+            children: CounterIsland.build({ count: initialCount })
           })
         )
-    });
+    }).as(Child);
   }
 }

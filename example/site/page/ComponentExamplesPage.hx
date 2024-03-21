@@ -1,12 +1,12 @@
 package site.page;
 
+import pine.bridge.ServerComponent;
 import site.layout.MainLayout;
 import site.island.ExamplesIsland;
 import site.component.core.*;
-import pine.router.Page;
 
-class ComponentExamplesPage extends Page<'/examples'> {
-  function render():Child {
+class ComponentExamplesPage extends ServerComponent {
+  function render():Task<Child> {
     return view(
       <MainLayout title="examples">
         <Section constrain>

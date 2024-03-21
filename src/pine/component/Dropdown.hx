@@ -4,60 +4,31 @@ import pine.debug.Debug;
 
 using pine.Modifier;
 
-enum abstract DropdownStatus(Bool) {
-  final Open = true;
-  final Closed = false;
-}
-
-// @todo: Decide if making Dropdown a context too is:
-// a) a good idea.
-// b) idiomatic with how we want Pine to work.
-@:fallback(error('No Dropdown found'))
-class Dropdown extends Component implements Context {
+class Dropdown extends Component {
   @:attribute final attachment:PositionedAttachment = ({ h: Middle, v: Bottom }:PositionedAttachment);
   @:attribute final gap:Int = 0;
-  @:attribute final label:(context:Dropdown)->Child;
-  @:attribute final child:(context:Dropdown)->Children;
-  @:signal final status:DropdownStatus = Closed;
-  
-  var items:Array<View> = [];
-  
-  public function open() {
-    status.set(Open);
-  }
-
-  public function close() {
-    status.set(Closed);
-  }
-
-  public function toggle() {
-    status.update(status -> status == Open ? Closed : Open);
-  }
-
-  public function register(view:View) {
-    items.push(view);
-  }
+  @:attribute final label:(context:DropdownContext)->Child;
+  @:attribute final child:(context:DropdownContext)->Children;
 
   function render() {
-    var target = label(this);
-
-    addDisposable(() -> items = []);
+    var context = new DropdownContext();
+    var target = label(context);
 
     return Provider
-      .provide(this)
+      .provide(context)
       .children(
         target,
-        Scope.wrap(_ -> switch status() {
+        Scope.wrap(_ -> switch context.status() {
           case Open:
             DropdownPopover.build({
               getTarget: () -> target.getPrimitive(),
-              onHide: close,
+              onHide: context.close,
               attachment: attachment,
               gap: gap,
-              children: child(this)
+              children: child(context)
             });
           case Closed:
-            items = [];
+            context.reset();
             Placeholder.build();
         })
       );
@@ -110,7 +81,7 @@ class DropdownPopover extends Component {
   }
 
   function getNextFocusedChild(offset:Int):Maybe<View> {
-    var items = Dropdown.from(this).items;
+    var items = DropdownContext.from(this).items;
     var index = Math.ceil(items.indexOf(current) + offset);
     var item = items[index];
     

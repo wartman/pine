@@ -34,7 +34,7 @@ class ClientAppAsset implements Asset {
     var path = config.main.withExtension('hx');
     var fs = new FileSystem(new SysAdaptor(Sys.getCwd()));
 
-    return fs.directory(config.outputDirectory)
+    return fs.directory(config.temporaryDirectory)
       .create()
       .next(dir -> dir.file(path).write(createMainHaxeFunction()));
   }
@@ -69,7 +69,7 @@ class ClientAppAsset implements Asset {
       paths = paths.concat(config.sources);
     }
 
-    paths.push(config.outputDirectory);
+    paths.push(config.temporaryDirectory);
 
     for (path in paths) {
       cmd.push('-cp $path');
@@ -82,7 +82,7 @@ class ClientAppAsset implements Asset {
     cmd.push('--debug');
     #else
     cmd.push('--dce full');
-    cmd.push('-D analyzer-optimize')
+    cmd.push('-D analyzer-optimize');
     #end
 
     for (flag in flags) {

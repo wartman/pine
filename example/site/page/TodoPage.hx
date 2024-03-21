@@ -1,12 +1,12 @@
 package site.page;
 
-import pine.router.Page;
+import pine.bridge.ServerComponent;
 import site.layout.MainLayout;
 import site.component.core.*;
 import todo.Todo;
 
-class TodoPage extends Page<'/todo'> {
-  function render():Child {
+class TodoPage extends ServerComponent {
+  function render():Task<Child> {
     var store = new TodoStore({
       uid: 1,
       visibility: All,

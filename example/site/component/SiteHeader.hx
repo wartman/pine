@@ -1,10 +1,14 @@
 package site.component;
 
-import pine.router.RouteVisitor;
-import site.page.*;
+import pine.router.*;
 import site.style.*;
 import site.island.*;
 import site.data.*;
+
+// Just as an example: the `Route` class has `createRoute` and
+// `link` static methods available for type-safe navigation. To use
+// them, just create a typedef like the following:
+typedef PostRoute = Route<"/post/{id:Int}">;
 
 class SiteHeader extends Component {
   function render() {
@@ -14,17 +18,17 @@ class SiteHeader extends Component {
         new MenuOption({
           label: 'First Post',
           type: PageLink,
-          url: PostPage.createUrl({ id: 1 })
+          url: PostRoute.createUrl({ id: 1 })
         }),
         new MenuOption({
           label: 'Second Post',
           type: PageLink,
-          url: PostPage.createUrl({ id: 2 })
+          url: PostRoute.createUrl({ id: 2 })
         }),
         new MenuOption({
           label: 'Third Post',
           type: PageLink,
-          url: PostPage.createUrl({ id: 3 })
+          url: PostRoute.createUrl({ id: 3 })
         })
       ]
     });
@@ -57,7 +61,7 @@ class SiteHeader extends Component {
             Flex.alignItems('center'),
             Sizing.height('100%'),
             Spacing.margin('right', 'auto')
-          )}>{HomePage.link({}).children("Example Site")}</h2>
+          )}>{Link.to("/").children("Example Site")}</h2>
           <nav>
             <ul class={Breeze.compose(
               Flex.display(),
@@ -66,11 +70,11 @@ class SiteHeader extends Component {
               Flex.gap(3),
               Sizing.height('100%'),
             )}>
-              <li>{TodoPage.link({}).children("Todos Example")}</li>
+              <li>{Link.to("/todos").children("Todos Example")}</li>
               <li><DropdownMenu menu=postMenu /></li>
-              <li>{CounterPage.link({ initialCount: 2 }).children("Counter Example (starts at 2)")}</li>
-              <li>{CounterPage.link({ initialCount: 10 }).children("Counter Example (starts at 10)")}</li>
-              <li>{ComponentExamplesPage.link({}).children("More Examples")}</li>
+              <li>{Link.to("/counter/2").children("Counter Example (starts at 2)")}</li>
+              <li>{Link.to("/counter/10").children("Counter Example (starts at 10)")}</li>
+              <li>{Link.to("/component-examples").children("More Examples")}</li>
             </ul>
           </nav>
         </div>

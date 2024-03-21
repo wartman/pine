@@ -1,19 +1,4 @@
 package pine.router;
 
-import kit.http.Request;
-
-interface Route {
-  public function match(request:Request):Maybe<()->Child>;
-}
-
-class SimpleRoute implements Route {
-  final matcher:(request:Request)->Maybe<()->Child>;
-
-  public function new(matcher) {
-    this.matcher = matcher;
-  }
-
-  public function match(request:Request) {
-    return matcher(request);
-  }
-}
+@:genericBuild(pine.router.RouteBuilder.buildGeneric())
+interface Route<@:const Path> {}
