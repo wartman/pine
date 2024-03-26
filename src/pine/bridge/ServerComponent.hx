@@ -23,7 +23,7 @@ abstract class ServerComponent extends View implements DisposableHost {
   abstract function render():Task<Child>;
 
   function __initialize() {
-    assert(getContext(Suspense) != null, 'ServerComponents must be used inside a Suspense.');
+    assert(Suspense.maybeFrom(this) != null, 'ServerComponents must be used inside a Suspense.');
 
     __child = __owner.own(() -> Resource.suspends(this)
       .fetch(render)

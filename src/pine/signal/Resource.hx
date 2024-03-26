@@ -31,7 +31,7 @@ class ResourceBuilder {
   final suspense:Null<Suspense>;
 
   public function new(context:View) {
-    this.suspense = context.getContext(Suspense);
+    this.suspense = Suspense.maybeFrom(context);
   }
 
   public function fetch<T>(fetch):Resource<T> {
@@ -54,16 +54,24 @@ class ResourceObject<T, E = Error> implements Disposable {
 
     owner.own(() -> Observer.track(() -> {
       link?.cancel();
-      data.set(Loading);
-      suspense?.markResourceAsSuspended(this);
+
+      var handled = false;
+
       link = fetch().handle(result -> switch result {
         case Ok(value):
+          handled = true;
           data.set(Ok(value));
           suspense?.markResourceAsCompleted(this);
         case Error(error): 
+          handled = true;
           data.set(Error(error));
-          suspense.markResourceAsFailed(this);
+          suspense?.markResourceAsFailed(this);
       });
+
+      if (!handled) {
+        data.set(Loading);
+        suspense?.markResourceAsSuspended(this);
+      }
     }));
 
     Owner.current()?.addDisposable(this);

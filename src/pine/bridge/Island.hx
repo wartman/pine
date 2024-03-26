@@ -9,12 +9,12 @@ abstract class Island extends ProxyView {
 
   #if !pine.client
   override function __initialize() {
-    var isIslandChild = getContext(Island) != null;
+    var isIslandChild = getContext(IslandMarker) != null;
     __child = if (isIslandChild) {
       __owner.own(() -> Runtime.current().untrack(render));
     } else {
       __owner.own(() -> Runtime.current().untrack(() -> 
-        Provider.provide(this).children(IslandElement.build({
+        Provider.provide(new IslandMarker()).children(IslandElement.build({
           component: __islandName(),
           props: toJson(),
           child: render()
@@ -25,3 +25,11 @@ abstract class Island extends ProxyView {
   }
   #end
 }
+
+#if !pine.client
+class IslandMarker implements Disposable {
+  public function new() {}
+
+  public function dispose() {}
+}
+#end

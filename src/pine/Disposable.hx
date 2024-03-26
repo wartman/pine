@@ -48,6 +48,7 @@ final class DisposableCollection implements Disposable implements DisposableHost
   }
 
   public function dispose() {
+    if (isDisposed) return;
     isDisposed = true;
     for (disposable in disposables) {
       disposables.remove(disposable);

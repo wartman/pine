@@ -1,7 +1,5 @@
 package pine.component;
 
-import pine.debug.Debug;
-
 using pine.Modifier;
 
 class Dropdown extends Component {
@@ -16,7 +14,7 @@ class Dropdown extends Component {
 
     return Provider
       .provide(context)
-      .children(
+      .children([
         target,
         Scope.wrap(_ -> switch context.status() {
           case Open:
@@ -31,7 +29,7 @@ class Dropdown extends Component {
             context.reset();
             Placeholder.build();
         })
-      );
+      ]);
   }
 }
 

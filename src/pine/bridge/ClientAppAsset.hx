@@ -108,6 +108,10 @@ class ClientAppAsset implements Asset {
   function createMainHaxeFunction() {
     var buf = new StringBuf();
     buf.add('function main() {\n');
+    buf.add('  hydrateIslands();\n');
+    // @todo: add code that allows HTML swapping.
+    buf.add('}\n\n');
+    buf.add('private function hydrateIslands() {\n');
     buf.add('  var adaptor = new pine.html.client.ClientAdaptor();\n');
     for (island in islands.getIslandPaths()) {
       buf.add('  $island.hydrateIslands(adaptor);\n');

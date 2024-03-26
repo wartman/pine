@@ -59,6 +59,8 @@ abstract class View implements Disposable {
   abstract function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>):Void;
 
   public function dispose() {
+    if (__status == Disposed) return;
+
     __dispose();
     __status = Disposed;
   }

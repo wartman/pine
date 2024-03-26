@@ -60,6 +60,7 @@ class Bridge extends Model {
   ):Task<HtmlAsset> {
     return new Task(activate -> {
       var document = new ElementPrimitive('#document', {});
+      var root:Null<View> = null;
       var suspended = false;
       var activated = false;
 
@@ -78,10 +79,11 @@ class Bridge extends Model {
           }).map(_ -> true).or(false)  
         }));
 
+        root?.dispose();
         activate(Ok(html));
       }
 
-      Root.build(document, new ServerAdaptor(), () -> Provider
+      root = Root.build(document, new ServerAdaptor(), () -> Provider
         .provide(assets)
         .provide(client)
         .provide(islands)

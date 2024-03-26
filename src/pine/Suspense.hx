@@ -1,5 +1,6 @@
 package pine;
 
+import pine.debug.Debug;
 import pine.signal.Scheduler;
 import pine.signal.Resource;
 
@@ -12,10 +13,22 @@ class Suspense extends Component {
     return new SuspenseBuilder(children);
   }
 
+  public static function maybeFrom(context:View):Null<Suspense> {
+    return switch context.getContext(SuspenseContext) {
+      case null:
+        null;
+      case context:
+        context.suspense;
+    }
+  }
+
   public static function from(context:View) {
-    return context.getContext(Suspense)
-      .toMaybe()
-      .orThrow('No Suspense found');
+    return switch maybeFrom(context) {
+      case null:
+        error('No Suspense found');
+      case suspense:
+        suspense;
+    }
   }
 
   @:attribute final onSuspended:()->Void = null;
@@ -28,7 +41,7 @@ class Suspense extends Component {
 
   function markResourceAsSuspended(resource:ResourceObject<Any, Any>) {
     if (resources.contains(resource)) return;
-    var isFirstSuspense = resources.length == 0;
+    var isFirstSuspense = resources.length == 0 && !scheduled;
     resources.push(resource);
     if (isFirstSuspense && onSuspended != null) onSuspended(); 
   }
@@ -41,7 +54,7 @@ class Suspense extends Component {
       scheduled = true;
       Scheduler.current().schedule(() -> {
         scheduled = false;
-        if (resources.length == 0) onComplete();
+        onComplete();
       });
     }
   }
@@ -53,8 +66,19 @@ class Suspense extends Component {
   }
 
   function render() {
-    return Provider.provide(this).children(children);
+    return Provider.provide(new SuspenseContext(this)).children(children);
   }
+}
+
+@:allow(pine.Suspense)
+private class SuspenseContext implements Disposable {
+  final suspense:Suspense;
+
+  public function new(suspense) {
+    this.suspense = suspense;
+  }
+
+  public function dispose() {}
 }
 
 abstract SuspenseBuilder({

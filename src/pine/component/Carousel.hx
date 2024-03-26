@@ -17,7 +17,7 @@ class Carousel extends Component {
 
     return Provider
       .provide(context)
-      .children(
+      .children([
         CarouselViewport.build({
           className: className,
           duration: duration,
@@ -26,6 +26,6 @@ class Carousel extends Component {
           children: [ for (slide in slides) (slide:View) ]
         }),
         controls != null ? controls(context) : null
-      );
+      ]);
   }
 }

@@ -2,6 +2,9 @@ package pine;
 
 using Lambda;
 
+// @todo: Consider only allowing Providers to provide Context. I was
+// providing Components here, but that causes endless loops at disposal
+// time.
 class Provider<T:Disposable> extends Component {
   public inline static function provide<T:Disposable>(value:T) {
     return new ProviderBuilder([ value ]);
@@ -35,29 +38,34 @@ class Provider<T:Disposable> extends Component {
 }
 
 abstract ProviderBuilder(Array<Disposable>) {
-  public inline function new(providers) {
-    this = providers;
+  public inline function new(values) {
+    this = values;
   }
 
-  public inline function provide(provider) {
-    this.push(provider);
+  public inline function provide(value) {
+    this.push(value);
     return abstract;
   }
 
-  public function children(...children:Children):Child {
-    var provider = this.shift();
-    var child = Provider.build({ value: provider, views: children.toArray().flatten() });
+  public function children(children:Children):Child {
+    var value = this.shift();
+    var child = Provider.build({ value: value, views: children });
+    value = this.shift();
     
-    while (provider != null) {
-      provider = this.shift();
+    while (value != null) {
       var prevChild = child;
-      child = Provider.build({ value: provider, views: prevChild });
+      child = Provider.build({ value: value, views: prevChild });
+      value = this.shift();
     }
 
     return child;
   }
 
   @:to public inline function toChild():Child {
+    return build();
+  }
+
+  public inline function build():View {
     return children([]);
   }
 }
