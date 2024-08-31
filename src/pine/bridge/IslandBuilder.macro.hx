@@ -1,50 +1,61 @@
 package pine.bridge;
 
-import pine.macro.*;
-import pine.macro.builder.*;
+import kit.macro.*;
+import kit.macro.step.*;
+import pine.ComponentBuilder;
 
 using Lambda;
 using haxe.macro.Tools;
 
-final factory = new ClassBuilderFactory([
-  new AttributeFieldBuilder(),
-  new SignalFieldBuilder(),
-  new ObservableFieldBuilder(),
-  new ComputedFieldBuilder(),
-  new ConstructorBuilder({}),
-  new ComponentBuilder(),
-  new IslandBuilder(),
-  new JsonSerializerBuilder({}),
-]);
-
 function build() {
-  return factory.fromContext().export();
+	return ClassBuilder.fromContext()
+		.addBundle(new ComponentBuilder())
+		.addStep(new IslandBuilder())
+		.addStep(new JsonSerializerBuildStep({
+			customParser: options -> switch options.type.toType().toComplexType() {
+				case macro :pine.signal.Signal<$wrappedType>:
+					var name = options.name;
+					Some(options.parser(macro this.$name.get(), name, wrappedType));
+				// case macro :pine.Children:
+				// 	var name = options.name;
+				// 	Some({
+				// 		serializer: macro pine.bridge.SerializableChildren.toJson(this, this.$name),
+				// 		deserializer: macro pine.bridge.SerializableChildren.fromJson(Reflect.field(data, $v{name}))
+				// 	});
+				// // @todo: handle `pine.Child` as well
+				default:
+					None;
+			},
+			constructorAccessor: macro build,
+			returnType: macro :pine.Child
+		}))
+		.export();
 }
 
-class IslandBuilder implements Builder {
-  public final priority:BuilderPriority = Late;
+class IslandBuilder implements BuildStep {
+	public final priority:Priority = Late;
 
-  public function new() {}
+	public function new() {}
 
-  public function apply(builder:ClassBuilder) {
-    var path = builder.getType().follow().toComplexType().toString();
+	public function apply(builder:ClassBuilder) {
+		var path = builder.getType().follow().toComplexType().toString();
 
-    builder.add(macro class {
-      public static final islandName = $v{path};
+		builder.add(macro class {
+			public static final islandName = $v{path};
 
-      function __islandName() {
-        return islandName;
-      }
+			function __islandName() {
+				return islandName;
+			}
 
-      #if pine.client
-      public static function hydrateIslands(adaptor:pine.Adaptor) {
-        var elements = pine.bridge.IslandElement.getIslandElementsForComponent(islandName);
-        return [ for (el in elements) {
-          var props:{} = pine.bridge.IslandElement.getIslandProps(el);
-          pine.Root.build(el, adaptor, () -> fromJson(props)).hydrate();
-        } ];
-      }
-      #end
-    });
-  }
+			#if pine.client
+			public static function hydrateIslands(adaptor:pine.Adaptor) {
+				var elements = pine.bridge.IslandElement.getIslandElementsForComponent(islandName);
+				return [for (el in elements) {
+					var props:{} = pine.bridge.IslandElement.getIslandProps(el);
+					pine.Root.build(el, adaptor, () -> fromJson(props)).hydrate();
+				}];
+			}
+			#end
+		});
+	}
 }

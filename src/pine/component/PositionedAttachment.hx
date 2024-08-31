@@ -1,20 +1,20 @@
 package pine.component;
 
 typedef PositionedAttachment = {
-  public final h:PositionedAttachmentHorizontal;
-  public final v:PositionedAttachmentVertical;
+	public final h:PositionedAttachmentHorizontal;
+	public final v:PositionedAttachmentVertical;
 }
 
 enum PositionedAttachmentVertical {
-  Top;
-  Bottom;
-  Middle;
+	Top;
+	Bottom;
+	Middle;
 }
 
 enum PositionedAttachmentHorizontal {
-  Left;
-  Right;
-  Middle;
-  MatchLeft;
-  MatchRight;
+	Left;
+	Right;
+	Middle;
+	MatchLeft;
+	MatchRight;
 }

@@ -8,119 +8,115 @@ import pine.signal.Computation;
 using Lambda;
 
 @:forward
-abstract ForIterator<T>(ReadOnlySignal<Iterable<T>>) 
-  from Signal<Iterable<T>>
-  from Computation<Iterable<T>>
-  from ReadOnlySignal<Iterable<T>> 
-{
-  @:from public static inline function ofArray<T>(arr:Array<T>):ForIterator<T> {
-    return (arr:Iterable<T>);
-  }
+abstract ForIterator<T>(ReadOnlySignal<Iterable<T>>) from Signal<Iterable<T>> from Computation<Iterable<T>> from ReadOnlySignal<Iterable<T>> {
+	@:from public static inline function ofArray<T>(arr:Array<T>):ForIterator<T> {
+		return (arr : Iterable<T>);
+	}
 
-  @:from public static inline function ofSignalArray<T>(arr:Signal<Array<T>>):ForIterator<T> {
-    return cast arr;
-  }
+	@:from public static inline function ofSignalArray<T>(arr:Signal<Array<T>>):ForIterator<T> {
+		return cast arr;
+	}
 
-  @:from public static inline function ofReadOnlySignalArray<T>(arr:ReadOnlySignal<Array<T>>):ForIterator<T> {
-    return cast arr;
-  }
+	@:from public static inline function ofReadOnlySignalArray<T>(arr:ReadOnlySignal<Array<T>>):ForIterator<T> {
+		return cast arr;
+	}
 
-  @:from public static inline function ofComputationArray<T>(arr:Computation<Array<T>>):ForIterator<T> {
-    return cast arr;
-  }
+	@:from public static inline function ofComputationArray<T>(arr:Computation<Array<T>>):ForIterator<T> {
+		return cast arr;
+	}
 
-  @:op(a())
-  public inline function get() {
-    return this.get();
-  }
+	@:op(a())
+	public inline function get() {
+		return this.get();
+	}
 }
 
 class For<T:{}> extends View {
-  @:fromMarkup
-  @:noCompletion
-  @:noUsing
-  public inline static function fromMarkup<T:{}>(props:{
-    public final each:ForIterator<T>;
-    @:children public final child:(item:T)->Child;
-  }) {
-    return For.each(props.each, props.child);
-  }
+	@:fromMarkup
+	@:noCompletion
+	@:noUsing
+	public inline static function fromMarkup<T:{}>(props:{
+		public final each:ForIterator<T>;
+		@:children public final child:(item:T) -> Child;
+	}) {
+		return For.each(props.each, props.child);
+	}
 
-  public static inline function each<T:{}>(items, render) {
-    return new For<T>(items, render);
-  }
+	public static inline function each<T:{}>(items, render) {
+		return new For<T>(items, render);
+	}
 
-  final items:ForIterator<T>;
-  final render:(item:T)->Child;
-  final itemToViewsMap:Map<T, View> = [];
-  final owner:Owner = new Owner();
-  
-  var reconciler:Null<Reconciler> = null;
-  var marker:Null<View> = null;
+	final items:ForIterator<T>;
+	final render:(item:T) -> Child;
+	final itemToViewsMap:Map<T, View> = [];
+	final owner:Owner = new Owner();
 
-  public function new(items, render) {
-    this.items = items;
-    this.render = render;
-  }
+	var reconciler:Null<Reconciler> = null;
+	var marker:Null<View> = null;
 
-  public function findNearestPrimitive():Dynamic {
-    return getParent().findNearestPrimitive();
-  }
+	public function new(items, render) {
+		this.items = items;
+		this.render = render;
+	}
 
-  public function getPrimitive():Dynamic {
-    assert(marker != null);
-    return reconciler?.last()?.getPrimitive() ?? marker.getPrimitive();
-  }
+	public function findNearestPrimitive():Dynamic {
+		return getParent().findNearestPrimitive();
+	}
 
-  function __initialize() {
-    marker = new Placeholder();
-    reconciler = new Reconciler(this, getAdaptor(), (index, previous) -> {
-      new FragmentSlot(slot.index, index, previous ?? marker?.getPrimitive());
-    });
+	public function getPrimitive():Dynamic {
+		assert(marker != null);
+		return reconciler?.last()?.getPrimitive() ?? marker.getPrimitive();
+	}
 
-    marker.mount(this, getAdaptor(), slot);
+	function __initialize() {
+		marker = new Placeholder();
+		reconciler = new Reconciler(this, getAdaptor(), (index, previous) -> {
+			new FragmentSlot(slot.index, index, previous ?? marker?.getPrimitive());
+		});
 
-    owner.own(() -> Observer.track(() -> {
-      var items = items();
+		marker.mount(this, getAdaptor(), slot);
 
-      for (item => _ in itemToViewsMap) {
-        if (!items.has(item)) {
-          itemToViewsMap.remove(item);
-        }
-      }
+		owner.own(() -> Observer.track(() -> {
+			var items = items();
 
-      var next:Array<View> = [];
+			for (item => _ in itemToViewsMap) {
+				if (!items.has(item)) {
+					itemToViewsMap.remove(item);
+				}
+			}
 
-      for (item in items) {
-        var view = itemToViewsMap.get(item);
-        if (view == null) {
-          view = render(item);
-          itemToViewsMap.set(item, view);
-        }
-        next.push(view);
-      }
+			var next:Array<View> = [];
 
-      reconciler.reconcile(next);
-    }));
-  }
+			for (item in items) {
+				var view = itemToViewsMap.get(item);
+				if (view == null) {
+					view = render(item);
+					itemToViewsMap.set(item, view);
+				}
+				next.push(view);
+			}
 
-  function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
-    if (newSlot == null) return;
-    marker.setSlot(newSlot);
-    
-    var previous = marker;
+			reconciler.reconcile(next);
+		}));
+	}
 
-    reconciler.each((index, child) -> {
-      child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
-      previous = child;
-    });
-  }
+	function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
+		if (newSlot == null) return;
+		marker.setSlot(newSlot);
 
-  function __dispose() {
-    owner.dispose();
-    marker?.dispose();
-    marker = null;
-    reconciler?.dispose();
-    reconciler = null;
-  }
+		var previous = marker;
+
+		reconciler.each((index, child) -> {
+			child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
+			previous = child;
+		});
+	}
+
+	function __dispose() {
+		owner.dispose();
+		marker?.dispose();
+		marker = null;
+		reconciler?.dispose();
+		reconciler = null;
+	}
 }

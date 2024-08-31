@@ -5,41 +5,41 @@ import pine.Disposable;
 import pine.debug.Debug;
 
 abstract class ProxyView extends View implements DisposableHost {
-  final __owner = new Owner();
-  var __child:Null<View> = null;
+	final __owner = new Owner();
+	var __child:Null<View> = null;
 
-  abstract function render():Child;
+	abstract function render():Child;
 
-  public function addDisposable(disposable:DisposableItem):Void {
-    __owner.addDisposable(disposable);
-  }
+	public function addDisposable(disposable:DisposableItem):Void {
+		__owner.addDisposable(disposable);
+	}
 
-  public function removeDisposable(disposable:DisposableItem):Void {
-    __owner.removeDisposable(disposable);
-  }
-  
-  function __initialize() {
-    __child = __owner.own(() -> Runtime.current().untrack(render));
-    __child.mount(this, getAdaptor(), slot);
-  }
+	public function removeDisposable(disposable:DisposableItem):Void {
+		__owner.removeDisposable(disposable);
+	}
 
-  public function findNearestPrimitive():Dynamic {
-    return getParent().findNearestPrimitive();
-  }
+	function __initialize() {
+		__child = __owner.own(() -> Runtime.current().untrack(render));
+		__child.mount(this, getAdaptor(), slot);
+	}
 
-  public function getPrimitive():Dynamic {
-    var primitive = __child?.getPrimitive();
-    assert(primitive != null);
-    return primitive;
-  }
+	public function findNearestPrimitive():Dynamic {
+		return getParent().findNearestPrimitive();
+	}
 
-  function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>):Void {
-    __child?.setSlot(newSlot);
-  }
+	public function getPrimitive():Dynamic {
+		var primitive = __child?.getPrimitive();
+		assert(primitive != null);
+		return primitive;
+	}
 
-  function __dispose():Void {
-    __owner.dispose();
-    __child?.dispose();
-    __child = null;
-  }
+	function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>):Void {
+		__child?.setSlot(newSlot);
+	}
+
+	function __dispose():Void {
+		__owner.dispose();
+		__child?.dispose();
+		__child = null;
+	}
 }

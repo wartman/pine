@@ -3,41 +3,41 @@ package pine.component;
 import pine.signal.Signal;
 
 enum abstract CollapseContextStatus(Bool) {
-  final Collapsed = false;
-  final Expanded = true;
+	final Collapsed = false;
+	final Expanded = true;
 }
 
 @:fallback(new CollapseContext(Expanded))
 class CollapseContext implements Context {
-  public final duration:Int;
-  public final status:Signal<CollapseContextStatus>;
-  final accordion:Null<AccordionContext>;
+	public final duration:Int;
+	public final status:Signal<CollapseContextStatus>;
 
-  public function new(status:CollapseContextStatus, ?duration:Int, ?accordion) {
-    this.status = new Signal(status);
-    this.duration = duration ?? 200;
-    this.accordion = accordion;
+	final accordion:Null<AccordionContext>;
 
-    this.accordion?.add(this);
-  }
+	public function new(status:CollapseContextStatus, ?duration:Int, ?accordion) {
+		this.status = new Signal(status);
+		this.duration = duration ?? 200;
+		this.accordion = accordion;
 
-  public function toggle() {
-    switch status.peek() {
-      case Expanded: collapse();
-      case Collapsed: expand();
-    }
-  }
+		this.accordion?.add(this);
+	}
 
-  public function expand() {
-    status.set(Expanded);
-  }
+	public function toggle() {
+		switch status.peek() {
+			case Expanded: collapse();
+			case Collapsed: expand();
+		}
+	}
 
-  public function collapse() {
-    status.set(Collapsed);
-  }
+	public function expand() {
+		status.set(Expanded);
+	}
 
-  public function dispose() {
-    accordion?.remove(this);
-  }
+	public function collapse() {
+		status.set(Collapsed);
+	}
+
+	public function dispose() {
+		accordion?.remove(this);
+	}
 }
-

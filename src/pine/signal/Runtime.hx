@@ -3,86 +3,86 @@ package pine.signal;
 import pine.debug.Debug;
 
 enum abstract RuntimeStatus(Bool) to Bool {
-  final Idle = false;
-  final Notifying = true;
+	final Idle = false;
+	final Notifying = true;
 }
 
 @:allow(pine.signal)
 class Runtime {
-  private static var instance:Null<Runtime> = null;
+	private static var instance:Null<Runtime> = null;
 
-  public static function setCurrent(runtime:Runtime):Null<Runtime> {
-    var prev = instance;
-    instance = runtime;
-    return prev;
-  }
+	public static function setCurrent(runtime:Runtime):Null<Runtime> {
+		var prev = instance;
+		instance = runtime;
+		return prev;
+	}
 
-  public static function current():Runtime {
-    if (instance == null) {
-      instance = new Runtime(Scheduler.current());
-    }
-    return instance;
-  }
+	public static function current():Runtime {
+		if (instance == null) {
+			instance = new Runtime(Scheduler.current());
+		}
+		return instance;
+	}
 
-  final scheduler:Scheduler;
+	final scheduler:Scheduler;
 
-  var status:RuntimeStatus = Idle;
-  var epoch:Int = 1;
-  
-  var currentConsumerNode:Null<ReactiveNode> = null;
+	var status:RuntimeStatus = Idle;
+	var epoch:Int = 1;
 
-  public function new(scheduler) {
-    this.scheduler = scheduler;
-  }
+	var currentConsumerNode:Null<ReactiveNode> = null;
 
-  public function incrementEpoch() {
-    epoch++;
-  }
+	public function new(scheduler) {
+		this.scheduler = scheduler;
+	}
 
-  public function schedule(effect:()->Void) {
-    scheduler.schedule(effect);
-  }
+	public function incrementEpoch() {
+		epoch++;
+	}
 
-  public function setCurrentConsumer(consumer:Null<ReactiveNode>):Null<ReactiveNode> {
-    var prev = currentConsumerNode;
-    currentConsumerNode = consumer;
-    return prev;
-  }
+	public function schedule(effect:() -> Void) {
+		scheduler.schedule(effect);
+	}
 
-  public function currentConsumer() {
-    return currentConsumerNode;
-  }
+	public function setCurrentConsumer(consumer:Null<ReactiveNode>):Null<ReactiveNode> {
+		var prev = currentConsumerNode;
+		currentConsumerNode = consumer;
+		return prev;
+	}
 
-  public inline function assertNotNotifying() {
-    assert(status != Notifying, 'Cannot add producers while the runtime is Notifying');
-  }
+	public function currentConsumer() {
+		return currentConsumerNode;
+	}
 
-  public function whileNotifying(effect:()->Void, ?finish:()->Void) {
-    var prev = status;
-    status = Notifying;
-    try effect() catch (e) {
-      status = prev;
-      if (finish != null) finish();
-      throw e;
-    }
-    status = prev;
-    if (finish != null) finish();
-  }
+	public inline function assertNotNotifying() {
+		assert(status != Notifying, 'Cannot add producers while the runtime is Notifying');
+	}
 
-  public inline function untrack<T>(handler:()->T):T {
-    return track(null, handler);
-  }
+	public function whileNotifying(effect:() -> Void, ?finish:() -> Void) {
+		var prev = status;
+		status = Notifying;
+		try effect() catch (e) {
+			status = prev;
+			if (finish != null) finish();
+			throw e;
+		}
+		status = prev;
+		if (finish != null) finish();
+	}
 
-  public function track<T>(node:ReactiveNode, handler:()->T, ?finish:()->Void):T {
-    var prev = setCurrentConsumer(node);
-    var value = try handler() catch (e) {
-      if (finish != null) finish();
-      setCurrentConsumer(prev);
-      throw e;
-    }
+	public inline function untrack<T>(handler:() -> T):T {
+		return track(null, handler);
+	}
 
-    if (finish != null) finish();
-    setCurrentConsumer(prev);
-    return value;
-  }
+	public function track<T>(node:ReactiveNode, handler:() -> T, ?finish:() -> Void):T {
+		var prev = setCurrentConsumer(node);
+		var value = try handler() catch (e) {
+			if (finish != null) finish();
+			setCurrentConsumer(prev);
+			throw e;
+		}
+
+		if (finish != null) finish();
+		setCurrentConsumer(prev);
+		return value;
+	}
 }

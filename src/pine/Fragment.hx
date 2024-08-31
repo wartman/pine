@@ -6,129 +6,129 @@ import pine.debug.Debug;
 
 @:forward
 abstract Fragment(View) to View to Child {
-  @:from
-  public static inline function of(children:Children):Fragment {
-    return new Fragment(children);
-  }
+	@:from
+	public static inline function of(children:Children):Fragment {
+		return new Fragment(children);
+	}
 
-  @:from
-  public static inline function track(children:ReadOnlySignal<Children>):Fragment {
-    return cast new TrackedFragment(children);
-  }
+	@:from
+	public static inline function track(children:ReadOnlySignal<Children>):Fragment {
+		return cast new TrackedFragment(children);
+	}
 
-  public inline function new(children:Children) {
-    this = new StaticFragment(children);
-  }
+	public inline function new(children:Children) {
+		this = new StaticFragment(children);
+	}
 
-  @:to
-  public inline function toChildren():Children {
-    return this;
-  }
+	@:to
+	public inline function toChildren():Children {
+		return this;
+	}
 }
 
 class StaticFragment extends View {
-  final children:Children;
-  
-  var marker:Null<View> = null;
-  
-  public function new(children) {
-    this.children = children;
-  }
+	final children:Children;
 
-  function __initialize() {
-    var adaptor = getAdaptor();
+	var marker:Null<View> = null;
 
-    marker = Placeholder.build();
-    marker.mount(this, adaptor, slot);
+	public function new(children) {
+		this.children = children;
+	}
 
-    var previous = marker;
-    for (index => child in children) {
-      child.mount(this, adaptor, new FragmentSlot(this.slot.index, index, previous.getPrimitive()));
-      previous = child;
-    }
-  }
+	function __initialize() {
+		var adaptor = getAdaptor();
 
-  public function findNearestPrimitive():Dynamic {
-    return getParent().findNearestPrimitive();
-  }
+		marker = Placeholder.build();
+		marker.mount(this, adaptor, slot);
 
-  public function getPrimitive():Dynamic {
-    assert(marker != null);
-    if (children.length == 0) return marker.getPrimitive();
-    return children[children.length - 1].getPrimitive();
-  }
+		var previous = marker;
+		for (index => child in children) {
+			child.mount(this, adaptor, new FragmentSlot(this.slot.index, index, previous.getPrimitive()));
+			previous = child;
+		}
+	}
 
-  function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
-    if (newSlot == null) return;
-    marker.setSlot(newSlot);
-    var previous = marker;
-    for (index => child in children) {
-      child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
-      previous = child;
-    }
-  }
+	public function findNearestPrimitive():Dynamic {
+		return getParent().findNearestPrimitive();
+	}
 
-  function __dispose() {
-    marker?.dispose();
-    for (child in children) child.dispose();
-    children.resize(0);
-  }
+	public function getPrimitive():Dynamic {
+		assert(marker != null);
+		if (children.length == 0) return marker.getPrimitive();
+		return children[children.length - 1].getPrimitive();
+	}
+
+	function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
+		if (newSlot == null) return;
+		marker.setSlot(newSlot);
+		var previous = marker;
+		for (index => child in children) {
+			child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
+			previous = child;
+		}
+	}
+
+	function __dispose() {
+		marker?.dispose();
+		for (child in children) child.dispose();
+		children.resize(0);
+	}
 }
 
 class TrackedFragment extends View {
-  public static inline function of(children:ReadOnlySignal<Children>) {
-    return new TrackedFragment(children);
-  }
+	public static inline function of(children:ReadOnlySignal<Children>) {
+		return new TrackedFragment(children);
+	}
 
-  final children:ReadOnlySignal<Children>;
-  final owner:Owner = new Owner();
-  
-  var reconciler:Null<Reconciler> = null;
-  var marker:Null<View> = null;
-  
-  public function new(children) {
-    this.children = children;
-  }
+	final children:ReadOnlySignal<Children>;
+	final owner:Owner = new Owner();
 
-  public function findNearestPrimitive():Dynamic {
-    return getParent().findNearestPrimitive();
-  }
+	var reconciler:Null<Reconciler> = null;
+	var marker:Null<View> = null;
 
-  public function getPrimitive():Dynamic {
-    assert(marker != null);
-    return reconciler?.last()?.getPrimitive() ?? marker.getPrimitive();
-  }
+	public function new(children) {
+		this.children = children;
+	}
 
-  function __initialize() {
-    var adaptor = getAdaptor();
-    
-    marker = Placeholder.build();
-    reconciler = new Reconciler(this, adaptor, (index, previous) -> {
-      new FragmentSlot(slot.index, index, previous ?? marker?.getPrimitive());
-    });
+	public function findNearestPrimitive():Dynamic {
+		return getParent().findNearestPrimitive();
+	}
 
-    marker.mount(this, adaptor, slot);
-    owner.own(() -> Observer.track(() -> reconciler.reconcile(children())));
-  }
+	public function getPrimitive():Dynamic {
+		assert(marker != null);
+		return reconciler?.last()?.getPrimitive() ?? marker.getPrimitive();
+	}
 
-  function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
-    if (newSlot == null) return;
+	function __initialize() {
+		var adaptor = getAdaptor();
 
-    marker.setSlot(newSlot);
+		marker = Placeholder.build();
+		reconciler = new Reconciler(this, adaptor, (index, previous) -> {
+			new FragmentSlot(slot.index, index, previous ?? marker?.getPrimitive());
+		});
 
-    var previous = marker;
+		marker.mount(this, adaptor, slot);
+		owner.own(() -> Observer.track(() -> reconciler.reconcile(children())));
+	}
 
-    reconciler.each((index, child) -> {
-      child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
-      previous = child;
-    });
-  }
+	function __updateSlot(previousSLot:Null<Slot>, newSlot:Null<Slot>) {
+		if (newSlot == null) return;
 
-  function __dispose() {
-    owner.dispose();
-    marker?.dispose();
-    marker = null;
-    reconciler?.dispose();
-    reconciler = null;
-  }
+		marker.setSlot(newSlot);
+
+		var previous = marker;
+
+		reconciler.each((index, child) -> {
+			child.setSlot(new FragmentSlot(newSlot.index, index, previous.getPrimitive()));
+			previous = child;
+		});
+	}
+
+	function __dispose() {
+		owner.dispose();
+		marker?.dispose();
+		marker = null;
+		reconciler?.dispose();
+		reconciler = null;
+	}
 }

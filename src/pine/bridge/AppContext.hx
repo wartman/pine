@@ -8,32 +8,33 @@ using haxe.io.Path;
 
 @:fallback(error('No app context found'))
 class AppContext implements Context {
-  public final config:ClientConfig;
-  public final output:Directory;
-  final assets:Array<Asset> = [];
+	public final config:ClientConfig;
+	public final output:Directory;
 
-  public function new(config, output, ?document) {
-    this.config = config;
-    this.output = output;
-  }
+	final assets:Array<Asset> = [];
 
-  public function getClientAppPath() {
-    return config.outputName.withExtension('js').normalize();
-  }
+	public function new(config, output, ?document) {
+		this.config = config;
+		this.output = output;
+	}
 
-  public function addAsset(asset:Asset) {
-    var id = asset.getIdentifier();
-    if (id != null && assets.exists(asset -> asset.getIdentifier() == id)) {
-      return;
-    }
-    if (!assets.contains(asset)) {
-      assets.push(asset);
-    }
-  }
+	public function getClientAppPath() {
+		return config.outputName.withExtension('js').normalize();
+	}
 
-  public function process() {
-    return Task.parallel(...assets.map(asset -> asset.process(this)));
-  }
+	public function addAsset(asset:Asset) {
+		var id = asset.getIdentifier();
+		if (id != null && assets.exists(asset -> asset.getIdentifier() == id)) {
+			return;
+		}
+		if (!assets.contains(asset)) {
+			assets.push(asset);
+		}
+	}
 
-  public function dispose() {}
+	public function process() {
+		return Task.parallel(...assets.map(asset -> asset.process(this)));
+	}
+
+	public function dispose() {}
 }

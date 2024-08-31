@@ -11,40 +11,40 @@ import site.data.*;
 typedef PostRoute = Route<"/post/{id:Int}">;
 
 class SiteHeader extends Component {
-  function render() {
-    var postMenu = new Menu({
-      label: 'Posts',
-      options: [
-        new MenuOption({
-          label: 'First Post',
-          type: PageLink,
-          url: PostRoute.createUrl({ id: 1 })
-        }),
-        new MenuOption({
-          label: 'Second Post',
-          type: PageLink,
-          url: PostRoute.createUrl({ id: 2 })
-        }),
-        new MenuOption({
-          label: 'Third Post',
-          type: PageLink,
-          url: PostRoute.createUrl({ id: 3 })
-        })
-      ]
-    });
+	function render() {
+		var postMenu = new Menu({
+			label: 'Posts',
+			options: [
+				new MenuOption({
+					label: 'First Post',
+					type: PageLink,
+					url: PostRoute.createUrl({id: 1})
+				}),
+				new MenuOption({
+					label: 'Second Post',
+					type: PageLink,
+					url: PostRoute.createUrl({id: 2})
+				}),
+				new MenuOption({
+					label: 'Third Post',
+					type: PageLink,
+					url: PostRoute.createUrl({id: 3})
+				})
+			]
+		});
 
-    // Note: this is a hack to ensure our post routes are visited, as
-    // the server will not activate the menu.
-    //
-    // This is probably a good argument *not* to build site-nav
-    // menus this way, but for this example's sake we'll do it.
-    var visitor = getContext(RouteVisitor);
-    if (visitor != null) for (option in postMenu.options) {
-      visitor.enqueue(option.url);
-    }
+		// Note: this is a hack to ensure our post routes are visited, as
+		// the server will not activate the menu.
+		//
+		// This is probably a good argument *not* to build site-nav
+		// menus this way, but for this example's sake we'll do it.
+		var visitor = getContext(RouteVisitor);
+		if (visitor != null) for (option in postMenu.options) {
+			visitor.enqueue(option.url);
+		}
 
-    return view(
-      <header class={Breeze.compose(
+		return view(
+			<header class={Breeze.compose(
         Background.color('black', 0),
         Typography.textColor('white', 0)
       )}>
@@ -79,6 +79,6 @@ class SiteHeader extends Component {
           </nav>
         </div>
       </header>
-    );
-  }
+		);
+	}
 }

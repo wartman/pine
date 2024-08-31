@@ -5,60 +5,60 @@ import pine.signal.Observer;
 import pine.signal.Signal;
 
 class PrimitiveView extends View {
-  final tag:String;
-  final children:Children;
-  final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
-  final ref:Null<(primitive:Dynamic)->Void>;
-  final owner:Owner = new Owner();
+	final tag:String;
+	final children:Children;
+	final attributes:Map<String, ReadOnlySignal<Dynamic>> = [];
+	final ref:Null<(primitive:Dynamic) -> Void>;
+	final owner:Owner = new Owner();
 
-  var primitive:Null<Dynamic> = null;
-  
-  public function new(tag, attributes, children:Children, ?ref) {
-    this.tag = tag;
-    this.attributes = attributes;
-    this.children = children;
-    this.ref = ref;
-  }
+	var primitive:Null<Dynamic> = null;
 
-  function __initialize() {
-    var adaptor = getAdaptor();
-    var parent = getParent();
+	public function new(tag, attributes, children:Children, ?ref) {
+		this.tag = tag;
+		this.attributes = attributes;
+		this.children = children;
+		this.ref = ref;
+	}
 
-    this.primitive = adaptor.createPrimitive(tag, slot, parent.findNearestPrimitive);
-    
-    owner.own(() -> {
-      for (name => value in attributes) Observer.track(() -> {
-        adaptor.updatePrimitiveAttribute(primitive, name, value());
-      });
-      
-      var previous:Null<View> = null;
-      for (index => child in children) {
-        child.mount(this, adaptor, new Slot(index, previous?.getPrimitive()));
-        previous = child;
-      }
-    });
+	function __initialize() {
+		var adaptor = getAdaptor();
+		var parent = getParent();
 
-    if (ref != null) ref(primitive);
+		this.primitive = adaptor.createPrimitive(tag, slot, parent.findNearestPrimitive);
 
-    adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
-  }
-  
-  public function findNearestPrimitive():Dynamic {
-    return getPrimitive();
-  }
+		owner.own(() -> {
+			for (name => value in attributes) Observer.track(() -> {
+				adaptor.updatePrimitiveAttribute(primitive, name, value());
+			});
 
-  public function getPrimitive():Dynamic {
-    assert(primitive != null, 'A primitive of type $tag was not initialized properly');
-    return primitive;
-  }
+			var previous:Null<View> = null;
+			for (index => child in children) {
+				child.mount(this, adaptor, new Slot(index, previous?.getPrimitive()));
+				previous = child;
+			}
+		});
 
-  function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
-    getAdaptor().movePrimitive(primitive, previousSlot, newSlot, getParent().findNearestPrimitive);
-  }
+		if (ref != null) ref(primitive);
 
-  function __dispose() {
-    getAdaptor().removePrimitive(primitive, slot);
-    owner.dispose();
-    for (child in children) child.dispose();
-  }
+		adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
+	}
+
+	public function findNearestPrimitive():Dynamic {
+		return getPrimitive();
+	}
+
+	public function getPrimitive():Dynamic {
+		assert(primitive != null, 'A primitive of type $tag was not initialized properly');
+		return primitive;
+	}
+
+	function __updateSlot(previousSlot:Null<Slot>, newSlot:Null<Slot>) {
+		getAdaptor().movePrimitive(primitive, previousSlot, newSlot, getParent().findNearestPrimitive);
+	}
+
+	function __dispose() {
+		getAdaptor().removePrimitive(primitive, slot);
+		owner.dispose();
+		for (child in children) child.dispose();
+	}
 }

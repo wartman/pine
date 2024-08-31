@@ -7,92 +7,92 @@ import pine.signal.Signal;
 
 @:forward
 abstract Text(TextView) to View to Child {
-  public inline static function build(content) {
-    return new Text(content);
-  }
+	public inline static function build(content) {
+		return new Text(content);
+	}
 
-  @:from public inline static function ofString(content:String) {
-    return new Text(content);
-  }
+	@:from public inline static function ofString(content:String) {
+		return new Text(content);
+	}
 
-  @:from public inline static function ofInt(content:Int) {
-    return new Text(content + '');
-  }
+	@:from public inline static function ofInt(content:Int) {
+		return new Text(content + '');
+	}
 
-  @:from public inline static function ofFloat(content:Float) {
-    return new Text(content + '');
-  }
+	@:from public inline static function ofFloat(content:Float) {
+		return new Text(content + '');
+	}
 
-  @:from public inline static function ofStringReadOnlySignal(content:ReadOnlySignal<String>) {
-    return new Text(content);
-  }
+	@:from public inline static function ofStringReadOnlySignal(content:ReadOnlySignal<String>) {
+		return new Text(content);
+	}
 
-  @:from public inline static function ofIntReadOnlySignal(content:ReadOnlySignal<Int>) {
-    return new Text(new Computation(() -> content() + ''));
-  }
+	@:from public inline static function ofIntReadOnlySignal(content:ReadOnlySignal<Int>) {
+		return new Text(new Computation(() -> content() + ''));
+	}
 
-  @:from public inline static function ofFloatReadOnlySignal(content:ReadOnlySignal<Float>) {
-    return new Text(new Computation(() -> content() + ''));
-  }
+	@:from public inline static function ofFloatReadOnlySignal(content:ReadOnlySignal<Float>) {
+		return new Text(new Computation(() -> content() + ''));
+	}
 
-  @:from public inline static function ofStringSignal(content:Signal<String>) {
-    return new Text(content);
-  }
+	@:from public inline static function ofStringSignal(content:Signal<String>) {
+		return new Text(content);
+	}
 
-  @:from public inline static function ofIntSignal(content:Signal<Int>) {
-    return new Text(new Computation(() -> content() + ''));
-  }
+	@:from public inline static function ofIntSignal(content:Signal<Int>) {
+		return new Text(new Computation(() -> content() + ''));
+	}
 
-  @:from public inline static function ofFloatSignal(content:Signal<Float>) {
-    return new Text(new Computation(() -> content() + ''));
-  }
+	@:from public inline static function ofFloatSignal(content:Signal<Float>) {
+		return new Text(new Computation(() -> content() + ''));
+	}
 
-  public inline function new(content:ReadOnlySignal<String>) {
-    this = new TextView(content);
-  }
+	public inline function new(content:ReadOnlySignal<String>) {
+		this = new TextView(content);
+	}
 }
 
 class TextView extends View {
-  final content:ReadOnlySignal<String>;
-  
-  var primitive:Null<Dynamic> = null;
-  var link:Null<Disposable> = null;
+	final content:ReadOnlySignal<String>;
 
-  public function new(content) {
-    this.content = content;
-  }
+	var primitive:Null<Dynamic> = null;
+	var link:Null<Disposable> = null;
 
-  function __initialize() {
-    var adaptor = getAdaptor();
-    var parent = getParent();
+	public function new(content) {
+		this.content = content;
+	}
 
-    primitive = adaptor.createTextPrimitive(content.peek(), slot, parent.findNearestPrimitive);
-    link = new Observer(() -> adaptor.updateTextPrimitive(primitive, content()));
+	function __initialize() {
+		var adaptor = getAdaptor();
+		var parent = getParent();
 
-    adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
-  }
+		primitive = adaptor.createTextPrimitive(content.peek(), slot, parent.findNearestPrimitive);
+		link = new Observer(() -> adaptor.updateTextPrimitive(primitive, content()));
 
-  public function findNearestPrimitive():Dynamic {
-    return getPrimitive();
-  }
+		adaptor.insertPrimitive(primitive, slot, parent.findNearestPrimitive);
+	}
 
-  public function getPrimitive():Dynamic {
-    assert(primitive != null);
-    return primitive;
-  }
+	public function findNearestPrimitive():Dynamic {
+		return getPrimitive();
+	}
 
-  function __updateSlot(prevSlot:Null<Slot>, newSlot:Null<Slot>) {
-    var adaptor = getAdaptor();
-    var parent = getParent();
+	public function getPrimitive():Dynamic {
+		assert(primitive != null);
+		return primitive;
+	}
 
-    adaptor.movePrimitive(primitive, prevSlot, newSlot, parent.findNearestPrimitive);
-  }
+	function __updateSlot(prevSlot:Null<Slot>, newSlot:Null<Slot>) {
+		var adaptor = getAdaptor();
+		var parent = getParent();
 
-  function __dispose() {
-    var adaptor = getAdaptor();
+		adaptor.movePrimitive(primitive, prevSlot, newSlot, parent.findNearestPrimitive);
+	}
 
-    link?.dispose();
-    link = null;
-    adaptor.removePrimitive(primitive, slot);
-  }
+	function __dispose() {
+		var adaptor = getAdaptor();
+
+		link?.dispose();
+		link = null;
+		adaptor.removePrimitive(primitive, slot);
+	}
 }

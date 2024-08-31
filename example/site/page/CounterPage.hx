@@ -7,19 +7,19 @@ import site.layout.MainLayout;
 import site.style.Core;
 
 class CounterPage extends ServerComponent {
-  @:attribute final initialCount:Int;
+	@:attribute final initialCount:Int;
 
-  function render():Task<Child> {
-    return MainLayout.build({
-      title: 'Counter | ${initialCount}',
-      children: Html.div()
-        .style(centered)
-        .children(
-          Section.build({
-            constrain: true,
-            children: CounterIsland.build({ count: initialCount })
-          })
-        )
-    }).as(Child);
-  }
+	function render():Task<Child> {
+		return MainLayout.build({
+			title: 'Counter | ${initialCount}',
+			children: Html.div()
+				.style(centered)
+				.children(
+					Section.build({
+						constrain: true,
+						children: CounterIsland.build({count: initialCount})
+					})
+				)
+		}).as(Child);
+	}
 }

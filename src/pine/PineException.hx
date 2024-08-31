@@ -7,7 +7,7 @@ using Type;
 class PineException extends Exception {}
 
 class PineComponentException extends PineException {
-  public function new(message) {
-    super(message);
-  }
+	public function new(message) {
+		super(message);
+	}
 }
